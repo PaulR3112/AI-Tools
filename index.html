@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Šablona technické analýzy</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --accent: #f97316;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --success: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.12), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(34, 197, 94, 0.14), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 32px;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    h1, h2, h3 { margin: 0; font-weight: 700; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+    p { margin: 8px 0 12px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(249, 115, 22, 0.12);
+      border: 1px solid rgba(249, 115, 22, 0.35);
+      border-radius: 999px;
+      color: #fed7aa;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
+    }
+    .card h3 {
+      margin-bottom: 6px;
+      color: #fff7ed;
+    }
+    .muted { color: var(--muted); }
+    .section {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin: 24px 0;
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.32);
+    }
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e5e7eb;
+      font-size: 13px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .block {
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+      margin-top: 10px;
+    }
+    .row { display: flex; align-items: center; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+    .steps {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0;
+      display: grid;
+      gap: 8px;
+    }
+    .steps li {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .tag { color: #a5f3fc; font-weight: 600; }
+    .success { color: var(--success); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="pill">Šablona reportu</div>
+    <h1>Technická analýza – strukturovaný výstup</h1>
+    <p class="muted">Vyplň podle pokynů: česky, zachovej originální text podmínek a logických výrazů.</p>
+
+    <section class="section">
+      <div class="row">
+        <h2>1. Rychlá odpověď</h2>
+        <div class="badge">Stručné shrnutí (1–3 odstavce)</div>
+      </div>
+      <div class="list">
+        <p><strong>Hlavní závěr:</strong> &hellip;</p>
+        <p>Klíčové poznámky: &hellip;</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2>2. Detailní nálezy</h2>
+        <div class="badge">Použij strukturu NÁLEZ [číslo]</div>
+      </div>
+      <div class="list">
+        <div class="card">
+          <h3>NÁLEZ 1</h3>
+          <div class="block">
+            <p><strong>A) Lokace:</strong> &hellip; (Soubor / Modul / Strana / Tabulka)</p>
+            <p><strong>B) Relevance:</strong> vysoká | střední | nízká – odůvodnění.</p>
+            <p><strong>C) Originální text:</strong><br />
+              Přesný citát &hellip;</p>
+            <p><strong>D) Technická struktura:</strong><br />
+              Podmínka/Pravidlo:<br />
+              WENN/IF: <span class="tag">[podmínka]</span><br />
+              &ndash; Proměnná 1: název operátor hodnota<br />
+              &ndash; Proměnná 2: název operátor hodnota<br />
+              Výstup/Akce: <span class="tag">[výstup = stav]</span></p>
+            <p><strong>E) Překlad funkčního popisu:</strong> Vysvětlení v češtině (bez překladu identifikátorů).</p>
+            <p><strong>F) Logické vysvětlení:</strong> Popis, co podmínka dělá, jak funguje logika a jak souvisí s dotazem.</p>
+            <p><strong>G) Vazby a závislosti:</strong> Nadřazené/nižší podmínky, související funkce.</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3>NÁLEZ 2</h3>
+          <p class="muted">Duplikuj kartu pro další nálezy. Pokud je nálezů &gt;20, uveď souhrn dle kapitoly/modulu a detailuj jen nejrelevantnější.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2>3. Závěrečný report</h2>
+        <div class="badge">Shrnutí &amp; logické vztahy</div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Důvěra ve vyhledávání</h3>
+          <p>Hodnocení [0–100] % – co bylo prohledáno, omezení, kvalita zdrojů.</p>
+        </div>
+        <div class="card">
+          <h3>Souhrnná analýza</h3>
+          <p>Počet relevantních nálezů a jejich lokace (Soubor, kapitola/strana – popis).</p>
+        </div>
+        <div class="card">
+          <h3>Logické vztahy</h3>
+          <p>Popiš AND/OR/NOT vztahy, priority, výjimky, konflikty a fallback logiku.</p>
+        </div>
+        <div class="card">
+          <h3>Shrnutí pro uživatele</h3>
+          <p>Co bylo zjištěno, jak funkce pracuje, klíčové podmínky, co si zapamatovat.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2>Rychlý postup práce</h2>
+        <div class="badge">Kontrolní seznam</div>
+      </div>
+      <ol class="steps">
+        <li>Detekuj jazyk dokumentu (DE/EN) a uveď, pokud je smíšený.</li>
+        <li>Analyzuj dotaz: klíčová slova, typ informace, funkční souvislosti, vytvoř seznam synonym.</li>
+        <li>Systematicky prohledej všechny soubory (kapitoly, tabulky, signály, strukturovaná data).</li>
+        <li>U každého nálezu uveď Lokaci, Relevanci, Originální text, Technickou strukturu, Překlad, Logické vysvětlení a Vazby.</li>
+        <li>Pokud nálezů &gt;20, vytvoř souhrn podle modulu/kapitoly a detailuj nejdůležitější.</li>
+        <li>Na konci sestav závěrečný report s důvěrou, souhrnnou analýzou, logickými vztahy a shrnutím pro uživatele.</li>
+        <li>Pokud nic nenalezneš, uveď explicitně, že informace chybí a co bylo prohledáno.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2>Stav kontroly</h2>
+        <div class="badge">Aktualizuj po dokončení</div>
+      </div>
+      <p><strong>Hotovo:</strong> <span class="success">✔</span> Struktura je připravena k vyplnění.</p>
+    </section>
+  </div>
+</body>
+</html>

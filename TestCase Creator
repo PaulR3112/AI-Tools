@@ -1,1 +1,2066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cases Creator v3.0 - Automotive BCM/LTM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --bg-base: #0a0a0f;
+    --bg-elevated: #12121a;
+    --bg-surface: #1a1a24;
+    --bg-hover: #22222e;
+    --bg-active: #2a2a38;
+    --text-primary: #f0f0f5;
+    --text-secondary: #a0a0b0;
+    --text-muted: #606070;
+    --accent-blue: #3b82f6;
+    --accent-blue-glow: rgba(59, 130, 246, 0.3);
+    --accent-green: #10b981;
+    --accent-green-glow: rgba(16, 185, 129, 0.3);
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    --accent-purple-glow: rgba(139, 92, 246, 0.3);
+    --border: rgba(255, 255, 255, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --transition-fast: 150ms ease;
+}
+[data-theme="light"] {
+    --bg-base: #f8f9fc;
+    --bg-elevated: #ffffff;
+    --bg-surface: #f0f1f5;
+    --bg-hover: #e8e9f0;
+    --bg-active: #dcdee8;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a60;
+    --text-muted: #8a8aa0;
+    --border: rgba(0, 0, 0, 0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: var(--font-sans);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, var(--accent-blue-glow) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--accent-purple-glow) 0%, transparent 50%);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: -1;
+}
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.header {
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+}
+.header-left { display: flex; align-items: center; gap: 24px; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+}
+.logo-text h1 { font-size: 1.1rem; font-weight: 700; }
+.logo-text span { font-size: 0.7rem; color: var(--text-muted); }
+.header-nav { display: flex; gap: 4px; background: var(--bg-surface); padding: 4px; border-radius: var(--radius-lg); }
+.nav-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.nav-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text-primary); }
+.nav-btn.active { background: var(--accent-blue); color: white; }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn .step {
+    width: 22px; height: 22px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+}
+.nav-btn.completed .step { background: var(--accent-green); }
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+.icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.main { flex: 1; padding: 24px; overflow-y: auto; }
+.screen { display: none; animation: fadeIn 0.4s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.card {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+.card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h2 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.card-body { padding: 24px; }
+.import-container { max-width: 800px; margin: 0 auto; }
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-xl);
+    padding: 80px 40px;
+    text-align: center;
+    background: var(--bg-surface);
+    cursor: pointer;
+    transition: 250ms ease;
+    position: relative;
+    overflow: hidden;
+}
+.upload-area:hover, .upload-area.dragover { border-color: var(--accent-blue); transform: scale(1.01); }
+.upload-area.has-file { border-style: solid; border-color: var(--accent-green); }
+.upload-icon { font-size: 64px; margin-bottom: 20px; }
+.upload-area h3 { font-size: 1.4rem; margin-bottom: 8px; font-weight: 700; }
+.upload-area p { color: var(--text-muted); margin-bottom: 24px; }
+.upload-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    border: none; border-radius: var(--radius-lg);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.file-types { display: flex; gap: 8px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+.file-type {
+    padding: 6px 14px;
+    background: var(--bg-hover);
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.file-info { margin-top: 24px; padding: 20px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--accent-green); display: none; }
+.file-info.visible { display: block; }
+.file-info-row { display: flex; align-items: center; gap: 16px; }
+.file-icon { font-size: 40px; }
+.file-details { flex: 1; }
+.file-name { font-weight: 700; font-size: 1.05rem; }
+.file-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+.parsing-progress { margin-top: 20px; padding: 16px; background: var(--bg-hover); border-radius: var(--radius-md); display: none; }
+.parsing-progress.visible { display: block; }
+.progress-bar { height: 6px; background: var(--bg-active); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green)); width: 0%; transition: width 0.4s; }
+.validation-results { margin-top: 20px; padding: 16px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border); display: none; }
+.validation-results.visible { display: block; }
+.validation-results h4 { font-size: 0.9rem; margin-bottom: 12px; }
+.validation-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 0.85rem; }
+.validation-item.success { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.validation-item.warning { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+.validation-item.error { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+.structure-container { display: grid; grid-template-columns: 380px 1fr; gap: 24px; height: calc(100vh - 140px); min-height: 500px; }
+.chapter-tree {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.tree-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); }
+.tree-header h3 { font-size: 0.95rem; font-weight: 700; }
+.tree-actions { display: flex; gap: 6px; }
+.tree-btn { padding: 6px 12px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; color: var(--text-secondary); }
+.tree-btn:hover { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+.tree-search { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.tree-search input {
+    width: 100%; padding: 10px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+.tree-search input:focus { outline: none; border-color: var(--accent-blue); }
+.tree-content { flex: 1; overflow-y: auto; padding: 12px; }
+.chapter-group { margin-bottom: 8px; }
+.chapter-group-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.chapter-group-header:hover { background: var(--bg-hover); }
+.chapter-group-toggle { transition: transform 0.2s; font-size: 0.7rem; color: var(--text-muted); }
+.chapter-group.collapsed .chapter-group-toggle { transform: rotate(-90deg); }
+.chapter-group.collapsed .chapter-group-items { display: none; }
+.chapter-group-items { padding-left: 12px; margin-top: 6px; }
+.chapter-group-count { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); background: var(--bg-hover); padding: 2px 8px; border-radius: 6px; }
+.tree-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: var(--radius-md); cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; }
+.tree-item:hover { background: var(--bg-hover); }
+.tree-item.selected { background: var(--bg-active); border-color: var(--accent-blue); }
+.tree-item input[type="checkbox"] { margin-top: 3px; width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-blue); }
+.tree-item-content { flex: 1; min-width: 0; }
+.tree-item-id { font-size: 0.7rem; color: var(--accent-blue); font-weight: 600; font-family: var(--font-mono); margin-bottom: 2px; }
+.tree-item-title { font-size: 0.85rem; color: var(--text-primary); word-break: break-word; line-height: 1.4; }
+.tree-item-type { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+.tree-item-type.logic { background: var(--accent-blue-glow); color: var(--accent-blue); }
+.tree-item-type.config { background: rgba(245, 158, 11, 0.3); color: var(--accent-amber); }
+.tree-item-type.chapter { background: var(--accent-purple-glow); color: var(--accent-purple); }
+.tree-item-type.text { background: var(--bg-hover); color: var(--text-muted); }
+.requirement-preview { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.preview-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-surface); }
+.preview-header h3 { font-size: 0.95rem; font-weight: 700; }
+.preview-content { flex: 1; overflow-y: auto; padding: 20px; }
+.preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; }
+.preview-empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.4; }
+.req-detail { line-height: 1.7; }
+.req-detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.req-detail-id { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; padding: 6px 14px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: white; border-radius: var(--radius-md); }
+.req-detail-internal { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); padding: 6px 12px; background: var(--bg-surface); border-radius: 6px; }
+.req-detail-text { font-size: 0.95rem; white-space: pre-wrap; background: var(--bg-surface); padding: 20px; border-radius: var(--radius-lg); border-left: 4px solid var(--accent-blue); font-family: var(--font-mono); line-height: 1.8; }
+.req-detail-text .keyword { color: var(--accent-blue); font-weight: 700; }
+.req-detail-text .signal { color: var(--accent-purple); background: var(--accent-purple-glow); padding: 1px 6px; border-radius: 3px; }
+.req-detail-text .value { color: var(--accent-green); font-weight: 600; }
+.req-detail-text .operator { color: var(--accent-amber); font-weight: 700; }
+.signals-preview { margin-top: 20px; padding: 16px; background: var(--bg-surface); border-radius: var(--radius-md); }
+.signals-preview h4 { font-size: 0.85rem; margin-bottom: 12px; color: var(--text-secondary); }
+.signals-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.signal-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-hover); border-radius: 6px; font-family: var(--font-mono); font-size: 0.8rem; border: 1px solid var(--border); }
+.signal-badge.input { border-left: 3px solid var(--accent-blue); }
+.signal-badge.output { border-left: 3px solid var(--accent-green); }
+.selection-summary { padding: 16px 20px; border-top: 1px solid var(--border); background: var(--bg-surface); display: flex; align-items: center; justify-content: space-between; }
+.selection-count { font-size: 0.9rem; font-weight: 500; }
+.selection-count strong { color: var(--accent-blue); font-weight: 700; }
+.analysis-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.analysis-panel { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+.analysis-panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-surface); font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
+.analysis-panel-body { flex: 1; padding: 20px; overflow-y: auto; max-height: 500px; }
+.logic-block { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+.logic-block-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.logic-block-id { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; padding: 4px 10px; background: var(--accent-blue); color: white; border-radius: 6px; }
+.logic-block-title { font-size: 0.85rem; color: var(--text-secondary); }
+.logic-block-stats { margin-left: auto; display: flex; gap: 8px; }
+.logic-stat { font-size: 0.75rem; padding: 4px 10px; background: var(--bg-hover); border-radius: 6px; font-family: var(--font-mono); }
+.logic-condition { font-family: var(--font-mono); font-size: 0.85rem; line-height: 2; padding: 16px; background: var(--bg-base); border-radius: var(--radius-md); border: 1px solid var(--border); overflow-x: auto; }
+.logic-keyword { color: var(--accent-blue); font-weight: 700; }
+.logic-signal { color: var(--accent-purple); }
+.logic-value { color: var(--accent-green); font-weight: 600; }
+.logic-operator { color: var(--accent-amber); font-weight: 700; }
+.signals-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.signal-tag { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-hover); border-radius: 6px; font-size: 0.8rem; font-family: var(--font-mono); border: 1px solid var(--border); }
+.signal-tag.input { border-left: 3px solid var(--accent-blue); }
+.signal-tag.output { border-left: 3px solid var(--accent-green); }
+.signal-tag .values { font-size: 0.7rem; color: var(--text-muted); background: var(--bg-active); padding: 2px 6px; border-radius: 3px; }
+.truth-table-container { overflow-x: auto; margin-top: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+.truth-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: var(--font-mono); }
+.truth-table th, .truth-table td { padding: 10px 14px; border: 1px solid var(--border); text-align: center; }
+.truth-table th { background: var(--bg-surface); font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+.truth-table th.output-col { background: linear-gradient(135deg, var(--accent-green-glow), rgba(6, 182, 212, 0.2)); }
+.truth-table td.val-1 { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); font-weight: 600; }
+.truth-table td.val-0 { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+.truth-table tr:hover { background: var(--bg-hover); }
+.truth-table .branch-dann { color: var(--accent-green); font-weight: 600; }
+.truth-table .branch-sonst { color: var(--accent-red); font-weight: 600; }
+.analysis-actions { margin-top: 24px; padding: 20px; background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.analysis-stats { display: flex; gap: 24px; }
+.analysis-stat { text-align: center; }
+.analysis-stat-value { font-size: 1.8rem; font-weight: 800; color: var(--accent-blue); font-family: var(--font-mono); }
+.analysis-stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.generate-container { display: grid; grid-template-columns: 420px 1fr; gap: 24px; }
+.generate-options { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 24px; }
+.generate-options h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.option-group { margin-bottom: 24px; }
+.option-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+.option-group input[type="text"], .option-group input[type="number"], .option-group select {
+    width: 100%; padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+}
+.option-group input:focus, .option-group select:focus { outline: none; border-color: var(--accent-blue); }
+.checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+.checkbox-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--bg-surface); border-radius: var(--radius-md); cursor: pointer; border: 1px solid var(--border); }
+.checkbox-item:hover { background: var(--bg-hover); border-color: var(--accent-blue); }
+.checkbox-item input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-blue); }
+.checkbox-item span { font-size: 0.9rem; font-weight: 500; }
+.checkbox-item .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.generate-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.generate-btn:hover { transform: translateY(-2px); }
+.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.generate-progress { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+.progress-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-surface); font-weight: 700; }
+.progress-log { flex: 1; min-height: 300px; max-height: 400px; overflow-y: auto; padding: 16px; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-base); }
+.log-entry { padding: 6px 0; border-bottom: 1px solid var(--border); }
+.log-entry.info { color: var(--accent-blue); }
+.log-entry.success { color: var(--accent-green); }
+.log-entry.warning { color: var(--accent-amber); }
+.log-entry.error { color: var(--accent-red); }
+.log-entry .timestamp { color: var(--text-muted); margin-right: 12px; }
+.progress-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px; border-top: 1px solid var(--border); background: var(--bg-surface); }
+.stat-card { text-align: center; padding: 20px; background: var(--bg-elevated); border-radius: var(--radius-lg); border: 1px solid var(--border); }
+.stat-value { font-size: 2.2rem; font-weight: 800; font-family: var(--font-mono); background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+.editor-container { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); overflow: hidden; }
+.editor-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border); gap: 16px; flex-wrap: wrap; }
+.toolbar-group { display: flex; align-items: center; gap: 10px; }
+.toolbar-input { padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.85rem; min-width: 200px; }
+.toolbar-input:focus { outline: none; border-color: var(--accent-blue); }
+.toolbar-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.85rem; }
+.toolbar-btn { padding: 10px 16px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.toolbar-btn:hover { background: var(--bg-hover); border-color: var(--accent-blue); }
+.toolbar-btn.primary { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+.toolbar-btn.danger { background: var(--accent-red); color: white; border-color: var(--accent-red); }
+.toolbar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.undo-redo-group { display: flex; gap: 4px; padding: 4px; background: var(--bg-hover); border-radius: var(--radius-md); }
+.undo-redo-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 6px; cursor: pointer; color: var(--text-secondary); }
+.undo-redo-btn:hover:not(:disabled) { background: var(--bg-active); color: var(--text-primary); }
+.undo-redo-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.editor-table-container { overflow-x: auto; max-height: calc(100vh - 300px); }
+.editor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.editor-table th { padding: 14px 18px; text-align: left; background: var(--bg-surface); border-bottom: 2px solid var(--border); font-weight: 700; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
+.editor-table td { padding: 14px 18px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.editor-table tbody tr:hover { background: var(--bg-hover); }
+.editor-table tbody tr.selected { background: var(--accent-blue-glow); }
+.tc-id { font-family: var(--font-mono); font-weight: 700; color: var(--accent-blue); white-space: nowrap; }
+.tc-description { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tc-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+.tc-badge.positive { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.tc-badge.negative { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+.tc-badge.boundary { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+.tc-badge.combination { background: var(--accent-purple-glow); color: var(--accent-purple); }
+.tc-badge.high { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+.tc-badge.medium { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+.tc-badge.low { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.tc-actions { display: flex; gap: 6px; }
+.tc-action-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+.tc-action-btn:hover { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+.tc-action-btn.danger:hover { background: var(--accent-red); border-color: var(--accent-red); }
+.export-container { display: grid; grid-template-columns: 420px 1fr; gap: 24px; }
+.export-options { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 24px; }
+.export-options h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.format-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 28px; }
+.format-card { padding: 24px 16px; background: var(--bg-surface); border: 2px solid var(--border); border-radius: var(--radius-lg); text-align: center; cursor: pointer; }
+.format-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+.format-card.selected { border-color: var(--accent-blue); background: var(--accent-blue-glow); }
+.format-card-icon { font-size: 36px; margin-bottom: 10px; }
+.format-card-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+.format-card-desc { font-size: 0.75rem; color: var(--text-muted); }
+.export-settings { margin-bottom: 28px; }
+.export-settings h4 { font-size: 0.9rem; margin-bottom: 14px; color: var(--text-secondary); }
+.export-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--accent-green), #0891b2);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.export-btn:hover { transform: translateY(-2px); }
+.export-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.export-preview { background: var(--bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+.export-preview-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-surface); font-weight: 700; }
+.export-preview-content { flex: 1; min-height: 400px; max-height: calc(100vh - 300px); overflow: auto; padding: 20px; font-family: var(--font-mono); font-size: 0.8rem; white-space: pre-wrap; background: var(--bg-base); color: var(--text-secondary); }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; opacity: 0; visibility: hidden; transition: 250ms ease; }
+.modal.visible { opacity: 1; visibility: visible; }
+.modal-content { background: var(--bg-elevated); border-radius: var(--radius-xl); width: 100%; max-width: 750px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border); transform: translateY(20px) scale(0.98); transition: 250ms ease; }
+.modal.visible .modal-content { transform: translateY(0) scale(1); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--bg-surface); }
+.modal-header h3 { font-size: 1.15rem; font-weight: 700; }
+.modal-close { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--bg-hover); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; font-size: 1.1rem; color: var(--text-secondary); }
+.modal-close:hover { background: var(--accent-red); color: white; border-color: var(--accent-red); }
+.modal-body { flex: 1; overflow-y: auto; padding: 24px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 20px 24px; border-top: 1px solid var(--border); background: var(--bg-surface); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+.form-group input[type="text"], .form-group textarea, .form-group select { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.9rem; }
+.form-group textarea { resize: vertical; min-height: 100px; font-family: var(--font-mono); }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--accent-blue); }
+.form-group input[readonly] { background: var(--bg-hover); cursor: not-allowed; }
+.form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.steps-editor { margin-top: 12px; }
+.step-item { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+.step-item input { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-surface); color: var(--text-primary); font-size: 0.85rem; font-family: var(--font-mono); }
+.step-item input:first-child { width: 80px; }
+.step-item input:nth-child(2) { flex: 1; }
+.step-item button { width: 36px; height: 36px; background: var(--accent-red); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+.add-step-btn { width: 100%; padding: 12px; background: var(--bg-surface); border: 2px dashed var(--border); border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+.add-step-btn:hover { background: var(--bg-hover); border-color: var(--accent-blue); color: var(--accent-blue); }
+.btn { padding: 12px 20px; border: none; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--accent-blue); color: white; }
+.btn-secondary { background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-success { background: var(--accent-green); color: white; }
+.btn-danger { background: var(--accent-red); color: white; }
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1001; display: flex; flex-direction: column; gap: 10px; }
+.toast { padding: 16px 20px; background: var(--bg-elevated); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 14px; animation: toastIn 0.4s ease; border: 1px solid var(--border); min-width: 300px; }
+.toast.success { border-left: 4px solid var(--accent-green); }
+.toast.error { border-left: 4px solid var(--accent-red); }
+.toast.warning { border-left: 4px solid var(--accent-amber); }
+.toast.info { border-left: 4px solid var(--accent-blue); }
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@media (max-width: 1200px) {
+    .structure-container { grid-template-columns: 320px 1fr; }
+    .analysis-container { grid-template-columns: 1fr; }
+    .generate-container { grid-template-columns: 1fr; }
+    .export-container { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .header { flex-wrap: wrap; padding: 12px 16px; height: auto; }
+    .header-nav { order: 3; width: 100%; justify-content: center; margin-top: 12px; overflow-x: auto; }
+    .nav-btn span:not(.step) { display: none; }
+    .structure-container { grid-template-columns: 1fr; height: auto; }
+    .chapter-tree, .requirement-preview { max-height: 450px; }
+    .form-row { grid-template-columns: 1fr; }
+    .progress-stats { grid-template-columns: repeat(2, 1fr); }
+}
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">🚗</span>
+                    <div class="logo-text">
+                        <h1>Test Cases Creator</h1>
+                        <span>Automotive BCM/LTM v3.0</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn active" data-screen="import"><span class="step">1</span><span>Import</span></button>
+                <button class="nav-btn" data-screen="structure" disabled><span class="step">2</span><span>Structure</span></button>
+                <button class="nav-btn" data-screen="analysis" disabled><span class="step">3</span><span>Analysis</span></button>
+                <button class="nav-btn" data-screen="generate" disabled><span class="step">4</span><span>Generate</span></button>
+                <button class="nav-btn" data-screen="editor" disabled><span class="step">5</span><span>Editor</span></button>
+                <button class="nav-btn" data-screen="export" disabled><span class="step">6</span><span>Export</span></button>
+            </nav>
+            <div class="header-actions">
+                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">🌙</button>
+                <button class="icon-btn" id="help-btn" title="Help">❓</button>
+            </div>
+        </header>
+        <main class="main">
+            <!-- Screen 1: Import -->
+            <section class="screen active" id="screen-import">
+                <div class="import-container">
+                    <div class="card">
+                        <div class="card-header"><h2>📁 Import Specification Document</h2></div>
+                        <div class="card-body">
+                            <div class="upload-area" id="upload-area">
+                                <div class="upload-icon">📄</div>
+                                <h3>Drag & Drop your file here</h3>
+                                <p>or click to browse your files</p>
+                                <label class="upload-btn">
+                                    <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.pdf,.html,.htm" hidden>
+                                    📂 Select File
+                                </label>
+                                <div class="file-types">
+                                    <span class="file-type">Excel (.xlsx)</span>
+                                    <span class="file-type">PDF</span>
+                                    <span class="file-type">HTML</span>
+                                    <span class="file-type">CSV</span>
+                                </div>
+                            </div>
+                            <div class="file-info" id="file-info">
+                                <div class="file-info-row">
+                                    <span class="file-icon" id="file-icon">📊</span>
+                                    <div class="file-details">
+                                        <div class="file-name" id="file-name">document.xlsx</div>
+                                        <div class="file-meta" id="file-meta">2.4 MB • Excel</div>
+                                    </div>
+                                    <button class="btn btn-danger" id="remove-file-btn">✕ Remove</button>
+                                </div>
+                            </div>
+                            <div class="parsing-progress" id="parsing-progress">
+                                <div id="parse-status">Parsing document...</div>
+                                <div class="progress-bar"><div class="progress-fill" id="parse-progress-fill"></div></div>
+                            </div>
+                            <div class="validation-results" id="validation-results">
+                                <h4>📋 Import Validation</h4>
+                                <div id="validation-items"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
+            <!-- Screen 2: Structure -->
+            <section class="screen" id="screen-structure">
+                <div class="structure-container">
+                    <div class="chapter-tree">
+                        <div class="tree-header">
+                            <h3>📂 Document Structure</h3>
+                            <div class="tree-actions">
+                                <button class="tree-btn" id="expand-all-btn">Expand</button>
+                                <button class="tree-btn" id="collapse-all-btn">Collapse</button>
+                                <button class="tree-btn" id="select-logic-btn">Select Logic</button>
+                            </div>
+                        </div>
+                        <div class="tree-search"><input type="text" id="tree-search-input" placeholder="🔍 Search..."></div>
+                        <div class="tree-content" id="tree-content"></div>
+                        <div class="selection-summary">
+                            <span class="selection-count"><strong id="selected-count">0</strong> selected</span>
+                            <button class="btn btn-primary" id="proceed-analysis-btn" disabled>Analyze →</button>
+                        </div>
+                    </div>
+                    <div class="requirement-preview">
+                        <div class="preview-header"><h3>📋 Preview</h3></div>
+                        <div class="preview-content" id="preview-content">
+                            <div class="preview-empty">
+                                <div class="preview-empty-icon">👆</div>
+                                <div>Select a requirement to preview</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 3: Analysis -->
+            <section class="screen" id="screen-analysis">
+                <div class="analysis-container">
+                    <div class="analysis-panel">
+                        <div class="analysis-panel-header">🔍 Extracted Logic</div>
+                        <div class="analysis-panel-body" id="logic-panel"></div>
+                    </div>
+                    <div class="analysis-panel">
+                        <div class="analysis-panel-header">📊 Truth Tables</div>
+                        <div class="analysis-panel-body" id="truth-table-panel"></div>
+                    </div>
+                </div>
+                <div class="analysis-actions">
+                    <div class="analysis-stats">
+                        <div class="analysis-stat"><div class="analysis-stat-value" id="analysis-logic-count">0</div><div class="analysis-stat-label">Logic Blocks</div></div>
+                        <div class="analysis-stat"><div class="analysis-stat-value" id="analysis-signal-count">0</div><div class="analysis-stat-label">Signals</div></div>
+                        <div class="analysis-stat"><div class="analysis-stat-value" id="analysis-combo-count">0</div><div class="analysis-stat-label">Combinations</div></div>
+                    </div>
+                    <button class="btn btn-success" id="approve-btn" style="padding: 16px 32px;">✓ Approve & Generate</button>
+                </div>
+            </section>
+
+            <!-- Screen 4: Generate -->
+            <section class="screen" id="screen-generate">
+                <div class="generate-container">
+                    <div class="generate-options">
+                        <h3>⚙️ Generation Options</h3>
+                        <div class="option-group">
+                            <label>Test Case ID Prefix</label>
+                            <input type="text" id="tc-prefix" value="TC_BCM_" placeholder="e.g., TC_BCM_">
+                        </div>
+                        <div class="option-group">
+                            <label>Starting Number</label>
+                            <input type="number" id="tc-start-num" value="1" min="1">
+                        </div>
+                        <div class="option-group">
+                            <label>Test Types</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" id="gen-positive" checked><div><span>✅ Positive (DANN)</span><div class="hint">Condition TRUE</div></div></label>
+                                <label class="checkbox-item"><input type="checkbox" id="gen-negative" checked><div><span>❌ Negative (SONST)</span><div class="hint">Condition FALSE</div></div></label>
+                                <label class="checkbox-item"><input type="checkbox" id="gen-boundary" checked><div><span>📐 Boundary Values</span><div class="hint">Edge cases</div></div></label>
+                                <label class="checkbox-item"><input type="checkbox" id="gen-all-combinations"><div><span>🔢 All Combinations</span><div class="hint">Complete coverage</div></div></label>
+                            </div>
+                        </div>
+                        <button class="generate-btn" id="generate-btn">🚀 Generate Test Cases</button>
+                    </div>
+                    <div class="generate-progress">
+                        <div class="progress-header">📝 Generation Log</div>
+                        <div class="progress-log" id="generation-log"><div class="log-entry info"><span class="timestamp">[--:--:--]</span> Ready...</div></div>
+                        <div class="progress-stats">
+                            <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total</div></div>
+                            <div class="stat-card"><div class="stat-value" id="stat-positive">0</div><div class="stat-label">Positive</div></div>
+                            <div class="stat-card"><div class="stat-value" id="stat-negative">0</div><div class="stat-label">Negative</div></div>
+                            <div class="stat-card"><div class="stat-value" id="stat-boundary">0</div><div class="stat-label">Boundary</div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 5: Editor -->
+            <section class="screen" id="screen-editor">
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <div class="toolbar-group">
+                            <input type="text" class="toolbar-input" id="search-input" placeholder="🔍 Search...">
+                            <select class="toolbar-select" id="filter-type">
+                                <option value="all">All Types</option>
+                                <option value="positive">Positive</option>
+                                <option value="negative">Negative</option>
+                                <option value="boundary">Boundary</option>
+                            </select>
+                            <select class="toolbar-select" id="filter-source"><option value="all">All Sources</option></select>
+                        </div>
+                        <div class="toolbar-group">
+                            <div class="undo-redo-group">
+                                <button class="undo-redo-btn" id="undo-btn" title="Undo" disabled>↶</button>
+                                <button class="undo-redo-btn" id="redo-btn" title="Redo" disabled>↷</button>
+                            </div>
+                            <button class="toolbar-btn primary" id="add-tc-btn">➕ Add</button>
+                            <button class="toolbar-btn danger" id="delete-selected-btn" disabled>🗑️ Delete</button>
+                        </div>
+                    </div>
+                    <div class="editor-table-container">
+                        <table class="editor-table">
+                            <thead><tr>
+                                <th style="width:40px;"><input type="checkbox" id="select-all-tc"></th>
+                                <th>ID</th><th>Description</th><th>Type</th><th>Priority</th><th>Source</th><th>Status</th><th style="width:120px;">Actions</th>
+                            </tr></thead>
+                            <tbody id="tc-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 6: Export -->
+            <section class="screen" id="screen-export">
+                <div class="export-container">
+                    <div class="export-options">
+                        <h3>💾 Export Options</h3>
+                        <div class="format-grid">
+                            <div class="format-card" data-format="xlsx"><div class="format-card-icon">📊</div><div class="format-card-name">Excel</div><div class="format-card-desc">XLSX</div></div>
+                            <div class="format-card" data-format="csv"><div class="format-card-icon">📝</div><div class="format-card-name">CSV</div><div class="format-card-desc">Comma Separated</div></div>
+                            <div class="format-card" data-format="html"><div class="format-card-icon">🌐</div><div class="format-card-name">HTML</div><div class="format-card-desc">Web Document</div></div>
+                            <div class="format-card" data-format="json"><div class="format-card-icon">📦</div><div class="format-card-name">JSON</div><div class="format-card-desc">Data Format</div></div>
+                        </div>
+                        <div class="export-settings">
+                            <h4>Settings</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" id="export-include-source" checked><span>Include Source IDs</span></label>
+                                <label class="checkbox-item"><input type="checkbox" id="export-include-metadata" checked><span>Include Metadata</span></label>
+                                <label class="checkbox-item"><input type="checkbox" id="export-include-traceability"><span>Traceability Matrix</span></label>
+                            </div>
+                        </div>
+                        <button class="export-btn" id="export-btn" disabled>📥 Download</button>
+                    </div>
+                    <div class="export-preview">
+                        <div class="export-preview-header">Preview</div>
+                        <div class="export-preview-content" id="export-preview">Select format to preview...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="modal-title">Edit Test Case</h3><button class="modal-close" id="modal-close">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>ID</label><input type="text" id="edit-id" readonly></div>
+                <div class="form-group"><label>Description</label><input type="text" id="edit-description"></div>
+                <div class="form-group"><label>Preconditions</label><textarea id="edit-preconditions" rows="4"></textarea></div>
+                <div class="form-group"><label>Actions</label><div class="steps-editor" id="actions-editor"></div><button type="button" class="add-step-btn" id="add-action-btn">+ Add Action</button></div>
+                <div class="form-group"><label>Expected Results</label><div class="steps-editor" id="expected-editor"></div><button type="button" class="add-step-btn" id="add-expected-btn">+ Add Expected</button></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Type</label><select id="edit-type"><option value="positive">Positive</option><option value="negative">Negative</option><option value="boundary">Boundary</option><option value="combination">Combination</option></select></div>
+                    <div class="form-group"><label>Priority</label><select id="edit-priority"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+                    <div class="form-group"><label>Status</label><select id="edit-status"><option value="draft">Draft</option><option value="ready">Ready</option><option value="approved">Approved</option></select></div>
+                </div>
+                <div class="form-group"><label>Comment</label><textarea id="edit-comment" rows="2"></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" id="modal-cancel">Cancel</button><button class="btn btn-primary" id="modal-save">Save</button></div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content" style="max-width:800px;">
+            <div class="modal-header"><h3>📖 Help</h3><button class="modal-close" id="help-close">✕</button></div>
+            <div class="modal-body">
+                <h4 style="color:var(--accent-blue);margin-bottom:12px;">🚗 Test Cases Creator v3.0</h4>
+                <p style="margin-bottom:20px;color:var(--text-secondary);">Advanced test case generator with real expression parser, boundary testing, and undo/redo.</p>
+                <h4 style="color:var(--accent-blue);margin:20px 0 12px;">Supported Patterns</h4>
+                <ul style="margin-left:24px;color:var(--text-secondary);line-height:1.8;">
+                    <li><code>WENN ... DANN ... SONST</code> (German)</li>
+                    <li><code>IF ... THEN ... ELSE</code> (English)</li>
+                    <li>Operators: UND/AND, ODER/OR, NICHT/NOT</li>
+                    <li>Comparisons: ==, !=, &lt;, &gt;, &lt;=, &gt;=, :=</li>
+                    <li>Nested parentheses</li>
+                    <li>Multi-value signals</li>
+                </ul>
+                <h4 style="color:var(--accent-blue);margin:20px 0 12px;">Shortcuts</h4>
+                <ul style="margin-left:24px;color:var(--text-secondary);">
+                    <li><code>Ctrl+Z</code> - Undo</li>
+                    <li><code>Ctrl+Y</code> - Redo</li>
+                    <li><code>Escape</code> - Close modals</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+<script>
+'use strict';
+
+// ==================== EXPRESSION PARSER ====================
+const ExpressionParser = {
+    TOKEN_TYPES: { SIGNAL:'SIGNAL', NUMBER:'NUMBER', COMPARISON:'COMPARISON', LPAREN:'LPAREN', RPAREN:'RPAREN', AND:'AND', OR:'OR', NOT:'NOT', EOF:'EOF' },
+
+    tokenize(expr) {
+        const tokens = [];
+        let pos = 0;
+        const str = expr.trim();
+        while (pos < str.length) {
+            if (/\s/.test(str[pos])) { pos++; continue; }
+            if (str[pos] === '(') { tokens.push({type:this.TOKEN_TYPES.LPAREN,value:'('}); pos++; continue; }
+            if (str[pos] === ')') { tokens.push({type:this.TOKEN_TYPES.RPAREN,value:')'}); pos++; continue; }
+            // Check two-char operators first
+            const twoChar = str.substring(pos, pos+2);
+            if (['==','!=','<=','>=',':='].includes(twoChar)) { tokens.push({type:this.TOKEN_TYPES.COMPARISON,value:twoChar}); pos+=2; continue; }
+            // Single char operators
+            if (['<','>','='].includes(str[pos])) { tokens.push({type:this.TOKEN_TYPES.COMPARISON,value:str[pos]}); pos++; continue; }
+            // Skip units like km/h, ms, etc
+            const unitMatch = str.substring(pos).match(/^(km\/h|kmh|km|ms|s|%)/i);
+            if (unitMatch) { pos += unitMatch[1].length; continue; }
+            // Boolean operators
+            const remaining = str.substring(pos).toUpperCase();
+            if (remaining.startsWith('UND') && !/\w/.test(str[pos+3]||'')) { tokens.push({type:this.TOKEN_TYPES.AND,value:'AND'}); pos+=3; continue; }
+            if (remaining.startsWith('AND') && !/\w/.test(str[pos+3]||'')) { tokens.push({type:this.TOKEN_TYPES.AND,value:'AND'}); pos+=3; continue; }
+            if (remaining.startsWith('ODER') && !/\w/.test(str[pos+4]||'')) { tokens.push({type:this.TOKEN_TYPES.OR,value:'OR'}); pos+=4; continue; }
+            if (remaining.startsWith('OR') && !/\w/.test(str[pos+2]||'')) { tokens.push({type:this.TOKEN_TYPES.OR,value:'OR'}); pos+=2; continue; }
+            if (remaining.startsWith('NICHT') && !/\w/.test(str[pos+5]||'')) { tokens.push({type:this.TOKEN_TYPES.NOT,value:'NOT'}); pos+=5; continue; }
+            if (remaining.startsWith('NOT') && !/\w/.test(str[pos+3]||'')) { tokens.push({type:this.TOKEN_TYPES.NOT,value:'NOT'}); pos+=3; continue; }
+            // Numbers
+            if (/[\d]/.test(str[pos]) || (str[pos] === '-' && /\d/.test(str[pos+1]||''))) {
+                let numStr = '';
+                if (str[pos] === '-') { numStr += str[pos]; pos++; }
+                while (pos < str.length && /[\d.]/.test(str[pos])) { numStr += str[pos]; pos++; }
+                if (numStr && numStr !== '-') { tokens.push({type:this.TOKEN_TYPES.NUMBER,value:parseFloat(numStr)}); continue; }
+            }
+            // Signals/identifiers (including underscores, brackets)
+            if (/[a-zA-Z_]/.test(str[pos])) {
+                let signal = '';
+                while (pos < str.length && /[\w\[\]\-]/.test(str[pos])) { signal += str[pos]; pos++; }
+                tokens.push({type:this.TOKEN_TYPES.SIGNAL,value:signal}); continue;
+            }
+            pos++;
+        }
+        tokens.push({type:this.TOKEN_TYPES.EOF,value:null});
+        return tokens;
+    },
+
+    parse(tokens) {
+        let pos = 0;
+        const current = () => tokens[pos];
+        const consume = (type) => current().type === type ? tokens[pos++] : null;
+        const parseExpression = () => parseOrExpr();
+        const parseOrExpr = () => {
+            let left = parseAndExpr();
+            while (current().type === this.TOKEN_TYPES.OR) { consume(this.TOKEN_TYPES.OR); left = {type:'OR',left,right:parseAndExpr()}; }
+            return left;
+        };
+        const parseAndExpr = () => {
+            let left = parseNotExpr();
+            while (current().type === this.TOKEN_TYPES.AND) { consume(this.TOKEN_TYPES.AND); left = {type:'AND',left,right:parseNotExpr()}; }
+            return left;
+        };
+        const parseNotExpr = () => {
+            if (current().type === this.TOKEN_TYPES.NOT) { consume(this.TOKEN_TYPES.NOT); return {type:'NOT',operand:parseNotExpr()}; }
+            return parseComparison();
+        };
+        const parseComparison = () => {
+            let left = parsePrimary();
+            if (current().type === this.TOKEN_TYPES.COMPARISON) {
+                const op = consume(this.TOKEN_TYPES.COMPARISON);
+                return {type:'COMPARISON',operator:op.value,left,right:parsePrimary()};
+            }
+            return left;
+        };
+        const parsePrimary = () => {
+            if (current().type === this.TOKEN_TYPES.LPAREN) { consume(this.TOKEN_TYPES.LPAREN); const expr = parseExpression(); consume(this.TOKEN_TYPES.RPAREN); return expr; }
+            if (current().type === this.TOKEN_TYPES.SIGNAL) return {type:'SIGNAL',value:consume(this.TOKEN_TYPES.SIGNAL).value};
+            if (current().type === this.TOKEN_TYPES.NUMBER) return {type:'NUMBER',value:consume(this.TOKEN_TYPES.NUMBER).value};
+            return {type:'UNKNOWN',value:null};
+        };
+        try { return parseExpression(); } catch(e) { return null; }
+    },
+
+    extractSignals(ast, signals = new Map()) {
+        if (!ast) return signals;
+        if (ast.type === 'SIGNAL') { if (!signals.has(ast.value)) signals.set(ast.value, {name:ast.value,values:new Set(),comparisons:[]}); }
+        else if (ast.type === 'COMPARISON') {
+            if (ast.left?.type === 'SIGNAL' && ast.right?.type === 'NUMBER') {
+                const sig = ast.left.value;
+                if (!signals.has(sig)) signals.set(sig, {name:sig,values:new Set(),comparisons:[]});
+                signals.get(sig).values.add(ast.right.value);
+                signals.get(sig).comparisons.push({op:ast.operator,value:ast.right.value});
+            }
+            if (ast.right?.type === 'SIGNAL' && ast.left?.type === 'NUMBER') {
+                const sig = ast.right.value;
+                if (!signals.has(sig)) signals.set(sig, {name:sig,values:new Set(),comparisons:[]});
+                signals.get(sig).values.add(ast.left.value);
+                signals.get(sig).comparisons.push({op:ast.operator,value:ast.left.value});
+            }
+        } else {
+            if (ast.left) this.extractSignals(ast.left, signals);
+            if (ast.right) this.extractSignals(ast.right, signals);
+            if (ast.operand) this.extractSignals(ast.operand, signals);
+        }
+        return signals;
+    },
+
+    // Extract signals directly from raw text (backup method)
+    extractSignalsFromText(text) {
+        const signals = new Map();
+        // Match: signal operator value [unit]
+        const regex = /([a-zA-Z_][\w\[\]]*)\s*(==|!=|<=|>=|<|>|:=)\s*([\d.]+)\s*(km\/h|kmh|ms|s|%)?/gi;
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            const sigName = match[1];
+            const value = parseFloat(match[3]);
+            if (!signals.has(sigName)) {
+                signals.set(sigName, {name: sigName, values: new Set(), comparisons: [], unit: match[4] || ''});
+            }
+            signals.get(sigName).values.add(value);
+            signals.get(sigName).comparisons.push({op: match[2], value: value});
+        }
+        return signals;
+    },
+
+    evaluate(ast, bindings) {
+        if (!ast) return false;
+        switch (ast.type) {
+            case 'AND': return this.evaluate(ast.left, bindings) && this.evaluate(ast.right, bindings);
+            case 'OR': return this.evaluate(ast.left, bindings) || this.evaluate(ast.right, bindings);
+            case 'NOT': return !this.evaluate(ast.operand, bindings);
+            case 'COMPARISON':
+                const lv = ast.left.type === 'SIGNAL' ? bindings[ast.left.value] : ast.left.value;
+                const rv = ast.right.type === 'SIGNAL' ? bindings[ast.right.value] : ast.right.value;
+                if (lv === undefined || rv === undefined) return false;
+                switch (ast.operator) {
+                    case '==': case ':=': case '=': return lv === rv;
+                    case '!=': return lv !== rv;
+                    case '<': return lv < rv;
+                    case '>': return lv > rv;
+                    case '<=': return lv <= rv;
+                    case '>=': return lv >= rv;
+                    default: return false;
+                }
+            case 'SIGNAL': return !!bindings[ast.value];
+            case 'NUMBER': return ast.value !== 0;
+            default: return false;
+        }
+    }
+};
+
+// ==================== UTILITIES ====================
+const Utils = {
+    escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; },
+    formatFileSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB'; return (bytes/(1024*1024)).toFixed(1) + ' MB'; },
+    timestamp() { return new Date().toLocaleTimeString('de-DE'); },
+    generateId(prefix, num, pad=3) { return prefix + String(num).padStart(pad, '0'); },
+    deepClone(obj) { return JSON.parse(JSON.stringify(obj)); },
+    debounce(fn, delay) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); }; }
+};
+
+// ==================== STATE ====================
+const State = {
+    currentScreen: 'import',
+    file: null,
+    parsedData: { chapters: [], requirements: [], validationErrors: [], validationWarnings: [] },
+    selectedRequirements: new Set(),
+    analyzedLogic: [],
+    testCases: [],
+    exportFormat: null,
+    history: { past: [], future: [], maxSize: 50 },
+    saveToHistory() { this.history.past.push(Utils.deepClone(this.testCases)); if (this.history.past.length > this.history.maxSize) this.history.past.shift(); this.history.future = []; this.updateUndoRedoButtons(); },
+    undo() { if (this.history.past.length === 0) return false; this.history.future.push(Utils.deepClone(this.testCases)); this.testCases = this.history.past.pop(); this.updateUndoRedoButtons(); return true; },
+    redo() { if (this.history.future.length === 0) return false; this.history.past.push(Utils.deepClone(this.testCases)); this.testCases = this.history.future.pop(); this.updateUndoRedoButtons(); return true; },
+    updateUndoRedoButtons() { const u = document.getElementById('undo-btn'), r = document.getElementById('redo-btn'); if(u) u.disabled = this.history.past.length===0; if(r) r.disabled = this.history.future.length===0; },
+    save() { try { localStorage.setItem('tcc3_testCases', JSON.stringify(this.testCases)); } catch(e) {} },
+    load() { try { const s = localStorage.getItem('tcc3_testCases'); if(s) this.testCases = JSON.parse(s); } catch(e) {} }
+};
+
+// ==================== TOAST ====================
+const Toast = {
+    show(message, type = 'info') {
+        const c = document.getElementById('toast-container');
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        const icons = {success:'✓',error:'✗',warning:'⚠',info:'ℹ'};
+        t.innerHTML = `<span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--accent-${type==='success'?'green':type==='error'?'red':type==='warning'?'amber':'blue'}-glow);color:var(--accent-${type==='success'?'green':type==='error'?'red':type==='warning'?'amber':'blue'});">${icons[type]||icons.info}</span><span>${Utils.escapeHtml(message)}</span>`;
+        c.appendChild(t);
+        setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(100%)'; setTimeout(() => t.remove(), 300); }, 4000);
+    }
+};
+
+// ==================== NAVIGATION ====================
+const Navigation = {
+    screens: ['import','structure','analysis','generate','editor','export'],
+    init() { document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => { if (!btn.disabled) this.goTo(btn.dataset.screen); })); },
+    goTo(screen) {
+        if (!this.screens.includes(screen)) return;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`screen-${screen}`).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === screen));
+        State.currentScreen = screen;
+        if (screen === 'editor') Editor.render();
+        if (screen === 'export') Exporter.updatePreview();
+    },
+    enable(screen) { const btn = document.querySelector(`.nav-btn[data-screen="${screen}"]`); if(btn) btn.disabled = false; },
+    markCompleted(screen) { const btn = document.querySelector(`.nav-btn[data-screen="${screen}"]`); if(btn) btn.classList.add('completed'); }
+};
+
+// ==================== FILE PARSER ====================
+const FileParser = {
+    async parse(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        let result;
+        switch(ext) {
+            case 'xlsx': case 'xls': result = await this.parseExcel(file); break;
+            case 'csv': result = await this.parseCSV(file); break;
+            case 'pdf': result = await this.parsePDF(file); break;
+            case 'html': case 'htm': result = await this.parseHTML(file); break;
+            default: throw new Error(`Unsupported: .${ext}`);
+        }
+        return this.validate(result);
+    },
+    validate(data) {
+        data.validationErrors = []; data.validationWarnings = [];
+        if (data.requirements.length === 0) data.validationErrors.push('No requirements found');
+        const logicReqs = data.requirements.filter(r => r.type === 'logic');
+        if (logicReqs.length === 0) data.validationWarnings.push('No WENN/DANN/SONST patterns found');
+        return data;
+    },
+    async parseExcel(file) {
+        const ab = await file.arrayBuffer();
+        const wb = XLSX.read(ab, {type:'array'});
+        const requirements = [], chapters = new Map();
+        wb.SheetNames.forEach(sheetName => {
+            const sheet = wb.Sheets[sheetName];
+            const data = XLSX.utils.sheet_to_json(sheet, {header:1});
+            let headerRow = 0;
+            for (let i = 0; i < Math.min(15, data.length); i++) {
+                const row = data[i];
+                if (row && row.some(c => /^(ID|Requirement|BCM|LTM)/i.test(String(c||'')))) { headerRow = i; break; }
+            }
+            for (let i = headerRow + 1; i < data.length; i++) {
+                const row = data[i];
+                if (!row || row.length < 2) continue;
+                const reqId = String(row[0]||'').trim();
+                let content = '';
+                for (let c = 1; c < row.length; c++) { const cc = String(row[c]||'').trim(); if (cc.length > content.length) content = cc; }
+                if (!content || content.length < 5) continue;
+                let type = 'text';
+                if (/WENN|DANN|SONST|IF|THEN|ELSE/i.test(content)) type = 'logic';
+                else if (/p_\w+_config|Parameter/i.test(content)) type = 'config';
+                const chapterNum = sheetName || 'Main';
+                if (!chapters.has(chapterNum)) chapters.set(chapterNum, {id:chapterNum,title:`Chapter ${chapterNum}`,requirements:[]});
+                const req = {id:reqId||`REQ_${i}`,internalId:String(row[1]||''),content,type,chapter:chapterNum,raw:row};
+                requirements.push(req);
+                chapters.get(chapterNum).requirements.push(req);
+            }
+        });
+        return {chapters:Array.from(chapters.values()),requirements,validationErrors:[],validationWarnings:[]};
+    },
+    async parseCSV(file) {
+        const text = await file.text();
+        const lines = text.split(/\r?\n/);
+        const requirements = [], chapters = new Map();
+        const delimiter = lines[0]?.includes('\t') ? '\t' : lines[0]?.includes(';') ? ';' : ',';
+        lines.forEach((line, i) => {
+            if (i === 0) return;
+            const cols = line.split(delimiter).map(c => c.trim().replace(/^"|"$/g, ''));
+            if (cols.length < 2) return;
+            const content = cols[1]?.trim() || cols[2]?.trim() || '';
+            if (!content || content.length < 5) return;
+            let type = 'text';
+            if (/WENN|DANN|SONST|IF|THEN|ELSE/i.test(content)) type = 'logic';
+            const req = {id:cols[0]||`LINE_${i+1}`,internalId:'',content,type,chapter:'Main',raw:cols};
+            requirements.push(req);
+            if (!chapters.has('Main')) chapters.set('Main', {id:'Main',title:'Requirements',requirements:[]});
+            chapters.get('Main').requirements.push(req);
+        });
+        return {chapters:Array.from(chapters.values()),requirements,validationErrors:[],validationWarnings:[]};
+    },
+    async parsePDF(file) {
+        const ab = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data:ab}).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const tc = await page.getTextContent(); fullText += tc.items.map(item => item.str).join(' ') + '\n'; }
+        return this.parseText(fullText, 'PDF');
+    },
+    async parseHTML(file) {
+        const text = await file.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        return this.parseText(doc.body?.innerText || text, 'HTML');
+    },
+    parseText(text, source) {
+        const requirements = [], chapters = new Map();
+        const lines = text.split(/\n+/);
+        lines.forEach((line, i) => {
+            if (line.trim().length > 30 && /WENN|DANN|IF|THEN/i.test(line)) {
+                requirements.push({id:`${source}_${i+1}`,internalId:'',content:line.trim(),type:'logic',chapter:source,raw:[line]});
+            }
+        });
+        chapters.set(source, {id:source,title:`Imported from ${source}`,requirements});
+        return {chapters:Array.from(chapters.values()),requirements,validationErrors:[],validationWarnings:[]};
+    }
+};
+
+// ==================== LOGIC ANALYZER ====================
+const LogicAnalyzer = {
+    analyze(requirements) {
+        const results = [];
+        requirements.forEach(req => {
+            const parsed = this.parseLogic(req.content, req.id);
+            if (parsed && (parsed.inputs.length > 0 || parsed.outputs.length > 0)) {
+                results.push(parsed);
+            }
+        });
+        return results;
+    },
+    
+    parseLogic(text, reqId) {
+        // Normalize text
+        const cleanText = text.replace(/\r\n/g, '\n').replace(/\s+/g, ' ').trim();
+        
+        // Extract condition part (everything between WENN and Ausgabe/DANN output)
+        let condition = '';
+        let output = '';
+        
+        // Pattern for WENN...Ausgabe structure
+        const wennAusgabeMatch = cleanText.match(/WENN\s*\(?.*?\)?\s*(.*?)(?=Ausgabe:|$)/is);
+        const ausgabeMatch = cleanText.match(/Ausgabe:\s*(.+?)$/is);
+        
+        // Alternative: WENN...DANN
+        const wennDannMatch = cleanText.match(/WENN\s*(.*?)(?=DANN)/is);
+        const dannMatch = cleanText.match(/DANN\s*(.+?)(?=SONST|$)/is);
+        
+        if (wennAusgabeMatch) {
+            condition = wennAusgabeMatch[1].trim();
+        } else if (wennDannMatch) {
+            condition = wennDannMatch[1].trim();
+        }
+        
+        if (ausgabeMatch) {
+            output = ausgabeMatch[1].trim();
+        } else if (dannMatch) {
+            output = dannMatch[1].trim();
+        }
+        
+        // If no WENN found, try to extract from entire text
+        if (!condition) {
+            condition = cleanText;
+        }
+        
+        // Extract all signals and their comparisons
+        const signals = this.extractAllSignals(condition);
+        const outputSignals = this.extractOutputSignals(output || cleanText);
+        
+        // Build formal boolean expression
+        const booleanExpr = this.buildBooleanExpression(condition);
+        
+        // Generate truth table
+        const truthTable = this.generateTruthTable(signals, booleanExpr, condition);
+        
+        return {
+            requirementId: reqId,
+            rawCondition: condition,
+            rawOutput: output,
+            booleanExpression: booleanExpr,
+            inputs: signals,
+            outputs: outputSignals,
+            truthTable: truthTable
+        };
+    },
+    
+    extractAllSignals(text) {
+        const signals = new Map();
+        
+        // Match: signal operator value [unit]
+        // Supports: ==, !=, <=, >=, <, >, =
+        const regex = /([a-zA-Z_][\w\[\]\-]*)\s*(==|!=|<=|>=|<|>|=)\s*([\d.]+)\s*(km\/h|kmh|ms|s|%)?/gi;
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+            const sigName = match[1];
+            const operator = match[2];
+            const value = parseFloat(match[3]);
+            const unit = match[4] || '';
+            
+            // Skip output assignments (:=)
+            if (text.substring(match.index - 2, match.index).includes(':')) continue;
+            
+            if (!signals.has(sigName)) {
+                signals.set(sigName, {
+                    name: sigName,
+                    comparisons: [],
+                    unit: unit,
+                    values: new Set()
+                });
+            }
+            
+            const sig = signals.get(sigName);
+            sig.comparisons.push({ operator, value, unit });
+            sig.values.add(value);
+            if (unit) sig.unit = unit;
+        }
+        
+        // Generate test values for each signal based on comparisons
+        signals.forEach((sig, name) => {
+            const testValues = new Set();
+            sig.comparisons.forEach(comp => {
+                testValues.add(comp.value);
+                if (comp.operator === '<=' || comp.operator === '<') {
+                    testValues.add(comp.value - 2); // Below
+                    testValues.add(comp.value + 10); // Above
+                } else if (comp.operator === '>=' || comp.operator === '>') {
+                    testValues.add(comp.value + 2); // Above
+                    testValues.add(comp.value - 10); // Below
+                } else if (comp.operator === '==' || comp.operator === '=') {
+                    if (comp.value === 0) testValues.add(1);
+                    else if (comp.value === 1) testValues.add(0);
+                    else {
+                        testValues.add(comp.value - 1);
+                        testValues.add(comp.value + 1);
+                    }
+                }
+            });
+            sig.testValues = Array.from(testValues).filter(v => v >= 0).sort((a,b) => a-b);
+            if (sig.testValues.length === 0) sig.testValues = [0, 1];
+        });
+        
+        return Array.from(signals.values());
+    },
+    
+    extractOutputSignals(text) {
+        const outputs = [];
+        // Match: signal := value
+        const regex = /([a-zA-Z_][\w\[\]\-]*)\s*:=\s*([\d.]+)/gi;
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+            outputs.push({
+                name: match[1],
+                activeValue: parseFloat(match[2]),
+                inactiveValue: parseFloat(match[2]) === 1 ? 0 : 0
+            });
+        }
+        
+        return outputs;
+    },
+    
+    buildBooleanExpression(condition) {
+        // Clean and format the boolean expression
+        let expr = condition
+            .replace(/WENN\s*\(?\s*logisches?\s+ODER\s*\)?/gi, '')
+            .replace(/\bUND\b/gi, 'AND')
+            .replace(/\bODER\b/gi, 'OR')
+            .replace(/\bNICHT\b/gi, 'NOT')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        // Format for display
+        const lines = [];
+        let depth = 0;
+        let current = '';
+        
+        for (let i = 0; i < expr.length; i++) {
+            const char = expr[i];
+            if (char === '(') {
+                if (current.trim()) lines.push('  '.repeat(depth) + current.trim());
+                current = '(';
+                depth++;
+            } else if (char === ')') {
+                if (current.trim()) lines.push('  '.repeat(depth) + current.trim());
+                depth = Math.max(0, depth - 1);
+                current = ')';
+            } else {
+                current += char;
+            }
+        }
+        if (current.trim()) lines.push('  '.repeat(depth) + current.trim());
+        
+        return expr;
+    },
+    
+    generateTruthTable(signals, booleanExpr, rawCondition) {
+        if (signals.length === 0) return [];
+        
+        const rows = [];
+        
+        // For simple cases (2-3 signals), generate key combinations
+        // For complex cases, generate representative combinations
+        
+        if (signals.length <= 3) {
+            // Generate all meaningful combinations
+            const combinations = this.generateSmartCombinations(signals);
+            combinations.forEach(combo => {
+                const result = this.evaluateCondition(rawCondition, combo);
+                rows.push({
+                    inputs: combo,
+                    result: result,
+                    status: result ? 'ACTIVE' : 'INACTIVE'
+                });
+            });
+        } else {
+            // Generate representative combinations for many signals
+            const combos = this.generateRepresentativeCombinations(signals);
+            combos.forEach(combo => {
+                const result = this.evaluateCondition(rawCondition, combo);
+                rows.push({
+                    inputs: combo,
+                    result: result,
+                    status: result ? 'ACTIVE' : 'INACTIVE'
+                });
+            });
+        }
+        
+        return rows;
+    },
+    
+    generateSmartCombinations(signals) {
+        const combinations = [];
+        
+        // Get test values for each signal
+        const signalValues = signals.map(s => ({
+            name: s.name,
+            values: s.testValues.length > 0 ? s.testValues : [0, 1],
+            unit: s.unit
+        }));
+        
+        // Generate cartesian product (limited)
+        const generate = (index, current) => {
+            if (index >= signalValues.length) {
+                combinations.push({...current});
+                return;
+            }
+            
+            const sig = signalValues[index];
+            // Limit to max 3 values per signal to avoid explosion
+            const vals = sig.values.slice(0, 3);
+            vals.forEach(val => {
+                current[sig.name] = val;
+                generate(index + 1, current);
+            });
+        };
+        
+        generate(0, {});
+        return combinations;
+    },
+    
+    generateRepresentativeCombinations(signals) {
+        const combinations = [];
+        
+        // All minimum values (likely FALSE)
+        const allMin = {};
+        signals.forEach(s => { allMin[s.name] = s.testValues[0] || 0; });
+        combinations.push(allMin);
+        
+        // All conditions TRUE (one by one)
+        signals.forEach((sig, idx) => {
+            const combo = {...allMin};
+            // Find value that makes this signal's condition TRUE
+            sig.comparisons.forEach(comp => {
+                if (comp.operator === '==' || comp.operator === '=') {
+                    combo[sig.name] = comp.value;
+                } else if (comp.operator === '<=' || comp.operator === '<') {
+                    combo[sig.name] = comp.value - 2;
+                } else if (comp.operator === '>=' || comp.operator === '>') {
+                    combo[sig.name] = comp.value + 2;
+                }
+            });
+            combinations.push(combo);
+        });
+        
+        return combinations;
+    },
+    
+    evaluateCondition(condition, values) {
+        // Replace signal names with their values and evaluate
+        let expr = condition
+            .replace(/\bUND\b/gi, '&&')
+            .replace(/\bAND\b/gi, '&&')
+            .replace(/\bODER\b/gi, '||')
+            .replace(/\bOR\b/gi, '||')
+            .replace(/\bNICHT\b/gi, '!')
+            .replace(/\bNOT\b/gi, '!')
+            .replace(/WENN\s*\(?\s*logisches?\s+ODER\s*\)?/gi, '')
+            .replace(/km\/h|kmh|ms|s|%/gi, '');
+        
+        // Replace signal comparisons with actual values
+        Object.entries(values).forEach(([signal, value]) => {
+            // Replace signal == X with (value == X)
+            const signalRegex = new RegExp(signal.replace(/[[\]]/g, '\\$&') + '\\s*(==|!=|<=|>=|<|>|=)\\s*([\\d.]+)', 'gi');
+            expr = expr.replace(signalRegex, (match, op, compValue) => {
+                const cv = parseFloat(compValue);
+                switch(op) {
+                    case '==': case '=': return value === cv ? 'true' : 'false';
+                    case '!=': return value !== cv ? 'true' : 'false';
+                    case '<=': return value <= cv ? 'true' : 'false';
+                    case '>=': return value >= cv ? 'true' : 'false';
+                    case '<': return value < cv ? 'true' : 'false';
+                    case '>': return value > cv ? 'true' : 'false';
+                    default: return 'false';
+                }
+            });
+        });
+        
+        // Clean up
+        expr = expr.replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+        
+        // Simple evaluation
+        try {
+            // Convert to evaluatable form
+            const parts = expr.split(/\s*(&&|\|\|)\s*/);
+            let result = parts[0] === 'true';
+            
+            for (let i = 1; i < parts.length; i += 2) {
+                const op = parts[i];
+                const val = parts[i + 1] === 'true';
+                if (op === '&&') result = result && val;
+                else if (op === '||') result = result || val;
+            }
+            
+            return result;
+        } catch (e) {
+            return false;
+        }
+    }
+};
+
+// ==================== TEST CASE GENERATOR ====================
+const TestCaseGenerator = {
+    generate(analyzedLogic, options) {
+        const testCases = [];
+        let tcNum = options.startNumber || 1;
+        
+        analyzedLogic.forEach(logic => {
+            const cases = this.generateFromTruthTable(logic, options.prefix, tcNum);
+            cases.forEach(tc => testCases.push(tc));
+            tcNum += cases.length;
+        });
+        
+        return testCases;
+    },
+    
+    generateFromTruthTable(logic, prefix, startNum) {
+        const tests = [];
+        let tcNum = startNum;
+        const reqId = logic.requirementId;
+        const inputs = logic.inputs;
+        const outputs = logic.outputs;
+        
+        // Group truth table rows by result (ACTIVE/INACTIVE)
+        const activeRows = logic.truthTable.filter(r => r.result);
+        const inactiveRows = logic.truthTable.filter(r => !r.result);
+        
+        // Generate test cases for ACTIVE conditions
+        activeRows.forEach((row, idx) => {
+            const tc = this.createTestCase({
+                id: Utils.generateId(prefix, tcNum++),
+                logic: logic,
+                row: row,
+                rowIndex: idx,
+                isPositive: true,
+                reqId: reqId
+            });
+            tests.push(tc);
+        });
+        
+        // Generate test cases for INACTIVE conditions (negative tests)
+        inactiveRows.forEach((row, idx) => {
+            const tc = this.createTestCase({
+                id: Utils.generateId(prefix, tcNum++),
+                logic: logic,
+                row: row,
+                rowIndex: idx,
+                isPositive: false,
+                reqId: reqId
+            });
+            tests.push(tc);
+        });
+        
+        return tests;
+    },
+    
+    createTestCase({ id, logic, row, rowIndex, isPositive, reqId }) {
+        const inputs = logic.inputs;
+        const outputs = logic.outputs;
+        
+        // Generate description (5-15 words, no signals, no logic)
+        const description = isPositive 
+            ? this.generatePositiveDescription(outputs, row, inputs)
+            : this.generateNegativeDescription(outputs, row, inputs);
+        
+        // Build preconditions - ALL signals must be defined in A_0
+        const preconditions = this.formatPreconditions(inputs, row.inputs);
+        
+        // Actions - static condition means no action needed
+        const actions = [{
+            id: 'A_1',
+            action: 'No action (static condition)'
+        }];
+        
+        // Expected results
+        const expectedResults = [];
+        if (outputs.length > 0) {
+            const outputValue = isPositive ? outputs[0].activeValue : outputs[0].inactiveValue;
+            expectedResults.push({
+                id: 'ER_0 (for A_0)',
+                result: `${outputs[0].name} = ${outputValue}`
+            });
+        } else {
+            expectedResults.push({
+                id: 'ER_0 (for A_0)',
+                result: isPositive ? 'Condition ACTIVE' : 'Condition INACTIVE'
+            });
+        }
+        
+        return {
+            id: id,
+            description: description,
+            preconditions: preconditions,
+            actions: actions,
+            expectedResults: expectedResults,
+            type: isPositive ? 'positive' : 'negative',
+            priority: isPositive ? 'high' : 'medium',
+            status: 'draft',
+            source: reqId,
+            comment: `Requirement ID: ${reqId}`,
+            createdAt: new Date().toISOString()
+        };
+    },
+    
+    generatePositiveDescription(outputs, row, inputs) {
+        // Short intent description without signals
+        const outputName = outputs[0]?.name || 'output';
+        
+        // Try to identify which condition makes this ACTIVE
+        const conditions = [];
+        inputs.forEach(inp => {
+            const val = row.inputs[inp.name];
+            if (inp.comparisons.length > 0) {
+                const comp = inp.comparisons[0];
+                if (comp.operator === '==' && val === comp.value) {
+                    if (val === 0) conditions.push('parameter disabled');
+                    else if (val === 1) conditions.push('parameter enabled');
+                }
+                if (comp.operator === '<=' && val <= comp.value) {
+                    conditions.push('speed below threshold');
+                }
+            }
+        });
+        
+        if (conditions.length > 0) {
+            return `Activate output when ${conditions[0]}`;
+        }
+        return 'Activate output under valid conditions';
+    },
+    
+    generateNegativeDescription(outputs, row, inputs) {
+        return 'Do not activate output when conditions are not met';
+    },
+    
+    formatPreconditions(inputs, values) {
+        const lines = ['A_0:'];
+        
+        inputs.forEach(input => {
+            const value = values[input.name];
+            const unit = input.unit || '';
+            
+            // Format with unit if applicable
+            if (unit) {
+                lines.push(`${input.name} = ${value} ${unit}`);
+            } else {
+                lines.push(`${input.name} = ${value}`);
+            }
+        });
+        
+        return lines.join('\n');
+    }
+};
+
+// ==================== STRUCTURE VIEW ====================
+const StructureView = {
+    searchTerm: '',
+    render() {
+        const container = document.getElementById('tree-content');
+        container.innerHTML = '';
+        State.parsedData.chapters.forEach(chapter => {
+            const filteredReqs = this.searchTerm ? chapter.requirements.filter(req => req.id.toLowerCase().includes(this.searchTerm) || req.content.toLowerCase().includes(this.searchTerm)) : chapter.requirements;
+            if (filteredReqs.length === 0 && this.searchTerm) return;
+            const group = document.createElement('div');
+            group.className = 'chapter-group';
+            group.innerHTML = `<div class="chapter-group-header"><span class="chapter-group-toggle">▼</span><input type="checkbox" class="chapter-checkbox" data-chapter="${chapter.id}"><span>📂 ${Utils.escapeHtml(chapter.title.substring(0,50))}</span><span class="chapter-group-count">${filteredReqs.length}</span></div><div class="chapter-group-items">${filteredReqs.map(req=>`<div class="tree-item" data-req-id="${req.id}"><input type="checkbox" class="req-checkbox" data-req-id="${req.id}" ${State.selectedRequirements.has(req.id)?'checked':''}><div class="tree-item-content"><div class="tree-item-id">${Utils.escapeHtml(req.id)}</div><div class="tree-item-title">${Utils.escapeHtml(req.content.substring(0,100))}${req.content.length>100?'...':''}</div></div><span class="tree-item-type ${req.type}">${req.type}</span></div>`).join('')}</div>`;
+            container.appendChild(group);
+        });
+        this.attachEvents();
+        this.updateCount();
+    },
+    attachEvents() {
+        document.querySelectorAll('.chapter-group-header').forEach(h => h.addEventListener('click', e => { if(e.target.type==='checkbox')return; h.parentElement.classList.toggle('collapsed'); }));
+        document.querySelectorAll('.chapter-checkbox').forEach(cb => cb.addEventListener('change', e => {
+            const items = e.target.closest('.chapter-group').querySelectorAll('.req-checkbox');
+            items.forEach(item => { item.checked = e.target.checked; if(e.target.checked) State.selectedRequirements.add(item.dataset.reqId); else State.selectedRequirements.delete(item.dataset.reqId); });
+            this.updateCount();
+        }));
+        document.querySelectorAll('.req-checkbox').forEach(cb => cb.addEventListener('change', e => { if(e.target.checked) State.selectedRequirements.add(e.target.dataset.reqId); else State.selectedRequirements.delete(e.target.dataset.reqId); this.updateCount(); }));
+        document.querySelectorAll('.tree-item').forEach(item => item.addEventListener('click', e => { if(e.target.type==='checkbox')return; document.querySelectorAll('.tree-item').forEach(i=>i.classList.remove('selected')); item.classList.add('selected'); this.showPreview(item.dataset.reqId); }));
+        document.getElementById('expand-all-btn')?.addEventListener('click', () => document.querySelectorAll('.chapter-group').forEach(g=>g.classList.remove('collapsed')));
+        document.getElementById('collapse-all-btn')?.addEventListener('click', () => document.querySelectorAll('.chapter-group').forEach(g=>g.classList.add('collapsed')));
+        document.getElementById('select-logic-btn')?.addEventListener('click', () => { document.querySelectorAll('.tree-item').forEach(item => { if(item.querySelector('.tree-item-type')?.classList.contains('logic')) { const cb = item.querySelector('.req-checkbox'); if(cb) { cb.checked=true; State.selectedRequirements.add(cb.dataset.reqId); } } }); this.updateCount(); Toast.show('Selected all logic requirements', 'success'); });
+        const si = document.getElementById('tree-search-input');
+        if(si) si.addEventListener('input', Utils.debounce(e => { this.searchTerm = e.target.value.toLowerCase(); this.render(); }, 300));
+    },
+    updateCount() { document.getElementById('selected-count').textContent = State.selectedRequirements.size; document.getElementById('proceed-analysis-btn').disabled = State.selectedRequirements.size===0; },
+    showPreview(reqId) {
+        const req = State.parsedData.requirements.find(r => r.id === reqId);
+        if (!req) return;
+        let hl = Utils.escapeHtml(req.content);
+        hl = hl.replace(/\b(WENN|DANN|SONST|IF|THEN|ELSE)\b/gi, '<span class="keyword">$1</span>').replace(/\b(UND|ODER|AND|OR|NICHT|NOT)\b/gi, '<span class="operator">$1</span>').replace(/([sp]_\w+(?:\[\d+\])?)/g, '<span class="signal">$1</span>').replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="value">$1</span>');
+        const tokens = ExpressionParser.tokenize(req.content);
+        const signals = [...new Set(tokens.filter(t=>t.type==='SIGNAL').map(t=>t.value))];
+        let signalsHtml = signals.length > 0 ? `<div class="signals-preview"><h4>🔌 Signals</h4><div class="signals-grid">${signals.map(s=>`<div class="signal-badge ${s.startsWith('s_')?'input':'output'}">${Utils.escapeHtml(s)}</div>`).join('')}</div></div>` : '';
+        document.getElementById('preview-content').innerHTML = `<div class="req-detail"><div class="req-detail-header"><span class="req-detail-id">${Utils.escapeHtml(req.id)}</span>${req.internalId?`<span class="req-detail-internal">${Utils.escapeHtml(req.internalId)}</span>`:''}<span class="tree-item-type ${req.type}">${req.type}</span></div><div class="req-detail-text">${hl}</div>${signalsHtml}</div>`;
+    }
+};
+
+// ==================== ANALYSIS VIEW ====================
+const AnalysisView = {
+    render() {
+        const selectedReqs = State.parsedData.requirements.filter(r => State.selectedRequirements.has(r.id));
+        State.analyzedLogic = LogicAnalyzer.analyze(selectedReqs);
+        this.renderLogicPanel();
+        this.renderTruthTables();
+        this.updateStats();
+    },
+    
+    renderLogicPanel() {
+        const container = document.getElementById('logic-panel');
+        
+        if (State.analyzedLogic.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:64px;margin-bottom:20px;opacity:0.4;">🔍</div><div>No logic patterns found</div><div style="font-size:0.85rem;margin-top:8px;">Make sure requirements contain WENN/DANN or signal comparisons</div></div>';
+            return;
+        }
+        
+        container.innerHTML = State.analyzedLogic.map(logic => `
+            <div class="logic-block">
+                <div class="logic-block-header">
+                    <span class="logic-block-id">${Utils.escapeHtml(logic.requirementId)}</span>
+                    <div class="logic-block-stats">
+                        <span class="logic-stat">${logic.inputs.length} inputs</span>
+                        <span class="logic-stat">${logic.outputs.length} outputs</span>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:0.8rem;color:var(--accent-blue);font-weight:600;margin-bottom:8px;text-transform:uppercase;">ACTIVATION LOGIC:</div>
+                    <div class="logic-condition">${this.formatBooleanExpression(logic.rawCondition)}</div>
+                </div>
+                
+                ${logic.outputs.length > 0 ? `
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:0.8rem;color:var(--accent-green);font-weight:600;margin-bottom:8px;text-transform:uppercase;">OUTPUT:</div>
+                    <div class="logic-condition">${logic.outputs.map(o => `<span class="logic-signal">${Utils.escapeHtml(o.name)}</span> <span class="logic-operator">:=</span> <span class="logic-value">${o.activeValue}</span>`).join('<br>')}</div>
+                </div>
+                ` : ''}
+                
+                <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;">INPUT SIGNALS:</div>
+                <div class="signals-list">
+                    ${logic.inputs.map(s => `
+                        <span class="signal-tag input">
+                            📥 ${Utils.escapeHtml(s.name)}
+                            <span class="values">${s.comparisons.map(c => `${c.operator}${c.value}${c.unit||''}`).join(', ')}</span>
+                        </span>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    },
+    
+    formatBooleanExpression(condition) {
+        if (!condition) return '<span style="color:var(--text-muted);">No condition</span>';
+        
+        let html = Utils.escapeHtml(condition);
+        
+        // Highlight keywords
+        html = html
+            .replace(/\b(WENN|IF|DANN|THEN|SONST|ELSE)\b/gi, '<span class="logic-keyword">$1</span>')
+            .replace(/\b(UND|AND|ODER|OR|NICHT|NOT)\b/gi, '<span class="logic-operator">$1</span>')
+            .replace(/\b(logisches?\s+ODER)\b/gi, '<span class="logic-operator">$1</span>')
+            .replace(/([a-zA-Z_][\w\[\]\-]*)\s*(==|!=|&lt;=|&gt;=|&lt;|&gt;|=)\s*([\d.]+)/gi, 
+                '<span class="logic-signal">$1</span> <span style="color:var(--accent-cyan);">$2</span> <span class="logic-value">$3</span>')
+            .replace(/(km\/h|kmh|ms|s|%)/gi, '<span style="color:var(--text-muted);">$1</span>');
+        
+        return html;
+    },
+    
+    renderTruthTables() {
+        const container = document.getElementById('truth-table-panel');
+        
+        if (State.analyzedLogic.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">No truth tables</div>';
+            return;
+        }
+        
+        container.innerHTML = State.analyzedLogic.map(logic => {
+            if (logic.truthTable.length === 0) return '<div style="padding:20px;color:var(--text-muted);">No combinations generated</div>';
+            
+            const inputs = logic.inputs;
+            const outputs = logic.outputs;
+            
+            return `
+                <div class="logic-block">
+                    <div class="logic-block-header">
+                        <span class="logic-block-id">${Utils.escapeHtml(logic.requirementId)}</span>
+                        <span style="font-size:0.8rem;color:var(--text-muted);">${logic.truthTable.length} combinations</span>
+                    </div>
+                    <div class="truth-table-container">
+                        <table class="truth-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    ${inputs.map(i => `<th title="${Utils.escapeHtml(i.name)}">${Utils.escapeHtml(this.shortenSignalName(i.name))}</th>`).join('')}
+                                    ${outputs.map(o => `<th class="output-col" title="${Utils.escapeHtml(o.name)}">${Utils.escapeHtml(this.shortenSignalName(o.name))}</th>`).join('')}
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${logic.truthTable.map((row, idx) => `
+                                    <tr class="${row.status.toLowerCase()}-row">
+                                        <td style="color:var(--text-muted);">${idx + 1}</td>
+                                        ${inputs.map(i => {
+                                            const val = row.inputs[i.name];
+                                            const unit = i.unit || '';
+                                            return `<td>${val}${unit ? ' ' + unit : ''}</td>`;
+                                        }).join('')}
+                                        ${outputs.map(o => `<td class="val-${row.result ? '1' : '0'}">${row.result ? o.activeValue : o.inactiveValue}</td>`).join('')}
+                                        <td class="${row.status === 'ACTIVE' ? 'branch-dann' : 'branch-sonst'}">${row.status}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="margin-top:16px;padding:12px;background:var(--bg-surface);border-radius:8px;font-size:0.8rem;">
+                        <strong style="color:var(--accent-green);">✓ ACTIVE:</strong> ${logic.truthTable.filter(r => r.result).length} combinations<br>
+                        <strong style="color:var(--accent-red);">✗ INACTIVE:</strong> ${logic.truthTable.filter(r => !r.result).length} combinations
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+    
+    shortenSignalName(name) {
+        // Shorten long signal names for table header
+        if (name.length <= 15) return name;
+        
+        // Try to extract key parts
+        const parts = name.split('_');
+        if (parts.length > 2) {
+            return parts.slice(-2).join('_');
+        }
+        return name.substring(0, 12) + '...';
+    },
+    
+    updateStats() {
+        const totalSignals = State.analyzedLogic.reduce((s, l) => s + l.inputs.length + l.outputs.length, 0);
+        const totalCombos = State.analyzedLogic.reduce((s, l) => s + l.truthTable.length, 0);
+        document.getElementById('analysis-logic-count').textContent = State.analyzedLogic.length;
+        document.getElementById('analysis-signal-count').textContent = totalSignals;
+        document.getElementById('analysis-combo-count').textContent = totalCombos;
+    }
+};
+
+// ==================== GENERATOR VIEW ====================
+const GeneratorView = {
+    log(msg, type='info') { const c=document.getElementById('generation-log'); const e=document.createElement('div'); e.className=`log-entry ${type}`; e.innerHTML=`<span class="timestamp">[${Utils.timestamp()}]</span> ${Utils.escapeHtml(msg)}`; c.appendChild(e); c.scrollTop=c.scrollHeight; },
+    clearLog() { document.getElementById('generation-log').innerHTML = ''; },
+    updateStats(s) { document.getElementById('stat-total').textContent=s.total; document.getElementById('stat-positive').textContent=s.positive; document.getElementById('stat-negative').textContent=s.negative; document.getElementById('stat-boundary').textContent=s.boundary; },
+    generate() {
+        this.clearLog();
+        this.log('Starting generation...', 'info');
+        const options = { prefix:document.getElementById('tc-prefix').value||'TC_', startNumber:parseInt(document.getElementById('tc-start-num').value)||1, positive:document.getElementById('gen-positive').checked, negative:document.getElementById('gen-negative').checked, boundary:document.getElementById('gen-boundary').checked, allCombinations:document.getElementById('gen-all-combinations').checked };
+        this.log(`Options: prefix=${options.prefix}, start=${options.startNumber}`, 'info');
+        if (State.analyzedLogic.length === 0) { this.log('ERROR: No logic!', 'error'); Toast.show('No logic available', 'error'); return; }
+        this.log(`Processing ${State.analyzedLogic.length} logic blocks...`, 'info');
+        State.testCases = TestCaseGenerator.generate(State.analyzedLogic, options);
+        const stats = { 
+            total: State.testCases.length, 
+            positive: State.testCases.filter(tc => tc.type === 'positive').length, 
+            negative: State.testCases.filter(tc => tc.type === 'negative').length, 
+            boundary: State.testCases.filter(tc => tc.type === 'boundary').length 
+        };
+        this.updateStats(stats);
+        State.testCases.forEach(tc => { 
+            const e = tc.type === 'positive' ? '✅' : tc.type === 'negative' ? '❌' : '📐'; 
+            this.log(`${e} ${tc.id}: ${tc.description.substring(0,60)}...`, 'success'); 
+        });
+        this.log(`✓ Complete! ${stats.total} test cases (${stats.positive} positive, ${stats.negative} negative)`, 'success');
+        State.save();
+        Navigation.enable('editor'); Navigation.enable('export'); Navigation.markCompleted('generate');
+        Toast.show(`Generated ${stats.total} test cases!`, 'success');
+        setTimeout(() => Navigation.goTo('editor'), 1000);
+    }
+};
+
+// ==================== EDITOR ====================
+const Editor = {
+    editingId: null,
+    render() {
+        const tbody = document.getElementById('tc-table-body');
+        if (State.testCases.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:60px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;opacity:0.4;">📝</div><div>No test cases</div></td></tr>'; return; }
+        tbody.innerHTML = State.testCases.map(tc => `<tr data-id="${tc.id}"><td><input type="checkbox" class="tc-select" data-id="${tc.id}"></td><td><span class="tc-id">${Utils.escapeHtml(tc.id)}</span></td><td><span class="tc-description" title="${Utils.escapeHtml(tc.description)}">${Utils.escapeHtml(tc.description)}</span></td><td><span class="tc-badge ${tc.type}">${tc.type}</span></td><td><span class="tc-badge ${tc.priority}">${tc.priority}</span></td><td style="font-family:var(--font-mono);font-size:0.75rem;">${Utils.escapeHtml(tc.source||'-')}</td><td>${tc.status}</td><td class="tc-actions"><button class="tc-action-btn" onclick="Editor.edit('${tc.id}')" title="Edit">✏️</button><button class="tc-action-btn" onclick="Editor.duplicate('${tc.id}')" title="Duplicate">📋</button><button class="tc-action-btn danger" onclick="Editor.delete('${tc.id}')" title="Delete">🗑️</button></td></tr>`).join('');
+        this.attachEvents();
+        this.updateSourceFilter();
+    },
+    attachEvents() {
+        document.querySelectorAll('.tc-select').forEach(cb => cb.addEventListener('change', () => this.updateDeleteButton()));
+        document.getElementById('select-all-tc')?.addEventListener('change', e => { document.querySelectorAll('.tc-select').forEach(cb => cb.checked = e.target.checked); this.updateDeleteButton(); });
+        document.getElementById('search-input')?.addEventListener('input', Utils.debounce(() => this.filter(), 300));
+        document.getElementById('filter-type')?.addEventListener('change', () => this.filter());
+        document.getElementById('filter-source')?.addEventListener('change', () => this.filter());
+    },
+    updateSourceFilter() { const sel = document.getElementById('filter-source'); const sources = [...new Set(State.testCases.map(tc=>tc.source).filter(Boolean))]; sel.innerHTML = '<option value="all">All Sources</option>' + sources.map(s=>`<option value="${Utils.escapeHtml(s)}">${Utils.escapeHtml(s)}</option>`).join(''); },
+    updateDeleteButton() { document.getElementById('delete-selected-btn').disabled = document.querySelectorAll('.tc-select:checked').length === 0; },
+    filter() {
+        const search = document.getElementById('search-input').value.toLowerCase();
+        const type = document.getElementById('filter-type').value;
+        const source = document.getElementById('filter-source').value;
+        document.querySelectorAll('#tc-table-body tr').forEach(row => {
+            const tc = State.testCases.find(t => t.id === row.dataset.id);
+            if (!tc) return;
+            const ms = !search || tc.id.toLowerCase().includes(search) || tc.description.toLowerCase().includes(search);
+            const mt = type === 'all' || tc.type === type;
+            const mso = source === 'all' || tc.source === source;
+            row.style.display = ms && mt && mso ? '' : 'none';
+        });
+    },
+    edit(id) {
+        const tc = State.testCases.find(t => t.id === id);
+        if (!tc) return;
+        this.editingId = id;
+        document.getElementById('edit-id').value = tc.id;
+        document.getElementById('edit-description').value = tc.description;
+        document.getElementById('edit-preconditions').value = tc.preconditions;
+        document.getElementById('edit-type').value = tc.type;
+        document.getElementById('edit-priority').value = tc.priority;
+        document.getElementById('edit-status').value = tc.status;
+        document.getElementById('edit-comment').value = tc.comment || '';
+        document.getElementById('actions-editor').innerHTML = tc.actions.map((a,i)=>`<div class="step-item"><input type="text" value="${Utils.escapeHtml(a.id)}"><input type="text" value="${Utils.escapeHtml(a.action)}"><button type="button" onclick="this.parentElement.remove()">✕</button></div>`).join('');
+        document.getElementById('expected-editor').innerHTML = tc.expectedResults.map((e,i)=>`<div class="step-item"><input type="text" value="${Utils.escapeHtml(e.id)}"><input type="text" value="${Utils.escapeHtml(e.result)}"><button type="button" onclick="this.parentElement.remove()">✕</button></div>`).join('');
+        document.getElementById('edit-modal').classList.add('visible');
+    },
+    save() {
+        State.saveToHistory();
+        const tc = State.testCases.find(t => t.id === this.editingId);
+        if (!tc) return;
+        tc.description = document.getElementById('edit-description').value;
+        tc.preconditions = document.getElementById('edit-preconditions').value;
+        tc.type = document.getElementById('edit-type').value;
+        tc.priority = document.getElementById('edit-priority').value;
+        tc.status = document.getElementById('edit-status').value;
+        tc.comment = document.getElementById('edit-comment').value;
+        tc.actions = [];
+        document.querySelectorAll('#actions-editor .step-item').forEach(item => { const inputs = item.querySelectorAll('input'); if(inputs[1].value) tc.actions.push({id:inputs[0].value,action:inputs[1].value}); });
+        tc.expectedResults = [];
+        document.querySelectorAll('#expected-editor .step-item').forEach(item => { const inputs = item.querySelectorAll('input'); if(inputs[1].value) tc.expectedResults.push({id:inputs[0].value,result:inputs[1].value}); });
+        State.save();
+        this.render();
+        this.closeModal();
+        Toast.show('Test case updated', 'success');
+    },
+    duplicate(id) {
+        State.saveToHistory();
+        const tc = State.testCases.find(t => t.id === id);
+        if (!tc) return;
+        const maxNum = State.testCases.reduce((max,t) => Math.max(max, parseInt(t.id.replace(/\D/g,''))||0), 0);
+        const newTc = {...Utils.deepClone(tc), id:tc.id.replace(/\d+$/,'') + String(maxNum+1).padStart(3,'0'), status:'draft', createdAt:new Date().toISOString()};
+        State.testCases.push(newTc);
+        State.save();
+        this.render();
+        Toast.show(`Duplicated as ${newTc.id}`, 'success');
+    },
+    delete(id) {
+        if (!confirm(`Delete ${id}?`)) return;
+        State.saveToHistory();
+        State.testCases = State.testCases.filter(t => t.id !== id);
+        State.save();
+        this.render();
+        Toast.show('Deleted', 'success');
+    },
+    deleteSelected() {
+        const selected = Array.from(document.querySelectorAll('.tc-select:checked')).map(cb => cb.dataset.id);
+        if (selected.length === 0) return;
+        if (!confirm(`Delete ${selected.length} test cases?`)) return;
+        State.saveToHistory();
+        State.testCases = State.testCases.filter(t => !selected.includes(t.id));
+        State.save();
+        this.render();
+        Toast.show(`Deleted ${selected.length}`, 'success');
+    },
+    addNew() {
+        State.saveToHistory();
+        const maxNum = State.testCases.reduce((max,t) => Math.max(max, parseInt(t.id.replace(/\D/g,''))||0), 0);
+        const prefix = document.getElementById('tc-prefix')?.value || 'TC_';
+        const newTc = {id:Utils.generateId(prefix,maxNum+1), description:'New Test Case', preconditions:'signal = 0', actions:[{id:'A_1',action:'Change signal'}], expectedResults:[{id:'ER_0',result:'output=0'},{id:'ER_1',result:'output=1'}], type:'positive', priority:'medium', status:'draft', source:'Manual', comment:'', createdAt:new Date().toISOString()};
+        State.testCases.push(newTc);
+        State.save();
+        this.render();
+        this.edit(newTc.id);
+    },
+    addAction() { const c=document.getElementById('actions-editor'); const n=c.querySelectorAll('.step-item').length+1; const item=document.createElement('div'); item.className='step-item'; item.innerHTML=`<input type="text" value="A_${n}"><input type="text" placeholder="Action"><button type="button" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(item); },
+    addExpected() { const c=document.getElementById('expected-editor'); const n=c.querySelectorAll('.step-item').length; const item=document.createElement('div'); item.className='step-item'; item.innerHTML=`<input type="text" value="ER_${n}"><input type="text" placeholder="Expected"><button type="button" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(item); },
+    undo() { if(State.undo()) { this.render(); Toast.show('Undo', 'info'); } },
+    redo() { if(State.redo()) { this.render(); Toast.show('Redo', 'info'); } },
+    closeModal() { document.getElementById('edit-modal').classList.remove('visible'); this.editingId = null; }
+};
+
+// ==================== EXPORTER ====================
+const Exporter = {
+    format: null,
+    setFormat(format) { this.format = format; document.querySelectorAll('.format-card').forEach(card => card.classList.toggle('selected', card.dataset.format === format)); document.getElementById('export-btn').disabled = false; this.updatePreview(); },
+    updatePreview() {
+        const c = document.getElementById('export-preview');
+        if (!this.format || State.testCases.length === 0) { c.textContent = 'Select format to preview...'; return; }
+        switch(this.format) {
+            case 'xlsx': c.textContent = this.generateExcelPreview(); break;
+            case 'csv': c.textContent = this.generateCSV(); break;
+            case 'html': c.textContent = this.generateHTML().substring(0,6000) + '\n\n... [truncated]'; break;
+            case 'json': c.textContent = JSON.stringify(State.testCases.slice(0,3), null, 2) + '\n\n... [truncated]'; break;
+        }
+    },
+    generateExcelPreview() {
+        let p = '╔══════════════════════════════════════════╗\n║         EXCEL EXPORT PREVIEW             ║\n╚══════════════════════════════════════════╝\n\n';
+        p += 'Columns: ID | Description | Preconditions | Actions | Expected | Type | Priority | Status | Source | Comment\n\n';
+        p += `Total rows: ${State.testCases.length + 1}\n\n`;
+        State.testCases.slice(0,5).forEach(tc => { p += `${tc.id}\n  └─ ${tc.description.substring(0,40)}...\n     Type: ${tc.type} | Priority: ${tc.priority}\n\n`; });
+        if (State.testCases.length > 5) p += `... and ${State.testCases.length - 5} more\n`;
+        return p;
+    },
+    generateCSV() {
+        const headers = ['ID','Description','Preconditions','Actions','Expected Results','Type','Priority','Status','Source','Comment'];
+        let csv = headers.join(',') + '\n';
+        State.testCases.forEach(tc => {
+            const row = [this.escapeCSV(tc.id), this.escapeCSV(tc.description), this.escapeCSV(tc.preconditions), this.escapeCSV(tc.actions.map(a=>`${a.id}: ${a.action}`).join('\n')), this.escapeCSV(tc.expectedResults.map(e=>`${e.id}: ${e.result}`).join('\n')), this.escapeCSV(tc.type), this.escapeCSV(tc.priority), this.escapeCSV(tc.status), this.escapeCSV(tc.source), this.escapeCSV(tc.comment)];
+            csv += row.join(',') + '\n';
+        });
+        return csv;
+    },
+    escapeCSV(val) { if(!val)return'""'; const s=String(val); return (s.includes(',')||s.includes('"')||s.includes('\n')) ? '"'+s.replace(/"/g,'""')+'"' : s; },
+    generateHTML() {
+        const incSrc = document.getElementById('export-include-source')?.checked;
+        const incMeta = document.getElementById('export-include-metadata')?.checked;
+        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Test Cases Export</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#f1f5f9;padding:40px;line-height:1.6}.header{background:linear-gradient(135deg,#3b82f6,#8b5cf6);padding:32px;border-radius:16px;margin-bottom:32px}.header h1{font-size:1.8rem;margin-bottom:8px}.stats{display:flex;gap:24px;margin-top:16px}.stat{background:rgba(255,255,255,0.1);padding:12px 20px;border-radius:8px}.stat-value{font-size:1.5rem;font-weight:700}.stat-label{font-size:0.75rem;opacity:0.8}.tc{background:#1e293b;padding:24px;margin-bottom:20px;border-radius:12px;border:1px solid #334155}.tc-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #334155;flex-wrap:wrap}.tc-id{font-family:monospace;font-weight:600;padding:6px 14px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:6px}.badge{padding:4px 10px;border-radius:4px;font-size:0.75rem;font-weight:600;text-transform:uppercase}.badge.positive{background:rgba(16,185,129,0.2);color:#10b981}.badge.negative{background:rgba(239,68,68,0.2);color:#ef4444}.badge.boundary{background:rgba(245,158,11,0.2);color:#f59e0b}.section{margin:16px 0}.section-title{font-weight:600;color:#3b82f6;margin-bottom:8px;font-size:0.85rem;text-transform:uppercase}.section-content{background:#0f172a;padding:16px;border-radius:8px;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;border-left:3px solid #3b82f6}.source{font-size:0.8rem;color:#64748b;margin-top:16px;font-family:monospace}</style></head><body>`;
+        html += `<div class="header"><h1>🚗 Test Cases Export</h1>${incMeta?`<div style="opacity:0.8;font-size:0.9rem;">Generated: ${new Date().toISOString()} | v3.0</div>`:''}<div class="stats"><div class="stat"><div class="stat-value">${State.testCases.length}</div><div class="stat-label">Total</div></div><div class="stat"><div class="stat-value">${State.testCases.filter(t=>t.type==='positive').length}</div><div class="stat-label">Positive</div></div><div class="stat"><div class="stat-value">${State.testCases.filter(t=>t.type==='negative').length}</div><div class="stat-label">Negative</div></div><div class="stat"><div class="stat-value">${State.testCases.filter(t=>t.type==='boundary').length}</div><div class="stat-label">Boundary</div></div></div></div>`;
+        State.testCases.forEach(tc => {
+            html += `<div class="tc"><div class="tc-header"><span class="tc-id">${Utils.escapeHtml(tc.id)}</span><span class="badge ${tc.type}">${tc.type}</span><span class="badge" style="background:rgba(255,255,255,0.1);">${tc.priority}</span><span style="color:#cbd5e1;flex:1;">${Utils.escapeHtml(tc.description)}</span></div><div class="section"><div class="section-title">Preconditions</div><div class="section-content">${Utils.escapeHtml(tc.preconditions)}</div></div><div class="section"><div class="section-title">Actions</div><div class="section-content">${tc.actions.map(a=>`${Utils.escapeHtml(a.id)}: ${Utils.escapeHtml(a.action)}`).join('\n')}</div></div><div class="section"><div class="section-title">Expected Results</div><div class="section-content">${tc.expectedResults.map(e=>`${Utils.escapeHtml(e.id)}: ${Utils.escapeHtml(e.result)}`).join('\n')}</div></div>${tc.comment?`<div class="section"><div class="section-title">Comment</div><div class="section-content">${Utils.escapeHtml(tc.comment)}</div></div>`:''}${incSrc&&tc.source?`<div class="source">Source: ${Utils.escapeHtml(tc.source)}</div>`:''}</div>`;
+        });
+        html += '</body></html>';
+        return html;
+    },
+    export() {
+        if (!this.format || State.testCases.length === 0) { Toast.show('No test cases to export', 'warning'); return; }
+        switch(this.format) {
+            case 'xlsx': this.exportExcel(); break;
+            case 'csv': this.download(this.generateCSV(), 'test_cases.csv', 'text/csv;charset=utf-8'); break;
+            case 'html': this.download(this.generateHTML(), 'test_cases.html', 'text/html;charset=utf-8'); break;
+            case 'json': this.download(JSON.stringify(State.testCases, null, 2), 'test_cases.json', 'application/json'); break;
+        }
+        Toast.show(`Exported ${State.testCases.length} test cases as ${this.format.toUpperCase()}`, 'success');
+    },
+    exportExcel() {
+        const data = State.testCases.map(tc => ({'ID':tc.id,'Description':tc.description,'Preconditions':tc.preconditions,'Actions':tc.actions.map(a=>`${a.id}:\n${a.action}`).join('\n\n'),'Expected Results':tc.expectedResults.map(e=>`${e.id}:\n${e.result}`).join('\n\n'),'Type':tc.type,'Priority':tc.priority,'Status':tc.status,'Source':tc.source||'','Comment':tc.comment||''}));
+        const ws = XLSX.utils.json_to_sheet(data);
+        ws['!cols'] = [{wch:15},{wch:50},{wch:40},{wch:50},{wch:50},{wch:12},{wch:10},{wch:10},{wch:20},{wch:30}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Test Cases');
+        if (document.getElementById('export-include-traceability')?.checked) {
+            const sources = [...new Set(State.testCases.map(tc=>tc.source).filter(Boolean))];
+            const traceData = sources.map(s => { const tcs = State.testCases.filter(tc=>tc.source===s); return {'Requirement ID':s,'Test Cases':tcs.map(tc=>tc.id).join(', '),'Total':tcs.length,'Positive':tcs.filter(t=>t.type==='positive').length,'Negative':tcs.filter(t=>t.type==='negative').length,'Boundary':tcs.filter(t=>t.type==='boundary').length}; });
+            const traceWs = XLSX.utils.json_to_sheet(traceData);
+            XLSX.utils.book_append_sheet(wb, traceWs, 'Traceability');
+        }
+        XLSX.writeFile(wb, 'test_cases.xlsx');
+    },
+    download(content, filename, mimeType) { const blob = new Blob([content], {type:mimeType}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+};
+
+// ==================== VALIDATION DISPLAY ====================
+const ValidationDisplay = {
+    show(data) {
+        const c = document.getElementById('validation-results');
+        const ic = document.getElementById('validation-items');
+        if (data.validationErrors.length === 0 && data.validationWarnings.length === 0) {
+            ic.innerHTML = `<div class="validation-item success"><span>✓</span><span>All validations passed - ${data.requirements.length} requirements imported</span></div>`;
+        } else {
+            let html = '';
+            data.validationErrors.forEach(err => { html += `<div class="validation-item error"><span>✗</span><span>${Utils.escapeHtml(err)}</span></div>`; });
+            data.validationWarnings.forEach(warn => { html += `<div class="validation-item warning"><span>⚠</span><span>${Utils.escapeHtml(warn)}</span></div>`; });
+            const logicCount = data.requirements.filter(r => r.type === 'logic').length;
+            html += `<div class="validation-item success"><span>✓</span><span>${data.requirements.length} requirements imported (${logicCount} with logic)</span></div>`;
+            ic.innerHTML = html;
+        }
+        c.classList.add('visible');
+    }
+};
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+    State.load();
+    Navigation.init();
+    if (State.testCases.length > 0) { Navigation.enable('editor'); Navigation.enable('export'); }
+
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', async e => { e.preventDefault(); uploadArea.classList.remove('dragover'); if(e.dataTransfer.files.length>0) await handleFile(e.dataTransfer.files[0]); });
+    uploadArea.addEventListener('click', e => { if(e.target.tagName!=='INPUT') fileInput.click(); });
+    fileInput.addEventListener('change', async e => { if(e.target.files.length>0) await handleFile(e.target.files[0]); });
+
+    async function handleFile(file) {
+        State.file = file;
+        const iconMap = {xlsx:'📊',xls:'📊',csv:'📝',pdf:'📕',html:'🌐',htm:'🌐'};
+        const ext = file.name.split('.').pop().toLowerCase();
+        document.getElementById('file-info').classList.add('visible');
+        document.getElementById('file-icon').textContent = iconMap[ext] || '📄';
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-meta').textContent = `${Utils.formatFileSize(file.size)} • ${ext.toUpperCase()}`;
+        const progressEl = document.getElementById('parsing-progress');
+        const progressFill = document.getElementById('parse-progress-fill');
+        const parseStatus = document.getElementById('parse-status');
+        progressEl.classList.add('visible');
+        parseStatus.textContent = 'Parsing...';
+        progressFill.style.width = '20%';
+        try {
+            parseStatus.textContent = 'Reading file...';
+            progressFill.style.width = '40%';
+            State.parsedData = await FileParser.parse(file);
+            parseStatus.textContent = 'Validating...';
+            progressFill.style.width = '80%';
+            await new Promise(r => setTimeout(r, 300));
+            progressFill.style.width = '100%';
+            parseStatus.textContent = 'Complete!';
+            setTimeout(() => {
+                progressEl.classList.remove('visible');
+                uploadArea.classList.add('has-file');
+                ValidationDisplay.show(State.parsedData);
+                Navigation.enable('structure');
+                Navigation.markCompleted('import');
+                if (State.parsedData.validationErrors.length === 0) { setTimeout(() => { Navigation.goTo('structure'); StructureView.render(); }, 500); }
+                Toast.show(`Imported ${State.parsedData.requirements.length} requirements`, 'success');
+            }, 500);
+        } catch (error) {
+            console.error('Parse error:', error);
+            progressEl.classList.remove('visible');
+            Toast.show(`Failed: ${error.message}`, 'error');
+        }
+    }
+
+    document.getElementById('remove-file-btn')?.addEventListener('click', e => {
+        e.stopPropagation();
+        State.file = null;
+        State.parsedData = {chapters:[],requirements:[],validationErrors:[],validationWarnings:[]};
+        document.getElementById('file-info').classList.remove('visible');
+        document.getElementById('validation-results').classList.remove('visible');
+        uploadArea.classList.remove('has-file');
+        fileInput.value = '';
+    });
+
+    document.getElementById('proceed-analysis-btn')?.addEventListener('click', () => { Navigation.enable('analysis'); Navigation.markCompleted('structure'); Navigation.goTo('analysis'); AnalysisView.render(); });
+    document.getElementById('approve-btn')?.addEventListener('click', () => { if(State.analyzedLogic.length===0) { Toast.show('No logic to approve', 'warning'); return; } Navigation.enable('generate'); Navigation.markCompleted('analysis'); Navigation.goTo('generate'); });
+    document.getElementById('generate-btn')?.addEventListener('click', () => GeneratorView.generate());
+    document.getElementById('add-tc-btn')?.addEventListener('click', () => Editor.addNew());
+    document.getElementById('delete-selected-btn')?.addEventListener('click', () => Editor.deleteSelected());
+    document.getElementById('undo-btn')?.addEventListener('click', () => Editor.undo());
+    document.getElementById('redo-btn')?.addEventListener('click', () => Editor.redo());
+    document.getElementById('modal-close')?.addEventListener('click', () => Editor.closeModal());
+    document.getElementById('modal-cancel')?.addEventListener('click', () => Editor.closeModal());
+    document.getElementById('modal-save')?.addEventListener('click', () => Editor.save());
+    document.getElementById('add-action-btn')?.addEventListener('click', () => Editor.addAction());
+    document.getElementById('add-expected-btn')?.addEventListener('click', () => Editor.addExpected());
+    document.getElementById('edit-modal')?.addEventListener('click', e => { if(e.target.id==='edit-modal') Editor.closeModal(); });
+    document.querySelectorAll('.format-card').forEach(card => card.addEventListener('click', () => Exporter.setFormat(card.dataset.format)));
+    document.getElementById('export-btn')?.addEventListener('click', () => Exporter.export());
+    document.getElementById('export-include-source')?.addEventListener('change', () => Exporter.updatePreview());
+    document.getElementById('export-include-metadata')?.addEventListener('change', () => Exporter.updatePreview());
+    document.getElementById('export-include-traceability')?.addEventListener('change', () => Exporter.updatePreview());
+    
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const newTheme = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        document.getElementById('theme-toggle').textContent = newTheme === 'light' ? '🌙' : '☀️';
+        localStorage.setItem('tcc3_theme', newTheme);
+    });
+    const savedTheme = localStorage.getItem('tcc3_theme') || 'dark';
+    if (savedTheme === 'light') { document.documentElement.setAttribute('data-theme', 'light'); document.getElementById('theme-toggle').textContent = '🌙'; }
+
+    document.getElementById('help-btn')?.addEventListener('click', () => document.getElementById('help-modal').classList.add('visible'));
+    document.getElementById('help-close')?.addEventListener('click', () => document.getElementById('help-modal').classList.remove('visible'));
+    document.getElementById('help-modal')?.addEventListener('click', e => { if(e.target.id==='help-modal') document.getElementById('help-modal').classList.remove('visible'); });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') document.querySelectorAll('.modal.visible').forEach(m => m.classList.remove('visible'));
+        if (e.ctrlKey && e.key === 'z' && !e.shiftKey && State.currentScreen === 'editor') { e.preventDefault(); Editor.undo(); }
+        if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) { if(State.currentScreen === 'editor') { e.preventDefault(); Editor.redo(); } }
+    });
+
+    State.updateUndoRedoButtons();
+    console.log('🚗 Test Cases Creator v3.0 initialized');
+});
+</script>
+</body>
+</html>

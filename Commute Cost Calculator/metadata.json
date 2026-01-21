@@ -1,0 +1,5 @@
+{
+  "name": "Commute Cost Calculator",
+  "description": "A smart fuel cost and consumption calculator for commuters, featuring AI-powered vehicle specs estimation and route insights.",
+  "requestFramePermissions": []
+}

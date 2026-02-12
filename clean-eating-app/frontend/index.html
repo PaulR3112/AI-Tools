@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0f1a">
+<title>Clean Eating Agent — Příbram</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f1a;
+  --bg2: #111827;
+  --bg3: #1a2236;
+  --surface: #1e2a3e;
+  --border: #2a3654;
+  --text: #e8ecf4;
+  --text2: #8b97b0;
+  --accent: #22d3ee;
+  --accent2: #06b6d4;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --orange: #fb923c;
+  --purple: #a78bfa;
+  --lidl: #0050aa;
+  --kaufland: #e10915;
+  --penny: #cd1719;
+  --billa: #f5e100;
+  --albert: #e2001a;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+body { min-height: 100dvh; padding-top: var(--safe-top); padding-bottom: calc(72px + var(--safe-bottom)); overflow-x: hidden; }
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,15,26,0.85); backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: calc(var(--safe-top) + 12px) 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--green)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-sub { font-size: 11px; color: var(--text2); font-weight: 500; }
+.header-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: rgba(34,211,238,0.15); color: var(--accent); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(34,211,238,0.3); }
+.week-info { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.week-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+
+/* ===== CATEGORIES NAV ===== */
+.cat-nav { display: flex; gap: 8px; padding: 16px 20px 8px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.cat-nav::-webkit-scrollbar { display: none; }
+.cat-btn {
+  flex-shrink: 0; padding: 10px 18px; border-radius: 24px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+  font-family: inherit;
+}
+.cat-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.cat-btn .count { font-family: 'JetBrains Mono', monospace; font-size: 11px; opacity: 0.7; }
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 20px;
+}
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center;
+}
+.stat-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ===== PRODUCT CARDS ===== */
+.products { padding: 8px 20px; display: flex; flex-direction: column; gap: 12px; }
+.product-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+}
+.product-card:active { transform: scale(0.98); }
+
+.product-main { padding: 16px; display: flex; gap: 14px; align-items: flex-start; }
+
+.score-ring {
+  width: 52px; height: 52px; flex-shrink: 0; position: relative;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring circle { fill: none; stroke-width: 4; }
+.score-ring .track { stroke: var(--bg3); }
+.score-ring .fill { stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+.score-val {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700;
+}
+
+.product-info { flex: 1; min-width: 0; }
+.product-name { font-size: 15px; font-weight: 700; line-height: 1.3; margin-bottom: 4px; }
+.product-meta { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+
+.price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.price-sale { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--green); }
+.price-unit { font-size: 11px; color: var(--text2); }
+.price-original { font-size: 12px; color: var(--text2); text-decoration: line-through; }
+.price-discount {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  background: rgba(251,191,36,0.15); color: var(--yellow); padding: 2px 8px; border-radius: 10px;
+}
+
+.store-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.store-badge {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 8px;
+  display: flex; align-items: center; gap: 4px;
+}
+.store-badge.lidl { background: rgba(0,80,170,0.2); color: #4da3ff; border: 1px solid rgba(0,80,170,0.3); }
+.store-badge.kaufland { background: rgba(225,9,21,0.15); color: #ff6b6b; border: 1px solid rgba(225,9,21,0.25); }
+.store-badge.penny { background: rgba(205,23,25,0.15); color: #ff8080; border: 1px solid rgba(205,23,25,0.25); }
+.store-badge.billa { background: rgba(245,225,0,0.15); color: #f5e100; border: 1px solid rgba(245,225,0,0.25); }
+.store-badge.albert { background: rgba(226,0,26,0.15); color: #ff7070; border: 1px solid rgba(226,0,26,0.25); }
+.store-badge.tesco { background: rgba(0,87,184,0.15); color: #5bacff; border: 1px solid rgba(0,87,184,0.25); }
+
+.store-badge .badge-price { font-family: 'JetBrains Mono', monospace; }
+
+/* ===== BIO AUDIT EXPANDABLE ===== */
+.bio-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-top: 1px solid var(--border); cursor: pointer;
+  font-size: 12px; color: var(--accent); font-weight: 600;
+}
+.bio-toggle .arrow { transition: transform 0.3s; font-size: 14px; }
+.bio-toggle.open .arrow { transform: rotate(180deg); }
+
+.bio-panel {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+  background: rgba(34,211,238,0.03);
+}
+.bio-panel.open { max-height: 500px; }
+.bio-content { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.bio-item { display: flex; gap: 10px; align-items: flex-start; }
+.bio-icon { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; margin-top: 1px; }
+.bio-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); margin-bottom: 2px; }
+.bio-score-bar { height: 4px; border-radius: 2px; background: var(--bg3); margin: 4px 0; }
+.bio-score-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+.bio-detail { font-size: 11px; color: var(--text2); line-height: 1.5; }
+
+/* ===== VALIDITY TAG ===== */
+.validity { font-size: 10px; color: var(--text2); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.validity.ending { color: var(--orange); }
+.validity.active { color: var(--green); }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10,15,26,0.92); backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex; padding: 8px 20px calc(8px + var(--safe-bottom));
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  background: none; border: none; color: var(--text2); font-family: inherit;
+}
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 20px; }
+.nav-label { font-size: 10px; font-weight: 600; }
+
+/* ===== LOADING ===== */
+.loading { text-align: center; padding: 60px 20px; }
+.loading-spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+
+/* ===== EMPTY STATE ===== */
+.empty { text-align: center; padding: 40px 20px; color: var(--text2); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+
+/* ===== SOURCE LINK ===== */
+.source-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--text2); text-decoration: none; margin-top: 6px;
+  opacity: 0.6; transition: opacity 0.2s;
+}
+.source-link:hover { opacity: 1; }
+
+/* ===== FOOTER ===== */
+.footer { text-align: center; padding: 24px 20px 12px; font-size: 11px; color: var(--text2); opacity: 0.5; }
+
+/* ===== ANIMATIONS ===== */
+.fade-in { animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+.card-enter { animation: cardEnter 0.3s ease backwards; }
+@keyframes cardEnter { from { opacity:0; transform:translateY(16px) } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🔬</div>
+      <div>
+        <div class="logo-text">Clean Eating Agent</div>
+        <div class="logo-sub">Příbram — Biomedicínsky audit</div>
+      </div>
+    </div>
+    <div class="header-badge" id="dataBadge">LIVE</div>
+  </div>
+  <div class="week-info">
+    <span class="week-dot"></span>
+    <span id="weekInfo">Načítanie...</span>
+  </div>
+</div>
+
+<div class="cat-nav" id="catNav"></div>
+<div class="stats-bar" id="statsBar"></div>
+<div class="products" id="productList"></div>
+<div class="footer">100% reálne dáta z letákov · 0 Kč prevádzkové náklady · Open Source</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="audit"><span class="nav-icon">🔬</span><span class="nav-label">Audit</span></button>
+  <button class="nav-item" data-view="stores"><span class="nav-icon">🏪</span><span class="nav-label">Obchody</span></button>
+  <button class="nav-item" data-view="plan"><span class="nav-icon">📋</span><span class="nav-label">Jedálniček</span></button>
+</nav>
+
+<script>
+// ============================================================
+// DATA — Inline verified data (fallback if JSON not loaded)
+// ============================================================
+const VERIFIED_DATA = {"generated_at": "2026-02-10T19:50:00", "verified_source": "Kupi.cz, NajdiSlevu.cz, Kimbino.cz — overené web searchom 10.2.2026", "store_location": "Příbram", "flyer_week": "9.2.–15.2.2026", "products": [{"name": "Kuřecí prsní řízky", "category": "meat", "is_priority": true, "offers": [{"store": "Lidl", "sale_price": 109.9, "unit": "1 kg", "valid_from": "2026-02-09", "valid_until": "2026-02-11", "note": "baleno, max 5 balení/osoba/den"}, {"store": "Penny Market", "sale_price": 109.9, "unit": "1 kg", "discount_pct": 50, "valid_from": "2026-02-04", "valid_until": "2026-02-10"}, {"store": "Penny Market", "sale_price": 119.9, "unit": "1 kg", "discount_pct": 45, "valid_from": "2026-02-13", "valid_until": "2026-02-15"}, {"store": "Kaufland", "sale_price": 129.9, "unit": "1 kg", "discount_pct": 41, "valid_from": "2026-02-11", "valid_until": "2026-02-17", "note": "pultový prodej"}], "regular_price": 214.32, "best_price": 109.9, "source_url": "https://www.kupi.cz/sleva/kureci-prsni-rizky", "clean_score": 92, "bio_audit": {"microbiome": {"score": 8, "detail": "Čisté kuřecí maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"}, "cardiovascular": {"score": 9, "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"}, "metabolism": {"score": 9, "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"}}}, {"name": "Kuře celé", "category": "meat", "is_priority": true, "offers": [{"store": "Albert", "sale_price": 59.9, "unit": "1 kg", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 90.54, "best_price": 59.9, "source_url": "https://www.kupi.cz/sleva/kure", "clean_score": 88, "bio_audit": {"microbiome": {"score": 7, "detail": "Celé kuře vrátane tmavého mása — obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"}, "cardiovascular": {"score": 7, "detail": "Tmavé maso obsahuje více železa a zinku, kůže zvyšuje obsah nasycených tuků — doporučuji kůži odebrat"}, "metabolism": {"score": 8, "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"}}}, {"name": "Vepřová plec bez kosti", "category": "meat", "is_priority": false, "offers": [{"store": "Penny Market", "sale_price": 69.9, "unit": "1 kg", "discount_pct": 50, "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 139.0, "best_price": 69.9, "source_url": "https://www.kupi.cz/sleva/veprova-plec", "clean_score": 72, "bio_audit": {"microbiome": {"score": 6, "detail": "Vepřové maso — neutrální vliv na mikrobiom, vyšší obsah nasycených tuků než drůbež"}, "cardiovascular": {"score": 5, "detail": "Vyšší podíl nasycených tuků — doporučuji max 2× týdně, preferovat libové části"}, "metabolism": {"score": 7, "detail": "Dobrý zdroj thiaminu (B1) a selenu, podporuje energetický metabolismus"}}}, {"name": "Mleté maso mix 95%", "category": "meat", "is_priority": false, "offers": [{"store": "Lidl", "sale_price": 119.9, "unit": "1 kg", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 189.0, "best_price": 119.9, "source_url": "https://www.kupi.cz/sleva/mleta-smes", "clean_score": 75, "bio_audit": {"microbiome": {"score": 6, "detail": "Mix hovězího a vepřového — 95% maso je dobrý poměr, bez přidaných plnidel"}, "cardiovascular": {"score": 6, "detail": "Směsné maso — střední obsah tuků, záleží na způsobu přípravy"}, "metabolism": {"score": 7, "detail": "Dobrý zdroj železa a B12, vysoký podíl bílkovin"}}}, {"name": "Losos filet s kůží", "category": "fish", "is_priority": true, "offers": [{"store": "Billa", "sale_price": 29.9, "unit": "kus", "discount_pct": 46, "valid_from": "2026-02-11", "valid_until": "2026-02-17"}], "regular_price": 55.0, "best_price": 29.9, "source_url": "https://www.billa.cz", "clean_score": 96, "bio_audit": {"microbiome": {"score": 9, "detail": "Omega-3 mastné kyseliny (EPA/DHA) mají protizánětlivý účinek na střevní mikrobiom"}, "cardiovascular": {"score": 10, "detail": "Omega-3 snižují triglyceridy, krevní tlak a riziko arytmií — kardiologové doporučují 2× týdně"}, "metabolism": {"score": 9, "detail": "Vysoký obsah vitamínu D a selenu, omega-3 zlepšují inzulínovou citlivost"}}}, {"name": "Franz Josef Tuňák steak 170/120g", "category": "fish", "is_priority": true, "offers": [{"store": "Billa", "sale_price": 47.9, "unit": "170 g", "discount_pct": 47, "valid_from": "2026-02-04", "valid_until": "2026-02-24"}], "regular_price": 89.9, "best_price": 47.9, "source_url": "https://www.kupi.cz/sleva/tunak-steak-franz-josef", "clean_score": 85, "bio_audit": {"microbiome": {"score": 7, "detail": "Konzervovaný tuňák — minimální zpracování, pozor na obsah sodíku"}, "cardiovascular": {"score": 8, "detail": "Bohatý na omega-3 a bílkoviny, konzervovaný v oleji dodá zdravé tuky"}, "metabolism": {"score": 8, "detail": "Niacin (B3) a selen podporují metabolismus, kompletní aminokyselinový profil"}}}, {"name": "Aljašská treska Kimbex mražená", "category": "fish", "is_priority": true, "offers": [{"store": "Kaufland", "sale_price": 149.9, "unit": "1 kg", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 219.0, "best_price": 149.9, "source_url": "https://www.kupi.cz/sleva/file-z-aljasske-tresky", "clean_score": 90, "bio_audit": {"microbiome": {"score": 8, "detail": "Čisté rybí filé bez přísad — neutrální až pozitivní vliv na mikrobiom"}, "cardiovascular": {"score": 8, "detail": "Nízkotučná ryba s vysokým podílem bílkovin, vhodná pro snižování cholesterolu"}, "metabolism": {"score": 8, "detail": "Jód podporuje funkci štítné žlázy, fosfor je klíčový pro energetický metabolismus"}}}, {"name": "Tvaroh tučný Karlova Koruna 250g", "category": "dairy", "is_priority": true, "offers": [{"store": "Penny Market", "sale_price": 12.9, "unit": "250 g", "discount_pct": 48, "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 24.9, "best_price": 12.9, "source_url": "https://www.kupi.cz/sleva/tvaroh-tucny-karlova-koruna", "clean_score": 94, "bio_audit": {"microbiome": {"score": 9, "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"}, "cardiovascular": {"score": 7, "detail": "Tučná varianta — vyšší obsah nasycených tuků, ale bohatý na vápník a fosfor"}, "metabolism": {"score": 9, "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci svalů a noční metabolismus"}}}, {"name": "Mozzarella Pilos 195g", "category": "dairy", "is_priority": true, "offers": [{"store": "Lidl", "sale_price": 12.9, "unit": "195 g", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 24.9, "best_price": 12.9, "source_url": "https://www.kupi.cz/sleva/mozzarella-pilos", "clean_score": 88, "bio_audit": {"microbiome": {"score": 7, "detail": "Mozzarella — fermentovaný sýr s nízkou laktózou, šetrný k mikrobiom"}, "cardiovascular": {"score": 7, "detail": "Střední obsah tuků, bohatý na vápník — prospěšný pro krevní tlak"}, "metabolism": {"score": 7, "detail": "Kompletní bílkoviny, vápník podporuje lipolýzu (spalování tuků)"}}}, {"name": "Smetanový jogurt Zlatý Florian Olma 150g", "category": "dairy", "is_priority": true, "offers": [{"store": "Kaufland", "sale_price": 12.9, "unit": "150 g", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 22.9, "best_price": 12.9, "source_url": "https://www.kupi.cz", "clean_score": 82, "bio_audit": {"microbiome": {"score": 8, "detail": "Živé jogurtové kultury (L. bulgaricus, S. thermophilus) — přímá podpora mikrobiom diverzity"}, "cardiovascular": {"score": 6, "detail": "Smetanový = vyšší obsah tuků, ale fermentace zlepšuje profil mastných kyselin"}, "metabolism": {"score": 7, "detail": "Probiotika zlepšují absorpci živin a inzulínovou citlivost"}}}, {"name": "Selský jogurt Hollandia 380g (zraje v kelímku)", "category": "dairy", "is_priority": true, "offers": [{"store": "Kaufland", "sale_price": 13.9, "unit": "380 g", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 28.9, "best_price": 13.9, "source_url": "https://www.kupi.cz", "clean_score": 95, "bio_audit": {"microbiome": {"score": 10, "detail": "Zrání v kelímku = živé kultury v plné síle, tradiční výroba bez přísad — TOP pro mikrobiom"}, "cardiovascular": {"score": 7, "detail": "Přirozený obsah CLA (konjugovaná linolová kyselina) z mléčného tuku má protizánětlivé účinky"}, "metabolism": {"score": 8, "detail": "Bioaktivní peptidy z fermentace zlepšují trávení a vstřebávání minerálů"}}}, {"name": "Hollandia krémový jogurt 150g", "category": "dairy", "is_priority": true, "offers": [{"store": "Billa", "sale_price": 9.9, "unit": "150 g", "discount_pct": 34, "valid_from": "2026-01-28", "valid_until": "2026-02-10", "note": "s BILLA Klub"}], "regular_price": 14.9, "best_price": 9.9, "source_url": "https://www.kupi.cz", "clean_score": 80, "bio_audit": {"microbiome": {"score": 7, "detail": "Krémový jogurt — nutno zkontrolovat zda neobsahuje modifikovaný škrob nebo cukr"}, "cardiovascular": {"score": 7, "detail": "Mléčné bílkoviny a vápník podporují zdravý krevní tlak"}, "metabolism": {"score": 7, "detail": "Probiotické kultury, riboflavin (B2) podporuje energetický metabolismus"}}}, {"name": "Čerstvá podestýlková vejce M 30ks", "category": "dairy", "is_priority": true, "offers": [{"store": "Kaufland", "sale_price": 149.9, "unit": "30 ks", "valid_from": "2026-02-06", "valid_until": "2026-02-10"}], "regular_price": 189.9, "best_price": 149.9, "source_url": "https://www.kupi.cz/sleva/vejce-m", "clean_score": 98, "bio_audit": {"microbiome": {"score": 8, "detail": "Vejce — kompletní potravina, lecitin podporuje integritu střevní bariéry"}, "cardiovascular": {"score": 8, "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol u zdravých jedinců"}, "metabolism": {"score": 10, "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"}}}, {"name": "Vejce S podestýlková 30ks", "category": "dairy", "is_priority": true, "offers": [{"store": "Tesco", "sale_price": 129.9, "unit": "30 ks", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 169.9, "best_price": 129.9, "source_url": "https://www.kupi.cz/sleva/vejce-s", "clean_score": 98, "bio_audit": {"microbiome": {"score": 8, "detail": "Vejce — kompletní potravina, lecitin podporuje integritu střevní bariéry"}, "cardiovascular": {"score": 8, "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol u zdravých jedinců"}, "metabolism": {"score": 10, "detail": "Cholin, kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"}}}, {"name": "Pomeranče", "category": "produce", "is_priority": false, "offers": [{"store": "Lidl", "sale_price": 32.9, "unit": "1 kg", "discount_pct": 45, "valid_from": "2026-02-12", "valid_until": "2026-02-15"}, {"store": "Penny Market", "sale_price": 19.9, "unit": "1 kg", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 59.9, "best_price": 19.9, "source_url": "https://www.kupi.cz/sleva/pomerance", "clean_score": 100, "bio_audit": {"microbiome": {"score": 9, "detail": "Bohatý zdroj pektinu — rozpustné vlákniny, která živí Bifidobacterium v tlustém střevě"}, "cardiovascular": {"score": 9, "detail": "Vitamín C, hesperidin a naringenin — flavonoidy snižující krevní tlak a zánět cév"}, "metabolism": {"score": 8, "detail": "Vitamín C zvyšuje absorpci železa, folát podporuje buněčný metabolismus"}}}, {"name": "Banány", "category": "produce", "is_priority": false, "offers": [{"store": "Penny Market", "sale_price": 24.9, "unit": "1 kg", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}, {"store": "Billa", "sale_price": 24.9, "unit": "1 kg", "valid_from": "2026-01-28", "valid_until": "2026-02-10"}], "regular_price": 34.9, "best_price": 24.9, "source_url": "https://www.kupi.cz/sleva/banany", "clean_score": 100, "bio_audit": {"microbiome": {"score": 9, "detail": "Rezistentní škrob (zejména nezralé banány) je prebiotikum pro prospěšné střevní bakterie"}, "cardiovascular": {"score": 8, "detail": "Draslík (358mg/100g) reguluje krevní tlak, vitamín B6 snižuje homocystein"}, "metabolism": {"score": 7, "detail": "Rychlý zdroj energie (GI 51), vhodný post-workout, B6 podporuje metabolismus bílkovin"}}}, {"name": "Hrozny tmavé/růžové bezsemenné 500g", "category": "produce", "is_priority": false, "offers": [{"store": "Penny Market", "sale_price": 37.9, "unit": "500 g", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}, {"store": "Lidl", "sale_price": 37.9, "unit": "500 g", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 69.9, "best_price": 37.9, "source_url": "https://www.kupi.cz", "clean_score": 100, "bio_audit": {"microbiome": {"score": 8, "detail": "Polyfenoly (resveratrol) z hroznů podporují růst Akkermansia muciniphila"}, "cardiovascular": {"score": 9, "detail": "Resveratrol a proanthocyanidiny — silné kardioprotektivní účinky"}, "metabolism": {"score": 7, "detail": "Vyšší obsah cukrů (GI 59), ale bohaté na antioxidanty"}}}, {"name": "Mrkev", "category": "produce", "is_priority": false, "offers": [{"store": "Penny Market", "sale_price": 11.9, "unit": "1 kg", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 24.9, "best_price": 11.9, "source_url": "https://www.kupi.cz/sleva/mrkev", "clean_score": 100, "bio_audit": {"microbiome": {"score": 8, "detail": "Bohatá na vlákninu a beta-karoten, podporuje diverzitu střevního mikrobiomu"}, "cardiovascular": {"score": 8, "detail": "Beta-karoten a luteolin mají antioxidační účinky na cévy"}, "metabolism": {"score": 8, "detail": "Nízkokalorická (41 kcal/100g), beta-karoten se přeměňuje na vitamín A"}}}, {"name": "Salátová okurka", "category": "produce", "is_priority": false, "offers": [{"store": "Penny Market", "sale_price": 17.9, "unit": "1 ks", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}, {"store": "Tesco", "sale_price": 17.9, "unit": "1 ks", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 29.9, "best_price": 17.9, "source_url": "https://www.kupi.cz/sleva/okurka-salatova", "clean_score": 100, "bio_audit": {"microbiome": {"score": 7, "detail": "Vysoký obsah vody (96%), vláknina ze slupky podporuje peristaltiku"}, "cardiovascular": {"score": 7, "detail": "Draslík, hořčík a kukurbitaciny — přirozené protizánětlivé látky"}, "metabolism": {"score": 9, "detail": "Prakticky bez kalorií (15 kcal/100g), ideální pro hydrataci a detoxifikaci"}}}, {"name": "Extra sladké zlaté kiwi", "category": "produce", "is_priority": false, "offers": [{"store": "Penny Market", "sale_price": 8.9, "unit": "1 ks", "valid_from": "2026-02-04", "valid_until": "2026-02-10"}], "regular_price": 14.9, "best_price": 8.9, "source_url": "https://www.kupi.cz", "clean_score": 100, "bio_audit": {"microbiome": {"score": 9, "detail": "Enzym actinidin zlepšuje trávení bílkovin, vysoký obsah vlákniny pro mikrobiom"}, "cardiovascular": {"score": 9, "detail": "Vitamín C (92mg/100g), vitamín K a draslík — silná kardioprotekce"}, "metabolism": {"score": 9, "detail": "Nízký GI (50), bohaté na folát a vitamín E"}}}, {"name": "Borges Olivový olej extra mild 500ml", "category": "pantry", "is_priority": true, "offers": [{"store": "Billa", "sale_price": 159.9, "unit": "500 ml", "discount_pct": 47, "valid_from": "2026-01-21", "valid_until": "2026-02-10"}], "regular_price": 299.9, "best_price": 159.9, "source_url": "https://www.kupi.cz", "clean_score": 85, "bio_audit": {"microbiome": {"score": 8, "detail": "Polyfenoly olivového oleje (oleocanthal, oleuropein) podporují prospěšné bakterie"}, "cardiovascular": {"score": 10, "detail": "Kyselina olejová (73%) — základ středomořské diety, snižuje LDL a zánět cév"}, "metabolism": {"score": 8, "detail": "Mononenasycené tuky zlepšují inzulínovou citlivost a metabolismus tuků"}}}]};
+
+// Store class mappings
+const STORE_CLASS = {
+  'Lidl': 'lidl',
+  'Kaufland': 'kaufland',
+  'Penny Market': 'penny',
+  'Billa': 'billa',
+  'Albert': 'albert',
+  'Tesco': 'tesco',
+};
+
+const CAT_LABELS = {
+  all: { icon: '🛒', label: 'Všetko' },
+  meat: { icon: '🥩', label: 'Mäso' },
+  fish: { icon: '🐟', label: 'Ryby' },
+  dairy: { icon: '🥛', label: 'Mliečne' },
+  produce: { icon: '🥬', label: 'Ovocie & Zelenina' },
+  pantry: { icon: '🫘', label: 'Trvanlivé' },
+};
+
+const BIO_ICONS = {
+  microbiome: '🦠',
+  cardiovascular: '❤️',
+  metabolism: '⚡',
+};
+
+const BIO_LABELS = {
+  microbiome: 'Mikrobióm',
+  cardiovascular: 'Kardiovaskulárne',
+  metabolism: 'Metabolizmus',
+};
+
+// ============================================================
+// APP STATE
+// ============================================================
+let appData = null;
+let activeCategory = 'all';
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadData() {
+  // Try fetching from data/ directory first (for GitHub Pages deployment)
+  try {
+    const resp = await fetch('../data/products_verified_2026-02-10.json');
+    if (resp.ok) {
+      appData = await resp.json();
+      document.getElementById('dataBadge').textContent = 'LIVE';
+      render();
+      return;
+    }
+  } catch(e) {}
+
+  // Try alternative paths
+  try {
+    const resp = await fetch('data/products_verified_2026-02-10.json');
+    if (resp.ok) {
+      appData = await resp.json();
+      render();
+      return;
+    }
+  } catch(e) {}
+
+  // Fallback to inline data
+  appData = VERIFIED_DATA;
+  document.getElementById('dataBadge').textContent = 'OFFLINE';
+  render();
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  renderWeekInfo();
+  renderCategories();
+  renderStats();
+  renderProducts();
+}
+
+function renderWeekInfo() {
+  const el = document.getElementById('weekInfo');
+  if (appData?.flyer_week) {
+    el.textContent = `Leták ${appData.flyer_week} · Overené ${new Date(appData.generated_at).toLocaleDateString('cs-CZ')}`;
+  } else {
+    el.textContent = `Aktualizované ${new Date().toLocaleDateString('cs-CZ')}`;
+  }
+}
+
+function renderCategories() {
+  const nav = document.getElementById('catNav');
+  const products = appData?.products || [];
+  
+  // Count per category
+  const counts = { all: products.length };
+  products.forEach(p => {
+    counts[p.category] = (counts[p.category] || 0) + 1;
+  });
+  
+  nav.innerHTML = Object.entries(CAT_LABELS)
+    .filter(([key]) => key === 'all' || counts[key])
+    .map(([key, {icon, label}]) => `
+      <button class="cat-btn ${key === activeCategory ? 'active' : ''}" data-cat="${key}">
+        ${icon} ${label} <span class="count">${counts[key] || 0}</span>
+      </button>
+    `).join('');
+  
+  nav.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      render();
+    });
+  });
+}
+
+function renderStats() {
+  const bar = document.getElementById('statsBar');
+  const products = getFilteredProducts();
+  
+  const withPrice = products.filter(p => p.best_price);
+  const avgDiscount = products.reduce((s, p) => s + (p.max_discount || 0), 0) / Math.max(products.length, 1);
+  const avgScore = products.reduce((s, p) => s + (p.clean_score || 0), 0) / Math.max(products.length, 1);
+  
+  bar.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-val">${products.length}</div>
+      <div class="stat-label">Clean produktov</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--yellow)">-${Math.round(avgDiscount)}%</div>
+      <div class="stat-label">Ø zľava</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--green)">${Math.round(avgScore)}</div>
+      <div class="stat-label">Ø Clean Score</div>
+    </div>
+  `;
+}
+
+function getFilteredProducts() {
+  const products = appData?.products || [];
+  if (activeCategory === 'all') return products;
+  return products.filter(p => p.category === activeCategory);
+}
+
+function getScoreColor(score) {
+  if (score >= 90) return 'var(--green)';
+  if (score >= 75) return 'var(--accent)';
+  if (score >= 60) return 'var(--yellow)';
+  return 'var(--orange)';
+}
+
+function getBioScoreColor(score) {
+  if (score >= 8) return 'var(--green)';
+  if (score >= 6) return 'var(--accent)';
+  if (score >= 4) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function getValidityClass(offer) {
+  if (!offer.valid_until) return '';
+  const end = new Date(offer.valid_until);
+  const today = new Date();
+  const diff = (end - today) / (1000 * 60 * 60 * 24);
+  if (diff < 0) return 'ended';
+  if (diff <= 1) return 'ending';
+  return 'active';
+}
+
+function getValidityText(offer) {
+  if (!offer.valid_until) return '';
+  const end = new Date(offer.valid_until);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return 'Ukončené';
+  if (diff === 0) return 'Dnes posledný deň!';
+  if (diff === 1) return 'Zajtra končí!';
+  return `Do ${end.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}`;
+}
+
+function renderProducts() {
+  const container = document.getElementById('productList');
+  const products = getFilteredProducts();
+  
+  if (!products.length) {
+    container.innerHTML = `
+      <div class="empty fade-in">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">Žiadne produkty</div>
+        <div>V tejto kategórii neboli nájdené akciové clean produkty.</div>
+      </div>
+    `;
+    return;
+  }
+  
+  // Sort: priority first, then by clean score
+  const sorted = [...products].sort((a, b) => {
+    if (a.is_priority !== b.is_priority) return b.is_priority ? 1 : -1;
+    return (b.clean_score || 0) - (a.clean_score || 0);
+  });
+  
+  container.innerHTML = sorted.map((p, i) => {
+    const score = p.clean_score || 0;
+    const color = getScoreColor(score);
+    const circumference = 2 * Math.PI * 22;
+    const offset = circumference - (score / 100) * circumference;
+    
+    // Best offer
+    const bestOffer = p.offers?.reduce((best, o) => !best || o.sale_price < best.sale_price ? o : best, null);
+    
+    const cardId = `card-${i}`;
+    
+    return `
+      <div class="product-card card-enter" style="animation-delay:${i * 0.05}s">
+        <div class="product-main">
+          <div class="score-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52">
+              <circle class="track" cx="26" cy="26" r="22"/>
+              <circle class="fill" cx="26" cy="26" r="22" 
+                stroke="${color}" 
+                stroke-dasharray="${circumference}" 
+                stroke-dashoffset="${offset}"/>
+            </svg>
+            <div class="score-val" style="color:${color}">${score}</div>
+          </div>
+          
+          <div class="product-info">
+            <div class="product-name">${p.is_priority ? '⭐ ' : ''}${p.name}</div>
+            <div class="product-meta">${CAT_LABELS[p.category]?.icon || ''} ${CAT_LABELS[p.category]?.label || p.category}</div>
+            
+            ${bestOffer ? `
+              <div class="price-row">
+                <span class="price-sale">${bestOffer.sale_price.toFixed(2).replace('.', ',')} Kč</span>
+                <span class="price-unit">/ ${bestOffer.unit || 'ks'}</span>
+                ${p.regular_price ? `<span class="price-original">${p.regular_price.toFixed(2).replace('.', ',')} Kč</span>` : ''}
+                ${p.max_discount ? `<span class="price-discount">-${p.max_discount}%</span>` : ''}
+              </div>
+            ` : '<div class="price-row"><span style="font-size:12px;color:var(--text2)">Aktuálne bez letákovej akcie</span></div>'}
+            
+            <div class="store-badges">
+              ${(p.offers || []).map(o => {
+                const cls = STORE_CLASS[o.store] || '';
+                const validity = getValidityClass(o);
+                const validText = getValidityText(o);
+                return `<div class="store-badge ${cls}">
+                  ${o.store} <span class="badge-price">${o.sale_price.toFixed(2).replace('.', ',')} Kč</span>
+                  ${validText ? `<span style="font-size:9px;opacity:0.7"> · ${validText}</span>` : ''}
+                </div>`;
+              }).join('')}
+            </div>
+            
+            ${p.source_url ? `<a class="source-link" href="${p.source_url}" target="_blank">🔗 Overiť na Kupi.cz</a>` : ''}
+          </div>
+        </div>
+        
+        ${p.bio_audit ? `
+          <div class="bio-toggle" onclick="toggleBio('${cardId}', this)">
+            🔬 Biomedicínsky audit
+            <span class="arrow">▼</span>
+          </div>
+          <div class="bio-panel" id="${cardId}">
+            <div class="bio-content">
+              ${Object.entries(p.bio_audit).map(([key, val]) => {
+                const scoreW = val.score * 10;
+                const barColor = getBioScoreColor(val.score);
+                return `
+                  <div class="bio-item">
+                    <div class="bio-icon">${BIO_ICONS[key] || '📊'}</div>
+                    <div style="flex:1">
+                      <div class="bio-label">${BIO_LABELS[key] || key} — ${val.score}/10</div>
+                      <div class="bio-score-bar"><div class="bio-score-fill" style="width:${scoreW}%;background:${barColor}"></div></div>
+                      <div class="bio-detail">${val.detail}</div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleBio(id, toggleEl) {
+  const panel = document.getElementById(id);
+  const isOpen = panel.classList.contains('open');
+  
+  // Close all other panels
+  document.querySelectorAll('.bio-panel.open').forEach(p => {
+    p.classList.remove('open');
+    p.previousElementSibling.classList.remove('open');
+  });
+  
+  if (!isOpen) {
+    panel.classList.add('open');
+    toggleEl.classList.add('open');
+  }
+}
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadData();
+</script>
+</body>
+</html>

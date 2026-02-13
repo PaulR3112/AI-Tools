@@ -1,0 +1,17 @@
+{
+  "name": "Clean Eating Agent — Příbram",
+  "short_name": "Clean Eating",
+  "description": "Biomedicínsky nákupný audit s reálnymi dátami z letákov",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0f1a'/><text x='50' y='68' text-anchor='middle' font-size='52'>🔬</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

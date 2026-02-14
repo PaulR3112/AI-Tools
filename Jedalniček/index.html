@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0f1a">
+<title>Clean Eating Agent — Příbram</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ... TVOJ PÔVODNÝ CSS ŠTÝL (BEZ ZMENY) ... */
+:root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2236;--surface:#1e2a3e;--border:#2a3654;--text:#e8ecf4;--text2:#8b97b0;--accent:#22d3ee;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--orange:#fb923c;--purple:#a78bfa;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overflow-x:hidden;padding-bottom:calc(80px + var(--safe-bottom))}
+/* ... (tu nechaj celý tvoj CSS blok tak ako bol) ... */
+.loading-indicator { text-align: center; padding: 20px; color: var(--text2); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div id="app-header">
+    </div>
+
+<main id="feed">
+    <div id="loading" class="loading-indicator">Načítavam dáta z cloudu...</div>
+    </main>
+
+<script>
+// ==========================================
+// 1. NASTAVENIE SUPABASE (Doplň svoje údaje!)
+// ==========================================
+const SUPABASE_URL = 'https://tvoj-projekt.supabase.co'; // Vlož URL zo Supabase Settings
+const SUPABASE_KEY = 'eyJ...tvoj-kluc...';             // Vlož ANON KEY zo Supabase Settings
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ==========================================
+// 2. LOGIKA APLIKÁCIE
+// ==========================================
+
+let products = []; // Toto sa naplní z databázy
+
+// Hlavná funkcia (Načíta dáta a spustí appku)
+async function init() {
+    console.log("Štartujem aplikáciu...");
+    
+    // A. Stiahni dáta zo Supabase
+    const { data, error } = await supabase
+        .from('potraviny')
+        .select('*');
+
+    if (error) {
+        console.error("Chyba pri sťahovaní:", error);
+        document.getElementById('loading').innerText = "Chyba pripojenia k databáze.";
+        return;
+    }
+
+    // B. Spracuj dáta (rozbaľ full_data JSON)
+    if (data && data.length > 0) {
+        products = data.map(row => {
+            // Spojíme stĺpce z tabuľky a vnútro JSONu do jedného objektu
+            return {
+                id: row.id,
+                name: row.name,
+                category: row.category,
+                best_price: row.best_price,
+                clean_score: row.clean_score,
+                ...row.full_data // Tu sú offers, nutrition, bio_audit
+            };
+        });
+        
+        // Skry loading a vykresli
+        document.getElementById('loading').style.display = 'none';
+        renderCards(products);
+        updateStats();
+    } else {
+        document.getElementById('loading').innerText = "Databáza je prázdna. Spusti uploadDataToSupabase() v konzole.";
+    }
+
+    // Nastavenie event listenerov (Search, Filter)
+    setupEventListeners();
+}
+
+// Funkcia na vykreslenie kariet (Tvoja pôvodná logika)
+function renderCards(dataToRender) {
+    const feed = document.getElementById('feed');
+    // Vymaž všetko okrem loading indikátora (ak tam je)
+    const loader = document.getElementById('loading');
+    feed.innerHTML = ''; 
+    if(loader) feed.appendChild(loader);
+
+    dataToRender.forEach(item => {
+        // ... SEM VLOŽ TVOJ KÓD PRE VYTVÁRANIE KARTY (const card = document.createElement...) ...
+        // Skopíruj vnútro tvojej pôvodnej funkcie renderCards, 
+        // len nezabudni, že premenná sa volá 'item'
+        
+        // PRÍKLAD (Zjednodušený):
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h3>${item.name}</h3><p>${item.best_price} Kč</p>`; // Uprav podľa svojho dizajnu
+        feed.appendChild(card);
+    });
+}
+
+function updateStats() {
+    // Tvoja pôvodná funkcia na štatistiky
+}
+
+function setupEventListeners() {
+    const searchInput = document.getElementById('searchInput'); // Uisti sa, že máš toto ID v HTML
+    if(searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(val));
+            renderCards(filtered);
+        });
+    }
+}
+
+// Spustíme to
+init();
+
+
+// ==========================================
+// 3. JEDNORAZOVÁ MIGRÁCIA DÁT
+// (Toto obsahuje tvoje staré dáta. Spusti to cez konzolu príkazom: uploadDataToSupabase())
+// ==========================================
+const oldDataForUpload = [
+    {
+        "name": "Fazole v tomatě Heinz 400g",
+        "category": "pantry",
+        "best_price": 19.9,
+        "clean_score": 88,
+        "full_data": {
+            "regular_price": 34.9,
+            "max_discount": 43,
+            "nutrition": {"kcal": 81, "protein": 4.6, "carbs": 12.9, "fat": 0.5, "fiber": 3.7},
+            "source_url": "https://www.kupi.cz/sleva/fazole",
+            "bio_audit": {
+                "microbiome": {"score": 9, "detail": "Luštěniny — TOP prebiotikum"},
+                "cardiovascular": {"score": 8, "detail": "Vláknina snižuje LDL"},
+                "metabolism": {"score": 8, "detail": "Nízký GI"}
+            },
+            "offers": [
+                {"store": "Tesco", "sale_price": 19.9, "unit": "415g", "valid_until": "2026-02-17"},
+                {"store": "Kaufland", "sale_price": 22.9, "unit": "400g", "valid_until": "2026-02-19"}
+            ]
+        }
+    },
+    {
+        "name": "Med květový Medokomerc 900g",
+        "category": "pantry",
+        "best_price": 129.9,
+        "clean_score": 65,
+        "full_data": {
+            "regular_price": 189.9,
+            "max_discount": 31,
+            "nutrition": {"kcal": 320, "protein": 0.3},
+            "bio_audit": {
+                "microbiome": {"score": 4, "detail": "Prebiotické účinky"},
+                "metabolism": {"score": 3, "detail": "Pozor na cukr"}
+            },
+            "offers": [
+                {"store": "Kaufland", "sale_price": 129.9, "unit": "900g", "valid_until": "2026-02-19"}
+            ]
+        }
+    }
+];
+
+async function uploadDataToSupabase() {
+    console.log("Začínam upload...");
+    for (const item of oldDataForUpload) {
+        const { error } = await supabase
+            .from('potraviny')
+            .insert({
+                name: item.name,
+                category: item.category,
+                best_price: item.best_price,
+                clean_score: item.clean_score,
+                full_data: item.full_data
+            });
+            
+        if (error) console.error("Chyba pri:", item.name, error);
+        else console.log("Nahrané:", item.name);
+    }
+    console.log("Hotovo! Teraz obnov stránku.");
+}
+</script>
+</body>
+</html>

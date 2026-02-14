@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-/* TVOJ PÔVODNÝ DIZAJN */
+/* TVOJ PÔVODNÝ DIZAJN - BEZ ZMENY */
 :root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2236;--surface:#1e2a3e;--border:#2a3654;--text:#e8ecf4;--text2:#8b97b0;--accent:#22d3ee;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--orange:#fb923c;--purple:#a78bfa;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overflow-x:hidden;padding-bottom:calc(80px + var(--safe-bottom))}
@@ -70,10 +70,14 @@ h1,h2,h3,p{margin:0}
     // ==========================================
     // 1. KONFIGURÁCIA
     // ==========================================
+    // ✅ TOTO JE SPRÁVNA URL Z TVOJHO ODKAZU:
     const SUPABASE_URL = 'https://tabrsayigbzrdeojbevi.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_9eOfcs6_jxfJZGXruwDVuw_80f5M0r4';
+    
+    // ⚠️ SEM VLOŽ SVOJ 'anon public' KĽÚČ (Začína na eyJ...)
+    // Nájdeš ho v Supabase: Project Settings -> API -> Project API keys
+    const SUPABASE_KEY = 'SEM_VLOZ_TVOJ_DLHY_KLUC_ZACINAJUCI_NA_ey...'; 
 
-    // Tu sme zmenili názov premennej na _supabase, aby sa nebila s knižnicou
+    // Inicializácia
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let allProducts = []; 
@@ -85,16 +89,20 @@ h1,h2,h3,p{margin:0}
     async function initApp() {
         console.log("Štartujem aplikáciu...");
         
-        // OPRAVENÉ: Používame _supabase (s podčiarkovníkom)
+        // Sťahujeme dáta z tabuľky 'potraviny'
+        // (Ak si tabuľku nazval 'Potraviny' s veľkým P, prepíš to dole na 'Potraviny')
         const { data, error } = await _supabase
-            .from('potraviny')
+            .from('potraviny') 
             .select('*');
 
         const feed = document.getElementById('feed');
         
         if (error) {
             console.error("Chyba Supabase:", error);
-            feed.innerHTML = `<div style="text-align:center;color:red;padding:20px">Chyba: ${error.message}</div>`;
+            feed.innerHTML = `<div style="text-align:center;color:red;padding:20px">
+                Chyba pripojenia:<br>${error.message}<br><br>
+                <i>Skontroluj, či máš správny Kľúč (začína na 'ey...') a či máš vytvorenú tabuľku 'potraviny'.</i>
+            </div>`;
             return;
         }
 
@@ -176,7 +184,6 @@ h1,h2,h3,p{margin:0}
         });
     }
 
-    // Táto funkcia musí byť viditeľná pre HTML onclick
     window.filterData = function(category, element) {
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         element.classList.add('active');
@@ -189,9 +196,7 @@ h1,h2,h3,p{margin:0}
         }
     }
 
-    // Spustenie
     initApp();
-
 
     // ==========================================
     // 3. MIGRAČNÝ NÁSTROJ
@@ -230,7 +235,6 @@ h1,h2,h3,p{margin:0}
         document.getElementById('feed').innerHTML = "Nahrávam dáta... Čakaj.";
         
         for (const item of dataToUpload) {
-            // OPRAVENÉ: Používame _supabase
             const { error } = await _supabase
                 .from('potraviny')
                 .insert({

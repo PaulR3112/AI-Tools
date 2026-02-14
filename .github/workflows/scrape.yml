@@ -30,11 +30,21 @@ jobs:
 
       - name: "📊 Kontrola výsledkov"
         run: |
-          echo "=== Výsledky scrapu ==="
-          cat clean-eating-app/data/summary.json | python -m json.tool
+          echo "=== Súbory v data/ ==="
+          ls -la clean-eating-app/data/
           echo ""
-          echo "Počet produktov:"
-          cat clean-eating-app/data/products.json | python -c "import sys,json; d=json.load(sys.stdin); print(f'  Celkom: {d[\"total_products\"]}')"
+          echo "=== Produkty ==="
+          python -c "
+          import json, glob
+          total = 0
+          for f in sorted(glob.glob('clean-eating-app/data/products*.json')):
+              with open(f) as fh:
+                  d = json.load(fh)
+                  n = len(d.get('products', []))
+                  total += n
+                  print(f'  {f}: {n} produktov')
+          print(f'  CELKOM: {total}')
+          "
 
       - name: "💾 Commit a push nových dát"
         run: |

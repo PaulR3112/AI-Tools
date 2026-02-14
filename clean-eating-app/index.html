@@ -24,6 +24,21 @@ body{min-height:100dvh;padding-top:var(--safe-top);padding-bottom:calc(72px + va
 .logo-t{font-size:15px;font-weight:700;letter-spacing:-0.3px}
 .logo-s{font-size:10px;color:var(--text2);font-weight:500}
 .badge{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(34,211,238,0.15);color:var(--accent);padding:3px 8px;border-radius:16px;border:1px solid rgba(34,211,238,0.3)}
+.hdr-acts{display:flex;gap:6px;align-items:center}
+.ref-btn{background:rgba(52,211,153,0.15);color:var(--green);border:1px solid rgba(52,211,153,0.3);border-radius:16px;padding:3px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;cursor:pointer;font-weight:600;transition:all .2s}
+.ref-btn:active{transform:scale(.95)}
+.ref-btn.loading{opacity:.5;pointer-events:none}
+.ref-btn.ok{background:rgba(52,211,153,0.3)}
+.ref-btn.err{background:rgba(248,113,113,0.15);color:var(--red);border-color:rgba(248,113,113,0.3)}
+.token-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px}
+.token-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:340px;width:100%}
+.token-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.token-desc{font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.4}
+.token-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.token-input:focus{outline:none;border-color:var(--accent)}
+.token-btns{display:flex;gap:8px}
+.token-save{flex:1;background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+.token-cancel{flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit}
 .week{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:5px}
 .wdot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -193,9 +208,21 @@ body{min-height:100dvh;padding-top:var(--safe-top);padding-bottom:calc(72px + va
 <div class="hdr">
   <div class="hdr-top">
     <div class="logo"><div class="logo-i">🔬</div><div><div class="logo-t">Clean Eating Agent</div><div class="logo-s">Příbram — Biomedicínsky audit</div></div></div>
-    <div class="badge" id="badge">LIVE</div>
+    <div class="hdr-acts"><button class="ref-btn" id="refBtn" onclick="triggerScrape()">🔄 Aktualizovať</button><div class="badge" id="badge">LIVE</div></div>
   </div>
   <div class="week"><span class="wdot"></span><span id="winfo">Načítanie...</span></div>
+</div>
+
+<div class="token-modal hidden" id="tokenModal">
+  <div class="token-box">
+    <div class="token-title">🔑 GitHub Token</div>
+    <div class="token-desc">Zadaj svoj GitHub Personal Access Token. Uloží sa len lokálne v tvojom zariadení — nikam sa neodosiela okrem GitHub API.</div>
+    <input class="token-input" id="tokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx">
+    <div class="token-btns">
+      <button class="token-cancel" onclick="closeToken()">Zrušiť</button>
+      <button class="token-save" onclick="saveToken()">Uložiť</button>
+    </div>
+  </div>
 </div>
 
 <!-- AUDIT VIEW -->
@@ -592,6 +619,59 @@ function renderShop(){
   });
 
   c.innerHTML=html;
+}
+
+// ==================== SCRAPE TRIGGER ====================
+function getToken(){try{return localStorage.getItem('gh_token')}catch(e){return null}}
+function closeToken(){document.getElementById('tokenModal').classList.add('hidden')}
+function saveToken(){
+  const t=document.getElementById('tokenInput').value.trim();
+  if(!t){alert('Zadaj token');return;}
+  try{localStorage.setItem('gh_token',t)}catch(e){}
+  closeToken();
+  doTrigger(t);
+}
+
+async function triggerScrape(){
+  let token=getToken();
+  if(!token){document.getElementById('tokenModal').classList.remove('hidden');return;}
+  doTrigger(token);
+}
+
+async function doTrigger(token){
+  const btn=document.getElementById('refBtn');
+  btn.textContent='⏳ Spúšťam...';
+  btn.classList.add('loading');
+  try{
+    const r=await fetch('https://api.github.com/repos/PaulR3112/AI-Tools/actions/workflows/scrape.yml/dispatches',{
+      method:'POST',
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify({ref:'main'})
+    });
+    if(r.status===204||r.status===200){
+      btn.textContent='✅ Spustené!';
+      btn.classList.remove('loading');
+      btn.classList.add('ok');
+      setTimeout(()=>{btn.textContent='🔄 Aktualizovať';btn.classList.remove('ok');},3000);
+      // Reload data after 90 seconds
+      setTimeout(()=>{loadData();},90000);
+    }else if(r.status===401){
+      try{localStorage.removeItem('gh_token')}catch(e){}
+      btn.textContent='🔄 Aktualizovať';
+      btn.classList.remove('loading');
+      document.getElementById('tokenModal').classList.remove('hidden');
+    }else{
+      btn.textContent='❌ Chyba '+r.status;
+      btn.classList.remove('loading');
+      btn.classList.add('err');
+      setTimeout(()=>{btn.textContent='🔄 Aktualizovať';btn.classList.remove('err');},3000);
+    }
+  }catch(e){
+    btn.textContent='❌ Offline';
+    btn.classList.remove('loading');
+    btn.classList.add('err');
+    setTimeout(()=>{btn.textContent='🔄 Aktualizovať';btn.classList.remove('err');},3000);
+  }
 }
 
 // ==================== SERVICE WORKER ====================

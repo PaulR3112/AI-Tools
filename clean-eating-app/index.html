@@ -284,8 +284,33 @@ document.querySelectorAll('.nv').forEach(b=>b.addEventListener('click',()=>{
 
 // ==================== DATA ====================
 async function loadData(){
-  for(const p of['../data/products_verified_2026-02-10.json','data/products_verified_2026-02-10.json','./data/products_verified_2026-02-10.json']){
-    try{const r=await fetch(p);if(r.ok){D=await r.json();init();return;}}catch(e){}
+  // Try scraper output first (products.json), then verified data, then embedded
+  const paths=[
+    '../data/products.json',
+    'data/products.json',
+    './data/products.json',
+    '../data/products_verified_2026-02-10.json',
+    'data/products_verified_2026-02-10.json',
+    './data/products_verified_2026-02-10.json'
+  ];
+  for(const p of paths){
+    try{
+      const r=await fetch(p,{cache:'no-store'});
+      if(r.ok){
+        const raw=await r.json();
+        // Normalize format — scraper uses {products:[...]}, old format uses {products:[...]} too
+        D=raw;
+        // If scraper format (has total_products), adapt flyer_week from generated_at
+        if(raw.generated_at && !raw.flyer_week){
+          const d=new Date(raw.generated_at);
+          D.flyer_week=d.toLocaleDateString('cs-CZ');
+          D.note='Automatický scraping z Kupi.cz · '+D.flyer_week;
+        }
+        document.getElementById('badge').textContent=raw.generated_at?'LIVE':'DATA';
+        init();
+        return;
+      }
+    }catch(e){}
   }
   D=EDATA;
   document.getElementById('badge').textContent='OFFLINE';
@@ -652,9 +677,24 @@ async function doTrigger(token){
       btn.textContent='✅ Spustené!';
       btn.classList.remove('loading');
       btn.classList.add('ok');
-      setTimeout(()=>{btn.textContent='🔄 Aktualizovať';btn.classList.remove('ok');},3000);
-      // Reload data after 90 seconds
-      setTimeout(()=>{loadData();},90000);
+      // Countdown: scraper takes ~60-90s, then GitHub Pages rebuild ~30s
+      let secs=120;
+      const iv=setInterval(()=>{
+        secs--;
+        btn.textContent='⏳ Načítanie za '+secs+'s';
+        if(secs<=0){
+          clearInterval(iv);
+          btn.textContent='🔄 Načítavam...';
+          btn.classList.add('loading');
+          // Force reload data (bypass cache)
+          loadData().then(()=>{
+            btn.textContent='✅ Hotovo!';
+            btn.classList.remove('loading');
+            btn.classList.add('ok');
+            setTimeout(()=>{btn.textContent='🔄 Aktualizovať';btn.classList.remove('ok');},3000);
+          });
+        }
+      },1000);
     }else if(r.status===401){
       try{localStorage.removeItem('gh_token')}catch(e){}
       btn.textContent='🔄 Aktualizovať';

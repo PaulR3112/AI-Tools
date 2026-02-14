@@ -1,0 +1,115 @@
+{
+  "generated_at": "2026-02-14T10:28:49.628088",
+  "category": "pantry",
+  "total_products": 4,
+  "products": [
+    {
+      "name": "Olivový olej Bertolli",
+      "slug": "olivovy-olej-bertolli",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/olivovy-olej-bertolli",
+      "scraped_at": "2026-02-14T10:28:44.339706",
+      "clean_score": 95,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Polyfenoly (oleocanthal, oleuropein) podporují růst prospěšných bakterií"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "Kyselina olejová (73%) — základ středomořské diety, snižuje LDL a zánět cév"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Mononenasycené tuky zlepšují inzulínovou citlivost a metabolismus tuků"
+        }
+      }
+    },
+    {
+      "name": "Rýže Basmati",
+      "slug": "ryze-basmati",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/ryze-basmati",
+      "scraped_at": "2026-02-14T10:28:45.305893",
+      "clean_score": 80,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Bílá rýže — nízký obsah vlákniny, natural/hnědá varianta je lepší pro mikrobiom"
+        },
+        "cardiovascular": {
+          "score": 6,
+          "detail": "Neutrální vliv, preferovat celozrnné varianty pro vyšší obsah hořčíku"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Dobrý zdroj energie, basmati má nižší GI než běžná bílá rýže"
+        }
+      }
+    },
+    {
+      "name": "Ovesné vločky",
+      "slug": "ovesne-vlocky",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/ovesne-vlocky",
+      "scraped_at": "2026-02-14T10:28:47.861690",
+      "clean_score": 95,
+      "bio_audit": {
+        "microbiome": {
+          "score": 10,
+          "detail": "Beta-glukan — zlatý standard prebiotik, masivně podporuje Bifidobacterium"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "3g beta-glukanu denně prokazatelně snižuje LDL cholesterol o 5-10%"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Nízký GI, pomalé uvolňování energie, stabilizace ranní glykémie"
+        }
+      }
+    },
+    {
+      "name": "Mandle",
+      "slug": "mandle",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/mandle",
+      "scraped_at": "2026-02-14T10:28:48.798194",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Vláknina a polyfenoly z ořechů podporují mikrobiotickou diverzitu"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "30g ořechů denně snižuje kardiovaskulární riziko o 30% (PREDIMED studie)"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Zdravé tuky, bílkoviny, hořčík, vitamín E — stabilizují metabolismus"
+        }
+      }
+    }
+  ]
+}

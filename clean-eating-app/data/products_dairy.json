@@ -1,0 +1,304 @@
+{
+  "generated_at": "2026-02-14T10:28:49.627233",
+  "category": "dairy",
+  "total_products": 10,
+  "products": [
+    {
+      "name": "Vejce M",
+      "slug": "vejce-m",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/vejce-m",
+      "scraped_at": "2026-02-14T10:28:13.218975",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Lecitin podporuje integritu střevní bariéry, žloutek obsahuje fosfolipidy"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol"
+        },
+        "metabolism": {
+          "score": 10,
+          "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"
+        }
+      }
+    },
+    {
+      "name": "Vejce L",
+      "slug": "vejce-l",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/vejce-l",
+      "scraped_at": "2026-02-14T10:28:14.146512",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Lecitin podporuje integritu střevní bariéry, žloutek obsahuje fosfolipidy"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol"
+        },
+        "metabolism": {
+          "score": 10,
+          "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"
+        }
+      }
+    },
+    {
+      "name": "Vejce S",
+      "slug": "vejce-s",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/vejce-s",
+      "scraped_at": "2026-02-14T10:28:15.132692",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Lecitin podporuje integritu střevní bariéry, žloutek obsahuje fosfolipidy"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol"
+        },
+        "metabolism": {
+          "score": 10,
+          "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh Jihočeský Madeta",
+      "slug": "tvaroh-jihocesky-madeta",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tvaroh-jihocesky-madeta",
+      "scraped_at": "2026-02-14T10:28:17.715874",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh polotučný Jihočeský Madeta",
+      "slug": "tvaroh-polotucny-jihocesky-madeta",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tvaroh-polotucny-jihocesky-madeta",
+      "scraped_at": "2026-02-14T10:28:18.683475",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh Jaroměřický",
+      "slug": "tvaroh-jaromericky",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": 47.9,
+      "best_price": null,
+      "max_discount": 27,
+      "offers": [
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 34.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/tvaroh-jaromericky",
+      "scraped_at": "2026-02-14T10:28:19.669935",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh tučný Karlova Koruna",
+      "slug": "tvaroh-tucny-karlova-koruna",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tvaroh-tucny-karlova-koruna",
+      "scraped_at": "2026-02-14T10:28:20.547816",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Bílý jogurt řecký Kolios",
+      "slug": "jogurt-recky-kolios",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/jogurt-recky-kolios",
+      "scraped_at": "2026-02-14T10:28:21.992240",
+      "clean_score": 90,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Živé jogurtové kultury (L. bulgaricus, S. thermophilus) — přímá podpora mikrobiotické diverzity"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Fermentace zlepšuje profil mastných kyselin, vápník podporuje krevní tlak"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Probiotika zlepšují absorpci živin a inzulínovou citlivost"
+        }
+      }
+    },
+    {
+      "name": "Sýr Mozzarella Galbani",
+      "slug": "mozzarella-galbani",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": 32.75,
+      "best_price": null,
+      "max_discount": 41,
+      "offers": [
+        {
+          "store": "Billa",
+          "store_slug": "billa",
+          "sale_price": 27.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 23.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 23.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 25.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/mozzarella-galbani",
+      "scraped_at": "2026-02-14T10:28:25.829321",
+      "clean_score": 88,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Fermentovaný sýr s nízkou laktózou, šetrný k mikrobiomu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Střední obsah tuků, bohatý na vápník — prospěšný pro krevní tlak"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Kompletní bílkoviny, vápník podporuje lipolýzu (spalování tuků)"
+        }
+      }
+    },
+    {
+      "name": "Kefírové mléko",
+      "slug": "kefir",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kefir",
+      "scraped_at": "2026-02-14T10:28:28.694159",
+      "clean_score": 90,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Živé jogurtové kultury (L. bulgaricus, S. thermophilus) — přímá podpora mikrobiotické diverzity"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Fermentace zlepšuje profil mastných kyselin, vápník podporuje krevní tlak"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Probiotika zlepšují absorpci živin a inzulínovou citlivost"
+        }
+      }
+    }
+  ]
+}

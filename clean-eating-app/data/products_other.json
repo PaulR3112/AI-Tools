@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-02-14T10:28:49.626854",
+  "category": "other",
+  "total_products": 2,
+  "products": [
+    {
+      "name": "Kuře",
+      "slug": "kure",
+      "category": "other",
+      "is_priority": false,
+      "regular_price": 90.59,
+      "best_price": null,
+      "max_discount": 33,
+      "offers": [
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 59.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kure",
+      "scraped_at": "2026-02-14T10:27:55.907980",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Tmavé maso obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Tmavé maso má více železa a zinku, kůže zvyšuje nasycené tuky — doporučuji kůži odebrat"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Maliny",
+      "slug": "maliny",
+      "category": "other",
+      "is_priority": false,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/maliny",
+      "scraped_at": "2026-02-14T10:28:34.415688"
+    }
+  ]
+}

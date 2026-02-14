@@ -1,0 +1,300 @@
+{
+  "generated_at": "2026-02-14T10:28:49.626422",
+  "category": "meat",
+  "total_products": 10,
+  "products": [
+    {
+      "name": "Kuřecí prsní řízky",
+      "slug": "kureci-prsni-rizky",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": 214.18,
+      "best_price": null,
+      "max_discount": 45,
+      "offers": [
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 129.9
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 119.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kureci-prsni-rizky",
+      "scraped_at": "2026-02-14T10:27:52.521220",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuřecí prsa",
+      "slug": "kureci-prsa",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kureci-prsa",
+      "scraped_at": "2026-02-14T10:27:53.495841",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuřecí stehna",
+      "slug": "kureci-stehna",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": 126.08,
+      "best_price": null,
+      "max_discount": 30,
+      "offers": [
+        {
+          "store": "Lidl",
+          "store_slug": "lidl",
+          "sale_price": 89.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kureci-stehna",
+      "scraped_at": "2026-02-14T10:27:54.451356",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Tmavé maso obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Tmavé maso má více železa a zinku, kůže zvyšuje nasycené tuky — doporučuji kůži odebrat"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuřecí čtvrtky Vodňanské kuře",
+      "slug": "kureci-ctvrtky-vodnanske-kure",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": 107.78,
+      "best_price": null,
+      "max_discount": 41,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kureci-ctvrtky-vodnanske-kure",
+      "scraped_at": "2026-02-14T10:27:56.821514",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Tmavé maso obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Tmavé maso má více železa a zinku, kůže zvyšuje nasycené tuky — doporučuji kůži odebrat"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Krůtí prsní řízky",
+      "slug": "kruti-prsni-rizky",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kruti-prsni-rizky",
+      "scraped_at": "2026-02-14T10:27:58.244764",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Krůtí prsa",
+      "slug": "kruti-prsa",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": 224.9,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [
+        {
+          "store": "Lidl",
+          "store_slug": "lidl",
+          "sale_price": 219.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kruti-prsa",
+      "scraped_at": "2026-02-14T10:27:59.724956",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Hovězí zadní bez kosti",
+      "slug": "hovezi-zadni",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/hovezi-zadni",
+      "scraped_at": "2026-02-14T10:28:00.955616",
+      "clean_score": 82,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Hovězí — střední vliv na mikrobiom, bohaté na železo hemové formy a L-karnitin"
+        },
+        "cardiovascular": {
+          "score": 6,
+          "detail": "Vyšší obsah nasycených tuků, ale zdroj CLA a koenzym Q10 — max 2-3× týdně"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kreatin, železo, B12, zinek — klíčové pro energetický metabolismus a krvetvorbu"
+        }
+      }
+    },
+    {
+      "name": "Hovězí svíčková",
+      "slug": "hovezi-svickova",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/hovezi-svickova",
+      "scraped_at": "2026-02-14T10:28:02.416618",
+      "clean_score": 82,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Hovězí — střední vliv na mikrobiom, bohaté na železo hemové formy a L-karnitin"
+        },
+        "cardiovascular": {
+          "score": 6,
+          "detail": "Vyšší obsah nasycených tuků, ale zdroj CLA a koenzym Q10 — max 2-3× týdně"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kreatin, železo, B12, zinek — klíčové pro energetický metabolismus a krvetvorbu"
+        }
+      }
+    },
+    {
+      "name": "Vepřová plec",
+      "slug": "veprova-plec",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/veprova-plec",
+      "scraped_at": "2026-02-14T10:28:03.348963",
+      "clean_score": 72,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Vepřové — neutrální vliv na mikrobiom, thiamin (B1) podporuje nervový systém"
+        },
+        "cardiovascular": {
+          "score": 5,
+          "detail": "Vyšší podíl nasycených tuků — preferovat libové části, max 2× týdně"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Dobrý zdroj thiaminu (B1) a selenu, podporuje energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Vepřová kýta",
+      "slug": "veprova-kyta",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/veprova-kyta",
+      "scraped_at": "2026-02-14T10:28:04.290674",
+      "clean_score": 72,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Vepřové — neutrální vliv na mikrobiom, thiamin (B1) podporuje nervový systém"
+        },
+        "cardiovascular": {
+          "score": 5,
+          "detail": "Vyšší podíl nasycených tuků — preferovat libové části, max 2× týdně"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Dobrý zdroj thiaminu (B1) a selenu, podporuje energetický metabolismus"
+        }
+      }
+    }
+  ]
+}

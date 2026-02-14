@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-02-14T10:28:49.628280",
+  "store_location": "Příbram",
+  "categories": {
+    "meat": {
+      "count": 10,
+      "min_price": null,
+      "avg_discount": 11.6
+    },
+    "other": {
+      "count": 2,
+      "min_price": null,
+      "avg_discount": 16.5
+    },
+    "fish": {
+      "count": 3,
+      "min_price": null,
+      "avg_discount": 0.0
+    },
+    "dairy": {
+      "count": 10,
+      "min_price": null,
+      "avg_discount": 6.8
+    },
+    "produce": {
+      "count": 11,
+      "min_price": null,
+      "avg_discount": 24.6
+    },
+    "pantry": {
+      "count": 4,
+      "min_price": null,
+      "avg_discount": 0.0
+    }
+  },
+  "total_clean_products": 40,
+  "total_with_offers": 12
+}

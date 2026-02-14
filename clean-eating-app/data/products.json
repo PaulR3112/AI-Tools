@@ -1,0 +1,1136 @@
+{
+  "generated_at": "2026-02-14T10:28:49.625005",
+  "store_location": "Příbram",
+  "total_products": 40,
+  "products": [
+    {
+      "name": "Kuřecí prsní řízky",
+      "slug": "kureci-prsni-rizky",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": 214.18,
+      "best_price": null,
+      "max_discount": 45,
+      "offers": [
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 129.9
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 119.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kureci-prsni-rizky",
+      "scraped_at": "2026-02-14T10:27:52.521220",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuřecí prsa",
+      "slug": "kureci-prsa",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kureci-prsa",
+      "scraped_at": "2026-02-14T10:27:53.495841",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuřecí stehna",
+      "slug": "kureci-stehna",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": 126.08,
+      "best_price": null,
+      "max_discount": 30,
+      "offers": [
+        {
+          "store": "Lidl",
+          "store_slug": "lidl",
+          "sale_price": 89.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kureci-stehna",
+      "scraped_at": "2026-02-14T10:27:54.451356",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Tmavé maso obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Tmavé maso má více železa a zinku, kůže zvyšuje nasycené tuky — doporučuji kůži odebrat"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuře",
+      "slug": "kure",
+      "category": "other",
+      "is_priority": false,
+      "regular_price": 90.59,
+      "best_price": null,
+      "max_discount": 33,
+      "offers": [
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 59.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kure",
+      "scraped_at": "2026-02-14T10:27:55.907980",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Tmavé maso obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Tmavé maso má více železa a zinku, kůže zvyšuje nasycené tuky — doporučuji kůži odebrat"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Kuřecí čtvrtky Vodňanské kuře",
+      "slug": "kureci-ctvrtky-vodnanske-kure",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": 107.78,
+      "best_price": null,
+      "max_discount": 41,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kureci-ctvrtky-vodnanske-kure",
+      "scraped_at": "2026-02-14T10:27:56.821514",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Tmavé maso obsahuje více kolagenu a glycinu, prospěšné pro střevní stěnu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Tmavé maso má více železa a zinku, kůže zvyšuje nasycené tuky — doporučuji kůži odebrat"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kompletní aminokyselinový profil, B-vitamíny (B3, B6) podporují energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Krůtí prsní řízky",
+      "slug": "kruti-prsni-rizky",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kruti-prsni-rizky",
+      "scraped_at": "2026-02-14T10:27:58.244764",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Krůtí prsa",
+      "slug": "kruti-prsa",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": 224.9,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [
+        {
+          "store": "Lidl",
+          "store_slug": "lidl",
+          "sale_price": 219.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/kruti-prsa",
+      "scraped_at": "2026-02-14T10:27:59.724956",
+      "clean_score": 92,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté drůbeží maso — minimální vliv na mikrobiom, bohaté na tryptofan (prekurzor serotoninu)"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Nízký obsah nasycených tuků, vysoký podíl bílkovin podporujících kardiovaskulární zdraví"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vysoký termický efekt bílkovin (TEF ~25%), podporuje svalovou syntézu a bazální metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Hovězí zadní bez kosti",
+      "slug": "hovezi-zadni",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/hovezi-zadni",
+      "scraped_at": "2026-02-14T10:28:00.955616",
+      "clean_score": 82,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Hovězí — střední vliv na mikrobiom, bohaté na železo hemové formy a L-karnitin"
+        },
+        "cardiovascular": {
+          "score": 6,
+          "detail": "Vyšší obsah nasycených tuků, ale zdroj CLA a koenzym Q10 — max 2-3× týdně"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kreatin, železo, B12, zinek — klíčové pro energetický metabolismus a krvetvorbu"
+        }
+      }
+    },
+    {
+      "name": "Hovězí svíčková",
+      "slug": "hovezi-svickova",
+      "category": "meat",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/hovezi-svickova",
+      "scraped_at": "2026-02-14T10:28:02.416618",
+      "clean_score": 82,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Hovězí — střední vliv na mikrobiom, bohaté na železo hemové formy a L-karnitin"
+        },
+        "cardiovascular": {
+          "score": 6,
+          "detail": "Vyšší obsah nasycených tuků, ale zdroj CLA a koenzym Q10 — max 2-3× týdně"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Kreatin, železo, B12, zinek — klíčové pro energetický metabolismus a krvetvorbu"
+        }
+      }
+    },
+    {
+      "name": "Vepřová plec",
+      "slug": "veprova-plec",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/veprova-plec",
+      "scraped_at": "2026-02-14T10:28:03.348963",
+      "clean_score": 72,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Vepřové — neutrální vliv na mikrobiom, thiamin (B1) podporuje nervový systém"
+        },
+        "cardiovascular": {
+          "score": 5,
+          "detail": "Vyšší podíl nasycených tuků — preferovat libové části, max 2× týdně"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Dobrý zdroj thiaminu (B1) a selenu, podporuje energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Vepřová kýta",
+      "slug": "veprova-kyta",
+      "category": "meat",
+      "is_priority": false,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/veprova-kyta",
+      "scraped_at": "2026-02-14T10:28:04.290674",
+      "clean_score": 72,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Vepřové — neutrální vliv na mikrobiom, thiamin (B1) podporuje nervový systém"
+        },
+        "cardiovascular": {
+          "score": 5,
+          "detail": "Vyšší podíl nasycených tuků — preferovat libové části, max 2× týdně"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Dobrý zdroj thiaminu (B1) a selenu, podporuje energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Aljašská treska filety mražená Mylord",
+      "slug": "file-z-aljasske-tresky",
+      "category": "fish",
+      "is_priority": true,
+      "regular_price": 118.65,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/file-z-aljasske-tresky",
+      "scraped_at": "2026-02-14T10:28:07.477308",
+      "clean_score": 90,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté rybí filé — neutrální až pozitivní vliv na mikrobiom, lehce stravitelné"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nízkotučná ryba s vysokým podílem bílkovin, vhodná pro snižování cholesterolu"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Jód podporuje štítnou žlázu, fosfor je klíčový pro energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tuňák steak v oleji Exclusive Franz Josef Kaiser",
+      "slug": "tunak-steak-franz-josef",
+      "category": "fish",
+      "is_priority": true,
+      "regular_price": 88.88,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tunak-steak-franz-josef",
+      "scraped_at": "2026-02-14T10:28:10.469071",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Konzervovaný tuňák — minimální zpracování, pozor na obsah sodíku"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Bohatý na omega-3 a bílkoviny, niacin snižuje LDL cholesterol"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Niacin (B3) a selen podporují metabolismus, kompletní aminokyseliny"
+        }
+      }
+    },
+    {
+      "name": "Makrela uzená",
+      "slug": "makrela-uzena",
+      "category": "fish",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/makrela-uzena",
+      "scraped_at": "2026-02-14T10:28:12.239601"
+    },
+    {
+      "name": "Vejce M",
+      "slug": "vejce-m",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/vejce-m",
+      "scraped_at": "2026-02-14T10:28:13.218975",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Lecitin podporuje integritu střevní bariéry, žloutek obsahuje fosfolipidy"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol"
+        },
+        "metabolism": {
+          "score": 10,
+          "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"
+        }
+      }
+    },
+    {
+      "name": "Vejce L",
+      "slug": "vejce-l",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/vejce-l",
+      "scraped_at": "2026-02-14T10:28:14.146512",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Lecitin podporuje integritu střevní bariéry, žloutek obsahuje fosfolipidy"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol"
+        },
+        "metabolism": {
+          "score": 10,
+          "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"
+        }
+      }
+    },
+    {
+      "name": "Vejce S",
+      "slug": "vejce-s",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/vejce-s",
+      "scraped_at": "2026-02-14T10:28:15.132692",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Lecitin podporuje integritu střevní bariéry, žloutek obsahuje fosfolipidy"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nová evidence: dietární cholesterol z vajec má minimální vliv na krevní cholesterol"
+        },
+        "metabolism": {
+          "score": 10,
+          "detail": "Cholin (essential nutrient), kompletní bílkovina, vitamín D, B12, selen — metabolický superfood"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh Jihočeský Madeta",
+      "slug": "tvaroh-jihocesky-madeta",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tvaroh-jihocesky-madeta",
+      "scraped_at": "2026-02-14T10:28:17.715874",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh polotučný Jihočeský Madeta",
+      "slug": "tvaroh-polotucny-jihocesky-madeta",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tvaroh-polotucny-jihocesky-madeta",
+      "scraped_at": "2026-02-14T10:28:18.683475",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh Jaroměřický",
+      "slug": "tvaroh-jaromericky",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": 47.9,
+      "best_price": null,
+      "max_discount": 27,
+      "offers": [
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 34.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/tvaroh-jaromericky",
+      "scraped_at": "2026-02-14T10:28:19.669935",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tvaroh tučný Karlova Koruna",
+      "slug": "tvaroh-tucny-karlova-koruna",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tvaroh-tucny-karlova-koruna",
+      "scraped_at": "2026-02-14T10:28:20.547816",
+      "clean_score": 94,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Tvaroh obsahuje přirozené probiotické kultury, kasein živí prospěšné bakterie v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Bohatý na vápník a fosfor, tučná varianta má vyšší nasycené tuky"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Kasein = pomalé uvolňování aminokyselin, ideální pro regeneraci a noční metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Bílý jogurt řecký Kolios",
+      "slug": "jogurt-recky-kolios",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/jogurt-recky-kolios",
+      "scraped_at": "2026-02-14T10:28:21.992240",
+      "clean_score": 90,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Živé jogurtové kultury (L. bulgaricus, S. thermophilus) — přímá podpora mikrobiotické diverzity"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Fermentace zlepšuje profil mastných kyselin, vápník podporuje krevní tlak"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Probiotika zlepšují absorpci živin a inzulínovou citlivost"
+        }
+      }
+    },
+    {
+      "name": "Sýr Mozzarella Galbani",
+      "slug": "mozzarella-galbani",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": 32.75,
+      "best_price": null,
+      "max_discount": 41,
+      "offers": [
+        {
+          "store": "Billa",
+          "store_slug": "billa",
+          "sale_price": 27.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 23.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 23.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 25.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/mozzarella-galbani",
+      "scraped_at": "2026-02-14T10:28:25.829321",
+      "clean_score": 88,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Fermentovaný sýr s nízkou laktózou, šetrný k mikrobiomu"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Střední obsah tuků, bohatý na vápník — prospěšný pro krevní tlak"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Kompletní bílkoviny, vápník podporuje lipolýzu (spalování tuků)"
+        }
+      }
+    },
+    {
+      "name": "Kefírové mléko",
+      "slug": "kefir",
+      "category": "dairy",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/kefir",
+      "scraped_at": "2026-02-14T10:28:28.694159",
+      "clean_score": 90,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Živé jogurtové kultury (L. bulgaricus, S. thermophilus) — přímá podpora mikrobiotické diverzity"
+        },
+        "cardiovascular": {
+          "score": 7,
+          "detail": "Fermentace zlepšuje profil mastných kyselin, vápník podporuje krevní tlak"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Probiotika zlepšují absorpci živin a inzulínovou citlivost"
+        }
+      }
+    },
+    {
+      "name": "Jablka červená",
+      "slug": "jablka-cervena",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 32.82,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/jablka-cervena",
+      "scraped_at": "2026-02-14T10:28:29.603554"
+    },
+    {
+      "name": "Banány",
+      "slug": "banany",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 40.11,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 29.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/banany",
+      "scraped_at": "2026-02-14T10:28:30.500650",
+      "clean_score": 100,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Rezistentní škrob (nezralé banány) je prebiotikum pro prospěšné střevní bakterie"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Draslík (358mg/100g) reguluje krevní tlak, B6 snižuje homocystein"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Rychlý zdroj energie (GI 51), vhodný post-workout, B6 podporuje metabolismus bílkovin"
+        }
+      }
+    },
+    {
+      "name": "Pomeranče",
+      "slug": "pomerance",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 50.07,
+      "best_price": null,
+      "max_discount": 60,
+      "offers": [
+        {
+          "store": "Lidl",
+          "store_slug": "lidl",
+          "sale_price": 32.9
+        },
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 24.9
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 39.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 29.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 29.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/pomerance",
+      "scraped_at": "2026-02-14T10:28:31.511332",
+      "clean_score": 100,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Pektin — rozpustná vláknina živící Bifidobacterium v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Vitamín C, hesperidin, naringenin — flavonoidy snižující tlak a zánět cév"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Vitamín C zvyšuje absorpci železa, folát podporuje buněčný metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Citrony",
+      "slug": "citrony",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 38.23,
+      "best_price": null,
+      "max_discount": 57,
+      "offers": [
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 16.9
+        },
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 33.8,
+          "unit": "1 kg"
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 16.9
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 33.8,
+          "unit": "1 kg"
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/citrony",
+      "scraped_at": "2026-02-14T10:28:32.460035",
+      "clean_score": 100,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Pektin — rozpustná vláknina živící Bifidobacterium v tlustém střevě"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Vitamín C, hesperidin, naringenin — flavonoidy snižující tlak a zánět cév"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Vitamín C zvyšuje absorpci železa, folát podporuje buněčný metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Borůvky",
+      "slug": "boruvky",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 109.75,
+      "best_price": null,
+      "max_discount": 40,
+      "offers": [
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 64.9
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 79.9
+        },
+        {
+          "store": "Billa",
+          "store_slug": "billa",
+          "sale_price": 59.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/boruvky",
+      "scraped_at": "2026-02-14T10:28:33.443703",
+      "clean_score": 100,
+      "bio_audit": {
+        "microbiome": {
+          "score": 10,
+          "detail": "Antokyaniny a ellagitaniny — TOP prebiotika pro mikrobiotickou diverzitu"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "Nejsilnější antioxidanty mezi ovocem, snižují oxidaci LDL a krevní tlak"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Nízký GI, vysoký obsah vlákniny, polyfenoly zlepšují inzulínovou citlivost"
+        }
+      }
+    },
+    {
+      "name": "Maliny",
+      "slug": "maliny",
+      "category": "other",
+      "is_priority": false,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/maliny",
+      "scraped_at": "2026-02-14T10:28:34.415688"
+    },
+    {
+      "name": "Rajčata",
+      "slug": "rajcata",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/rajcata",
+      "scraped_at": "2026-02-14T10:28:35.381601"
+    },
+    {
+      "name": "Papriky",
+      "slug": "papriky",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/papriky",
+      "scraped_at": "2026-02-14T10:28:36.299103"
+    },
+    {
+      "name": "Brokolice",
+      "slug": "brokolice",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 39.52,
+      "best_price": null,
+      "max_discount": 37,
+      "offers": [
+        {
+          "store": "Kaufland",
+          "store_slug": "kaufland",
+          "sale_price": 29.9
+        },
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 24.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/brokolice",
+      "scraped_at": "2026-02-14T10:28:38.049650",
+      "clean_score": 100,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Sulforafan a indol-3-karbinol — podporují detoxifikační enzymy a zdravý mikrobiom"
+        },
+        "cardiovascular": {
+          "score": 9,
+          "detail": "Silné protizánětlivé a antioxidační účinky, snižují riziko aterosklerózy"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Vláknina zpomaluje vstřebávání cukrů, sulforafan aktivuje Nrf2 dráhu"
+        }
+      }
+    },
+    {
+      "name": "Mrkev",
+      "slug": "mrkev",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": 20.35,
+      "best_price": null,
+      "max_discount": 35,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/mrkev",
+      "scraped_at": "2026-02-14T10:28:39.870022",
+      "clean_score": 100,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Bohaté na vlákninu a beta-karoten, podporují diverzitu střevního mikrobiomu"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Beta-karoten a luteolin — antioxidační účinky na cévy, draslík reguluje tlak"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Nízkokalorické, beta-karoten se přeměňuje na vitamín A, podpora imunity"
+        }
+      }
+    },
+    {
+      "name": "Cuketa",
+      "slug": "cuketa",
+      "category": "produce",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/cuketa",
+      "scraped_at": "2026-02-14T10:28:41.591889"
+    },
+    {
+      "name": "Avokádo",
+      "slug": "avokado",
+      "category": "produce",
+      "is_priority": false,
+      "regular_price": 36.4,
+      "best_price": null,
+      "max_discount": 42,
+      "offers": [
+        {
+          "store": "Penny Market",
+          "store_slug": "penny-market",
+          "sale_price": 19.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 26.9
+        },
+        {
+          "store": "Albert",
+          "store_slug": "albert",
+          "sale_price": 26.9
+        }
+      ],
+      "url": "https://www.kupi.cz/sleva/avokado",
+      "scraped_at": "2026-02-14T10:28:42.540722"
+    },
+    {
+      "name": "Olivový olej Bertolli",
+      "slug": "olivovy-olej-bertolli",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/olivovy-olej-bertolli",
+      "scraped_at": "2026-02-14T10:28:44.339706",
+      "clean_score": 95,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Polyfenoly (oleocanthal, oleuropein) podporují růst prospěšných bakterií"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "Kyselina olejová (73%) — základ středomořské diety, snižuje LDL a zánět cév"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Mononenasycené tuky zlepšují inzulínovou citlivost a metabolismus tuků"
+        }
+      }
+    },
+    {
+      "name": "Rýže Basmati",
+      "slug": "ryze-basmati",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/ryze-basmati",
+      "scraped_at": "2026-02-14T10:28:45.305893",
+      "clean_score": 80,
+      "bio_audit": {
+        "microbiome": {
+          "score": 6,
+          "detail": "Bílá rýže — nízký obsah vlákniny, natural/hnědá varianta je lepší pro mikrobiom"
+        },
+        "cardiovascular": {
+          "score": 6,
+          "detail": "Neutrální vliv, preferovat celozrnné varianty pro vyšší obsah hořčíku"
+        },
+        "metabolism": {
+          "score": 7,
+          "detail": "Dobrý zdroj energie, basmati má nižší GI než běžná bílá rýže"
+        }
+      }
+    },
+    {
+      "name": "Ovesné vločky",
+      "slug": "ovesne-vlocky",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/ovesne-vlocky",
+      "scraped_at": "2026-02-14T10:28:47.861690",
+      "clean_score": 95,
+      "bio_audit": {
+        "microbiome": {
+          "score": 10,
+          "detail": "Beta-glukan — zlatý standard prebiotik, masivně podporuje Bifidobacterium"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "3g beta-glukanu denně prokazatelně snižuje LDL cholesterol o 5-10%"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Nízký GI, pomalé uvolňování energie, stabilizace ranní glykémie"
+        }
+      }
+    },
+    {
+      "name": "Mandle",
+      "slug": "mandle",
+      "category": "pantry",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/mandle",
+      "scraped_at": "2026-02-14T10:28:48.798194",
+      "clean_score": 98,
+      "bio_audit": {
+        "microbiome": {
+          "score": 9,
+          "detail": "Vláknina a polyfenoly z ořechů podporují mikrobiotickou diverzitu"
+        },
+        "cardiovascular": {
+          "score": 10,
+          "detail": "30g ořechů denně snižuje kardiovaskulární riziko o 30% (PREDIMED studie)"
+        },
+        "metabolism": {
+          "score": 9,
+          "detail": "Zdravé tuky, bílkoviny, hořčík, vitamín E — stabilizují metabolismus"
+        }
+      }
+    }
+  ]
+}

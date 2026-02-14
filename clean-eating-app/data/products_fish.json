@@ -1,0 +1,73 @@
+{
+  "generated_at": "2026-02-14T10:28:49.626989",
+  "category": "fish",
+  "total_products": 3,
+  "products": [
+    {
+      "name": "Aljašská treska filety mražená Mylord",
+      "slug": "file-z-aljasske-tresky",
+      "category": "fish",
+      "is_priority": true,
+      "regular_price": 118.65,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/file-z-aljasske-tresky",
+      "scraped_at": "2026-02-14T10:28:07.477308",
+      "clean_score": 90,
+      "bio_audit": {
+        "microbiome": {
+          "score": 8,
+          "detail": "Čisté rybí filé — neutrální až pozitivní vliv na mikrobiom, lehce stravitelné"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Nízkotučná ryba s vysokým podílem bílkovin, vhodná pro snižování cholesterolu"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Jód podporuje štítnou žlázu, fosfor je klíčový pro energetický metabolismus"
+        }
+      }
+    },
+    {
+      "name": "Tuňák steak v oleji Exclusive Franz Josef Kaiser",
+      "slug": "tunak-steak-franz-josef",
+      "category": "fish",
+      "is_priority": true,
+      "regular_price": 88.88,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/tunak-steak-franz-josef",
+      "scraped_at": "2026-02-14T10:28:10.469071",
+      "clean_score": 85,
+      "bio_audit": {
+        "microbiome": {
+          "score": 7,
+          "detail": "Konzervovaný tuňák — minimální zpracování, pozor na obsah sodíku"
+        },
+        "cardiovascular": {
+          "score": 8,
+          "detail": "Bohatý na omega-3 a bílkoviny, niacin snižuje LDL cholesterol"
+        },
+        "metabolism": {
+          "score": 8,
+          "detail": "Niacin (B3) a selen podporují metabolismus, kompletní aminokyseliny"
+        }
+      }
+    },
+    {
+      "name": "Makrela uzená",
+      "slug": "makrela-uzena",
+      "category": "fish",
+      "is_priority": true,
+      "regular_price": null,
+      "best_price": null,
+      "max_discount": null,
+      "offers": [],
+      "url": "https://www.kupi.cz/sleva/makrela-uzena",
+      "scraped_at": "2026-02-14T10:28:12.239601"
+    }
+  ]
+}

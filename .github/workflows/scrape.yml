@@ -2,9 +2,7 @@ name: "🔬 Clean Eating Scraper — Kupi.cz"
 
 on:
   schedule:
-    - cron: "0 5 * * 1"
-    - cron: "0 5 * * 3"
-    - cron: "0 5 * * 4"
+    - cron: "0 5 * * *"
   workflow_dispatch:
 
 permissions:

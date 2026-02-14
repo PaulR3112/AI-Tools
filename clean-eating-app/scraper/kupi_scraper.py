@@ -635,7 +635,7 @@ def save_results(products: list, output_dir: str = "."):
                 "count": len(items),
                 "min_price": min((p["best_price"] for p in items if p.get("best_price")), default=None),
                 "avg_discount": round(
-                    sum(p.get("max_discount", 0) for p in items) / max(len(items), 1), 1
+                    sum(p.get("max_discount") or 0 for p in items) / max(len(items), 1), 1
                 ),
             }
             for cat, items in categories.items()

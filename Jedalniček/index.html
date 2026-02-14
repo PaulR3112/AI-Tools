@@ -12,124 +12,190 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-/* ... TVOJ PÔVODNÝ CSS ŠTÝL (BEZ ZMENY) ... */
+/* TVOJ PÔVODNÝ DIZAJN */
 :root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2236;--surface:#1e2a3e;--border:#2a3654;--text:#e8ecf4;--text2:#8b97b0;--accent:#22d3ee;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--orange:#fb923c;--purple:#a78bfa;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overflow-x:hidden;padding-bottom:calc(80px + var(--safe-bottom))}
-/* ... (tu nechaj celý tvoj CSS blok tak ako bol) ... */
-.loading-indicator { text-align: center; padding: 20px; color: var(--text2); font-style: italic; }
+h1,h2,h3,p{margin:0}
+#app-header{position:sticky;top:0;background:rgba(10,15,26,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:calc(16px + var(--safe-top)) 16px 16px;z-index:100;display:flex;flex-direction:column;gap:16px}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+.search-box{position:relative;width:100%}
+.search-input{width:100%;background:var(--bg2);border:1px solid var(--border);padding:12px 16px 12px 44px;border-radius:12px;color:var(--text);font-family:inherit;font-size:15px;transition:all .2s ease}
+.search-input:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);pointer-events:none}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filter-chip{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:13px;white-space:nowrap;cursor:pointer;transition:all .2s}
+.filter-chip.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500}
+#feed{padding:16px;display:flex;flex-direction:column;gap:16px;max-width:600px;margin:0 auto}
+.card{background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid var(--border);position:relative}
+.card-header{padding:16px;display:flex;justify-content:space-between;align-items:flex-start}
+.product-name{font-weight:700;font-size:17px;line-height:1.3;margin-bottom:4px;color:var(--text)}
+.product-meta{display:flex;gap:10px;font-size:13px;color:var(--text2)}
+.score-badge{background:var(--bg2);padding:4px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;border:1px solid var(--border)}
+.price-section{padding:0 16px 16px;display:flex;align-items:flex-end;gap:8px}
+.current-price{font-size:20px;font-weight:700;color:var(--text)}
+.old-price{text-decoration:line-through;color:var(--text2);font-size:14px}
+.discount-badge{background:rgba(239,68,68,0.15);color:var(--red);font-size:12px;font-weight:700;padding:2px 6px;border-radius:4px}
+.store-info{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px;color:var(--text2)}
+.store-name{color:var(--accent);font-weight:500}
+/* Loading stav */
+#loading-msg { text-align: center; color: var(--text2); padding: 40px; font-style: italic; }
 </style>
 </head>
 <body>
 
 <div id="app-header">
+    <div class="header-top">
+        <div class="logo">CleanAgent_Alpha</div>
     </div>
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Hľadať potraviny..." id="searchInput">
+    </div>
+    <div class="filters">
+        <div class="filter-chip active" onclick="filterData('all', this)">Všetko</div>
+        <div class="filter-chip" onclick="filterData('pantry', this)">Špajza</div>
+        <div class="filter-chip" onclick="filterData('fridge', this)">Chladnička</div>
+        <div class="filter-chip" onclick="filterData('protein', this)">Bielkoviny</div>
+    </div>
+</div>
 
 <main id="feed">
-    <div id="loading" class="loading-indicator">Načítavam dáta z cloudu...</div>
-    </main>
+    <div id="loading-msg">Pripájam sa k databáze...</div>
+</main>
 
 <script>
-// ==========================================
-// 1. NASTAVENIE SUPABASE (Doplň svoje údaje!)
-// ==========================================
-const SUPABASE_URL = 'https://tvoj-projekt.supabase.co'; // Vlož URL zo Supabase Settings
-const SUPABASE_KEY = 'eyJ...tvoj-kluc...';             // Vlož ANON KEY zo Supabase Settings
+    // ==========================================
+    // 1. KONFIGURÁCIA (SEM VLOŽ SVOJE ÚDAJE)
+    // ==========================================
+    const SUPABASE_URL = 'https://tvoj-projekt.supabase.co'; // ⚠️ Prepíš
+    const SUPABASE_KEY = 'tvoj-ey-kod';                     // ⚠️ Prepíš
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ==========================================
-// 2. LOGIKA APLIKÁCIE
-// ==========================================
+    let allProducts = []; // Tu budú žiť tvoje dáta z cloudu
 
-let products = []; // Toto sa naplní z databázy
+    // ==========================================
+    // 2. HLAVNÁ LOGIKA
+    // ==========================================
 
-// Hlavná funkcia (Načíta dáta a spustí appku)
-async function init() {
-    console.log("Štartujem aplikáciu...");
-    
-    // A. Stiahni dáta zo Supabase
-    const { data, error } = await supabase
-        .from('potraviny')
-        .select('*');
-
-    if (error) {
-        console.error("Chyba pri sťahovaní:", error);
-        document.getElementById('loading').innerText = "Chyba pripojenia k databáze.";
-        return;
-    }
-
-    // B. Spracuj dáta (rozbaľ full_data JSON)
-    if (data && data.length > 0) {
-        products = data.map(row => {
-            // Spojíme stĺpce z tabuľky a vnútro JSONu do jedného objektu
-            return {
-                id: row.id,
-                name: row.name,
-                category: row.category,
-                best_price: row.best_price,
-                clean_score: row.clean_score,
-                ...row.full_data // Tu sú offers, nutrition, bio_audit
-            };
-        });
+    async function initApp() {
+        console.log("Startujem aplikáciu...");
         
-        // Skry loading a vykresli
-        document.getElementById('loading').style.display = 'none';
-        renderCards(products);
-        updateStats();
-    } else {
-        document.getElementById('loading').innerText = "Databáza je prázdna. Spusti uploadDataToSupabase() v konzole.";
-    }
+        // Stiahni dáta z tabuľky 'potraviny'
+        const { data, error } = await supabase
+            .from('potraviny')
+            .select('*');
 
-    // Nastavenie event listenerov (Search, Filter)
-    setupEventListeners();
-}
-
-// Funkcia na vykreslenie kariet (Tvoja pôvodná logika)
-function renderCards(dataToRender) {
-    const feed = document.getElementById('feed');
-    // Vymaž všetko okrem loading indikátora (ak tam je)
-    const loader = document.getElementById('loading');
-    feed.innerHTML = ''; 
-    if(loader) feed.appendChild(loader);
-
-    dataToRender.forEach(item => {
-        // ... SEM VLOŽ TVOJ KÓD PRE VYTVÁRANIE KARTY (const card = document.createElement...) ...
-        // Skopíruj vnútro tvojej pôvodnej funkcie renderCards, 
-        // len nezabudni, že premenná sa volá 'item'
+        const feed = document.getElementById('feed');
         
-        // PRÍKLAD (Zjednodušený):
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<h3>${item.name}</h3><p>${item.best_price} Kč</p>`; // Uprav podľa svojho dizajnu
-        feed.appendChild(card);
-    });
-}
+        if (error) {
+            console.error(error);
+            feed.innerHTML = `<div style="text-align:center;color:red;padding:20px">Chyba pripojenia. Skontroluj konzolu.</div>`;
+            return;
+        }
 
-function updateStats() {
-    // Tvoja pôvodná funkcia na štatistiky
-}
+        if (!data || data.length === 0) {
+            feed.innerHTML = `<div style="text-align:center;padding:20px">
+                Databáza je prázdna.<br><br>
+                <button onclick="uploadDataToSupabase()" style="padding:10px;background:var(--accent);border:none;border-radius:8px">Nahrať dáta (Klikni raz)</button>
+            </div>`;
+            return;
+        }
 
-function setupEventListeners() {
-    const searchInput = document.getElementById('searchInput'); // Uisti sa, že máš toto ID v HTML
-    if(searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(val));
+        // Spracovanie dát (rozbalenie JSONu)
+        allProducts = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            best_price: item.best_price,
+            clean_score: item.clean_score,
+            ...item.full_data // Rozbalí detaily
+        }));
+
+        renderCards(allProducts);
+        
+        // Aktivuj vyhľadávanie
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
             renderCards(filtered);
         });
     }
-}
 
-// Spustíme to
-init();
+    function renderCards(items) {
+        const feed = document.getElementById('feed');
+        feed.innerHTML = ''; // Vyčisti
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // Farba skóre
+            let scoreColor = '#34d399';
+            if(item.clean_score < 80) scoreColor = '#fbbf24';
+            if(item.clean_score < 60) scoreColor = '#f87171';
+
+            // Nájdi najlepšiu ponuku (ak existuje)
+            const offer = item.offers ? item.offers[0] : null;
+            const storeName = offer ? offer.store : 'Neznámy obchod';
+            const regularPrice = item.regular_price || (item.best_price * 1.2);
+            const discount = Math.round((1 - (item.best_price / regularPrice)) * 100);
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div>
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-meta">
+                            <span>${item.category}</span>
+                            <span>•</span>
+                            <span>${item.nutrition ? item.nutrition.kcal + ' kcal' : ''}</span>
+                        </div>
+                    </div>
+                    <div class="score-badge" style="color:${scoreColor};border-color:${scoreColor}40">
+                        ${item.clean_score}
+                    </div>
+                </div>
+                <div class="price-section">
+                    <span class="current-price">${item.best_price} Kč</span>
+                    ${discount > 0 ? `
+                    <span class="old-price">${regularPrice.toFixed(1)}</span>
+                    <span class="discount-badge">-${discount}%</span>
+                    ` : ''}
+                </div>
+                <div class="store-info" style="margin:0 16px 16px 16px">
+                    <span class="store-name">📍 ${storeName}</span>
+                    <span>Do: ${offer ? offer.valid_until.slice(5) : '?'}</span>
+                </div>
+            `;
+            feed.appendChild(card);
+        });
+    }
+
+    function filterData(category, element) {
+        // Vizuálna zmena tlačidiel
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        element.classList.add('active');
+
+        if (category === 'all') {
+            renderCards(allProducts);
+        } else {
+            const filtered = allProducts.filter(p => p.category === category);
+            renderCards(filtered);
+        }
+    }
+
+    // Spusti appku
+    initApp();
 
 
-// ==========================================
-// 3. JEDNORAZOVÁ MIGRÁCIA DÁT
-// (Toto obsahuje tvoje staré dáta. Spusti to cez konzolu príkazom: uploadDataToSupabase())
-// ==========================================
-const oldDataForUpload = [
+    // ==========================================
+    // 3. MIGRAČNÝ NÁSTROJ (Spusti iba raz)
+    // ==========================================
+    // Toto sú tvoje pôvodné dáta z JSONu
+    const dataToUpload = [
     {
         "name": "Fazole v tomatě Heinz 400g",
         "category": "pantry",
@@ -138,16 +204,9 @@ const oldDataForUpload = [
         "full_data": {
             "regular_price": 34.9,
             "max_discount": 43,
-            "nutrition": {"kcal": 81, "protein": 4.6, "carbs": 12.9, "fat": 0.5, "fiber": 3.7},
-            "source_url": "https://www.kupi.cz/sleva/fazole",
-            "bio_audit": {
-                "microbiome": {"score": 9, "detail": "Luštěniny — TOP prebiotikum"},
-                "cardiovascular": {"score": 8, "detail": "Vláknina snižuje LDL"},
-                "metabolism": {"score": 8, "detail": "Nízký GI"}
-            },
+            "nutrition": {"kcal": 81, "protein": 4.6},
             "offers": [
-                {"store": "Tesco", "sale_price": 19.9, "unit": "415g", "valid_until": "2026-02-17"},
-                {"store": "Kaufland", "sale_price": 22.9, "unit": "400g", "valid_until": "2026-02-19"}
+                {"store": "Tesco", "valid_until": "2026-02-17"}
             ]
         }
     },
@@ -158,37 +217,33 @@ const oldDataForUpload = [
         "clean_score": 65,
         "full_data": {
             "regular_price": 189.9,
-            "max_discount": 31,
-            "nutrition": {"kcal": 320, "protein": 0.3},
-            "bio_audit": {
-                "microbiome": {"score": 4, "detail": "Prebiotické účinky"},
-                "metabolism": {"score": 3, "detail": "Pozor na cukr"}
-            },
             "offers": [
-                {"store": "Kaufland", "sale_price": 129.9, "unit": "900g", "valid_until": "2026-02-19"}
+                {"store": "Kaufland", "valid_until": "2026-02-19"}
             ]
         }
     }
-];
+    ];
 
-async function uploadDataToSupabase() {
-    console.log("Začínam upload...");
-    for (const item of oldDataForUpload) {
-        const { error } = await supabase
-            .from('potraviny')
-            .insert({
-                name: item.name,
-                category: item.category,
-                best_price: item.best_price,
-                clean_score: item.clean_score,
-                full_data: item.full_data
-            });
-            
-        if (error) console.error("Chyba pri:", item.name, error);
-        else console.log("Nahrané:", item.name);
+    async function uploadDataToSupabase() {
+        console.log("Nahrávam dáta...");
+        document.getElementById('feed').innerHTML = "Nahrávam dáta... Čakaj.";
+        
+        for (const item of dataToUpload) {
+            const { error } = await supabase
+                .from('potraviny')
+                .insert({
+                    name: item.name,
+                    category: item.category,
+                    best_price: item.best_price,
+                    clean_score: item.clean_score,
+                    full_data: item.full_data
+                });
+            if(error) console.error("Chyba:", error);
+        }
+        
+        alert("Hotovo! Obnov stránku (F5).");
+        location.reload();
     }
-    console.log("Hotovo! Teraz obnov stránku.");
-}
 </script>
 </body>
 </html>

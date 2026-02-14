@@ -30,6 +30,44 @@ body{min-height:100dvh;padding-top:var(--safe-top);padding-bottom:calc(72px + va
 .ref-btn.loading{opacity:.5;pointer-events:none}
 .ref-btn.ok{background:rgba(52,211,153,0.3)}
 .ref-btn.err{background:rgba(248,113,113,0.15);color:var(--red);border-color:rgba(248,113,113,0.3)}
+/* SOURCE BADGES */
+.src-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.src-badge{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.src-multi{background:rgba(34,211,238,0.15);color:var(--accent);border:1px solid rgba(34,211,238,0.3)}
+.src-ver{background:rgba(52,211,153,0.15);color:var(--green);border:1px solid rgba(52,211,153,0.3)}
+.src-unver{background:rgba(251,191,36,0.15);color:var(--yellow);border:1px solid rgba(251,191,36,0.3)}
+/* CALENDAR */
+.cal-strip{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.cal-strip::-webkit-scrollbar{display:none}
+.cal-day{flex-shrink:0;width:50px;height:62px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-family:inherit}
+.cal-day.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.cal-day.urgent{border-color:var(--red)}
+.cal-dn{font-size:10px;font-weight:700;opacity:.6}
+.cal-dd{font-size:16px;font-weight:700}
+.cal-dots{display:flex;gap:2px;margin-top:2px}
+.cal-dot{width:4px;height:4px;border-radius:50%}
+/* PROFILE */
+.prof-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px}
+.prof-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto}
+.prof-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.prof-section{margin-bottom:16px}
+.prof-label{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.goal-btn{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.02);text-align:left;cursor:pointer;margin-bottom:6px;transition:all .2s;font-family:inherit;color:var(--text)}
+.goal-btn.on{border-color:var(--accent);background:rgba(34,211,238,0.08)}
+.goal-btn .goal-name{font-weight:600;font-size:13px;margin-bottom:2px}
+.goal-btn .goal-desc{font-size:11px;color:var(--text2)}
+.excl-btn{padding:6px 14px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.excl-btn.on{border-color:var(--red);background:rgba(248,113,113,0.12);color:var(--red);font-weight:600}
+.watch-row{display:flex;gap:6px;margin-bottom:8px}
+.watch-input{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:12px;font-family:inherit}
+.watch-add{background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:0 14px;font-weight:700;cursor:pointer;font-family:inherit}
+.watch-tags{display:flex;gap:4px;flex-wrap:wrap}
+.watch-tag{padding:4px 10px;border-radius:12px;font-size:11px;background:rgba(251,191,36,0.12);color:var(--yellow);border:1px solid rgba(251,191,36,0.25);display:flex;align-items:center;gap:4px}
+.watch-tag button{background:none;border:none;color:inherit;cursor:pointer;padding:0;font-size:12px}
+.prof-save{width:100%;padding:12px;background:var(--accent);color:var(--bg);border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;font-family:inherit}
+/* NOTIFICATION DOT */
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--red);position:absolute;top:-2px;right:-2px;border:2px solid var(--bg)}
+.prof-btn{position:relative;background:rgba(167,139,250,0.15);color:var(--purple);border:1px solid rgba(167,139,250,0.3);border-radius:16px;padding:3px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;cursor:pointer;font-weight:600;transition:all .2s}
 .token-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px}
 .token-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:340px;width:100%}
 .token-title{font-size:14px;font-weight:700;margin-bottom:8px}
@@ -208,7 +246,7 @@ body{min-height:100dvh;padding-top:var(--safe-top);padding-bottom:calc(72px + va
 <div class="hdr">
   <div class="hdr-top">
     <div class="logo"><div class="logo-i">🔬</div><div><div class="logo-t">Clean Eating Agent</div><div class="logo-s">Příbram — Biomedicínsky audit</div></div></div>
-    <div class="hdr-acts"><button class="ref-btn" id="refBtn" onclick="triggerScrape()">🔄 Aktualizovať</button><div class="badge" id="badge">LIVE</div></div>
+    <div class="hdr-acts"><button class="prof-btn" id="profBtn" onclick="openProfile()">👤 Profil</button><button class="ref-btn" id="refBtn" onclick="triggerScrape()">🔄 Aktualizovať</button><div class="badge" id="badge">LIVE</div></div>
   </div>
   <div class="week"><span class="wdot"></span><span id="winfo">Načítanie...</span></div>
 </div>
@@ -249,11 +287,39 @@ body{min-height:100dvh;padding-top:var(--safe-top);padding-bottom:calc(72px + va
   <div class="ct" id="shopList" style="padding-top:12px"></div>
 </div>
 
-<div class="ftr">100% reálne dáta z letákov · 0 Kč prevádzkové náklady</div>
+<!-- CALENDAR VIEW -->
+<div id="vCal" class="hidden">
+  <div class="cal-strip" id="calStrip"></div>
+  <div class="ct" id="calList" style="padding-top:8px"></div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="prof-modal hidden" id="profModal">
+  <div class="prof-box">
+    <div class="prof-title"><span>👤 Môj Bio-Profil</span><button onclick="closeProfile()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">×</button></div>
+    <div class="prof-section">
+      <div class="prof-label">🎯 Hlavný cieľ</div>
+      <div id="profGoals"></div>
+    </div>
+    <div class="prof-section">
+      <div class="prof-label" style="color:var(--red)">🚫 Intolerancie</div>
+      <div id="profExcl" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div class="prof-section">
+      <div class="prof-label" style="color:var(--yellow)">🔔 Watchlist (Notifikácie)</div>
+      <div class="watch-row"><input class="watch-input" id="watchInput" placeholder="Napr. losos, mandle..."><button class="watch-add" onclick="addWatch()">+</button></div>
+      <div class="watch-tags" id="watchTags"></div>
+    </div>
+    <button class="prof-save" onclick="saveProfile()">Uložiť profil</button>
+  </div>
+</div>
+
+<div class="ftr">📡 Kupi.cz + iLetaky.cz + AkcniCeny.cz · Cross-overené ceny · 0 Kč</div>
 
 <nav class="bnav">
   <button class="nv on" data-v="audit"><span class="nv-i">🔬</span><span class="nv-l">Audit</span></button>
   <button class="nv" data-v="stores"><span class="nv-i">🏪</span><span class="nv-l">Obchody</span></button>
+  <button class="nv" data-v="cal"><span class="nv-i">📅</span><span class="nv-l">Kalendár</span></button>
   <button class="nv" data-v="plan"><span class="nv-i">📋</span><span class="nv-l">Jedálniček</span></button>
   <button class="nv" data-v="shop"><span class="nv-i">🛒</span><span class="nv-l">Nákup</span></button>
 </nav>
@@ -274,12 +340,14 @@ document.querySelectorAll('.nv').forEach(b=>b.addEventListener('click',()=>{
   activeView=b.dataset.v;
   document.querySelectorAll('.nv').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
-  ['vAudit','vStores','vPlan','vShop'].forEach(id=>{
-    document.getElementById(id).classList.toggle('hidden',id!=='v'+activeView.charAt(0).toUpperCase()+activeView.slice(1));
+  ['vAudit','vStores','vPlan','vShop','vCal'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.toggle('hidden',id!=='v'+activeView.charAt(0).toUpperCase()+activeView.slice(1));
   });
   if(activeView==='stores')renderStores();
   if(activeView==='plan')renderPlan();
   if(activeView==='shop')renderShop();
+  if(activeView==='cal')renderCalendar();
 }));
 
 // ==================== DATA ====================
@@ -304,9 +372,10 @@ async function loadData(){
         if(raw.generated_at && !raw.flyer_week){
           const d=new Date(raw.generated_at);
           D.flyer_week=d.toLocaleDateString('cs-CZ');
-          D.note='Automatický scraping z Kupi.cz · '+D.flyer_week;
+          D.note='Multi-source scraping · '+D.flyer_week;
         }
-        document.getElementById('badge').textContent=raw.generated_at?'LIVE':'DATA';
+        const srcs=raw.sources||['kupi.cz'];
+        document.getElementById('badge').textContent=raw.generated_at?'LIVE '+srcs.length+'×':'DATA';
         init();
         return;
       }
@@ -317,7 +386,7 @@ async function loadData(){
   init();
 }
 
-function init(){renderWeek();renderStorePick();renderCats();renderStats();renderProds();renderDayPick();}
+function init(){renderWeek();renderStorePick();renderCats();renderStats();renderProds();renderDayPick();checkWatchNotifs();}
 
 // ==================== HELPERS ====================
 function scol(s){return s>=90?'var(--green)':s>=75?'var(--accent)':s>=60?'var(--yellow)':'var(--orange)'}
@@ -327,8 +396,10 @@ function today(){return new Date().toISOString().slice(0,10)}
 function isValid(o){if(!o.valid_until)return true;return o.valid_until>=today()}
 function validLabel(o){
   if(!o.valid_from)return'';
-  const f=o.valid_from.slice(5).replace('-','.');
-  const t=o.valid_until.slice(5).replace('-','.');
+  const fd=new Date(o.valid_from);
+  const td=new Date(o.valid_until);
+  const f=fd.getDate()+'.'+(fd.getMonth()+1)+'.';
+  const t=td.getDate()+'.'+(td.getMonth()+1)+'.';
   const cls=isValid(o)?'active':'expired';
   return '<span class="'+cls+'">'+f+' – '+t+'</span>';
 }
@@ -417,7 +488,16 @@ function renderProds(){
       offers.forEach(o=>{if(o.valid_from)h+=o.store+': '+validLabel(o)+' ';});
       h+='</div>';
     }
-    if(p.source_url)h+='<a class="src" href="'+p.source_url+'" target="_blank">🔗 Kupi.cz</a>';
+    if(p.source_url){
+      const srcs=p.sources_checked||['kupi.cz'];
+      const ver=p.verification&&p.verification.verified;
+      h+='<div class="src-row">';
+      h+='<a class="src" href="'+p.source_url+'" target="_blank">🔗 Kupi.cz</a>';
+      if(srcs.length>1)h+='<span class="src-badge src-multi">📡 '+srcs.length+' zdroje</span>';
+      if(ver)h+='<span class="src-badge src-ver">✓ Overená cena</span>';
+      else if(p.verification)h+='<span class="src-badge src-unver">⚠ Neoverené</span>';
+      h+='</div>';
+    }
     h+='</div></div>';
     // Nutrition
     if(n){
@@ -644,6 +724,162 @@ function renderShop(){
   });
 
   c.innerHTML=html;
+}
+
+// ==================== PROFILE ====================
+let profile={goal:'longevity',exclusions:[],watchlist:[]};
+try{const saved=localStorage.getItem('bio_profile');if(saved)profile=JSON.parse(saved);}catch(e){}
+
+const GOALS=[
+  {id:'longevity',label:'🐢 Dlhovekosť & Anti-Age',desc:'Priorita: Omega-3, polyfenoly, nízky GI'},
+  {id:'muscle',label:'💪 Budovanie svalov',desc:'Priorita: Vysoké bielkoviny, kvalitné sacharidy'},
+  {id:'weightloss',label:'🔥 Chudnutie (Low Carb)',desc:'Priorita: Bielkoviny, vláknina, zdravé tuky'},
+  {id:'gut',label:'🦠 Zdravý Mikrobióm',desc:'Priorita: Fermentované produkty, vláknina'}
+];
+const EXCLS=[{id:'gluten',l:'Lepok'},{id:'lactose',l:'Laktóza'},{id:'nuts',l:'Orechy'},{id:'fish',l:'Ryby'},{id:'eggs',l:'Vajcia'}];
+
+function openProfile(){
+  document.getElementById('profModal').classList.remove('hidden');
+  renderProfileGoals();
+  renderProfileExcl();
+  renderProfileWatch();
+  checkWatchNotifs();
+}
+function closeProfile(){document.getElementById('profModal').classList.add('hidden');}
+function saveProfile(){
+  try{localStorage.setItem('bio_profile',JSON.stringify(profile));}catch(e){}
+  closeProfile();
+  renderProds(); // re-filter
+}
+
+function renderProfileGoals(){
+  document.getElementById('profGoals').innerHTML=GOALS.map(g=>
+    '<button class="goal-btn '+(profile.goal===g.id?'on':'')+'" onclick="profile.goal=\''+g.id+'\';renderProfileGoals()">'+
+    '<div class="goal-name">'+g.label+'</div><div class="goal-desc">'+g.desc+'</div></button>'
+  ).join('');
+}
+function renderProfileExcl(){
+  document.getElementById('profExcl').innerHTML=EXCLS.map(e=>{
+    const on=profile.exclusions.includes(e.id);
+    return '<button class="excl-btn '+(on?'on':'')+'" onclick="toggleExcl(\''+e.id+'\')">'+(on?'🚫 ':'')+e.l+'</button>';
+  }).join('');
+}
+function toggleExcl(id){
+  const i=profile.exclusions.indexOf(id);
+  if(i>=0)profile.exclusions.splice(i,1);else profile.exclusions.push(id);
+  renderProfileExcl();
+}
+function renderProfileWatch(){
+  document.getElementById('watchTags').innerHTML=(profile.watchlist||[]).map((w,i)=>
+    '<span class="watch-tag">'+w+' <button onclick="removeWatch('+i+')">×</button></span>'
+  ).join('')||(profile.watchlist?.length?'':'<span style="font-size:11px;color:var(--text2)">Zatiaľ nesleduješ žiadne produkty</span>');
+}
+function addWatch(){
+  const inp=document.getElementById('watchInput');
+  const v=inp.value.trim();
+  if(!v||v.length<2)return;
+  if(!profile.watchlist)profile.watchlist=[];
+  if(!profile.watchlist.includes(v)){profile.watchlist.push(v);}
+  inp.value='';
+  renderProfileWatch();
+}
+function removeWatch(i){profile.watchlist.splice(i,1);renderProfileWatch();}
+
+function checkWatchNotifs(){
+  const wl=profile.watchlist||[];
+  if(!wl.length)return;
+  const prods=D?.products||[];
+  const matches=prods.filter(p=>wl.some(w=>p.name.toLowerCase().includes(w.toLowerCase())));
+  const btn=document.getElementById('profBtn');
+  if(matches.length>0){
+    btn.innerHTML='👤 Profil <span class="notif-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-left:2px"></span>';
+  }
+}
+
+// ==================== CALENDAR ====================
+let calDate=new Date();
+
+function renderCalendar(){
+  renderCalStrip();
+  renderCalProducts();
+}
+
+function renderCalStrip(){
+  const el=document.getElementById('calStrip');
+  const days=['Ne','Po','Ut','St','Št','Pi','So'];
+  let html='';
+  for(let i=0;i<14;i++){
+    const d=new Date();d.setDate(d.getDate()+i);
+    const isOn=d.toDateString()===calDate.toDateString();
+    const prods=getCalProducts(d);
+    const hasUrgent=prods.some(p=>{
+      const o=p.offers?.[0];if(!o?.valid_until)return false;
+      const diff=Math.ceil((new Date(o.valid_until)-d)/(86400000));
+      return diff<=2;
+    });
+    html+='<button class="cal-day '+(isOn?'on':'')+(hasUrgent?' urgent':'')+'" onclick="setCalDate('+i+')">'+
+      '<div class="cal-dn">'+days[d.getDay()]+'</div><div class="cal-dd">'+d.getDate()+'</div>'+
+      '<div class="cal-dots">'+(prods.length>0?'<div class="cal-dot" style="background:var(--green)"></div>':'')+(hasUrgent?'<div class="cal-dot" style="background:var(--red)"></div>':'')+'</div>'+
+    '</button>';
+  }
+  el.innerHTML=html;
+}
+
+function setCalDate(offset){
+  calDate=new Date();calDate.setDate(calDate.getDate()+offset);
+  renderCalendar();
+}
+
+function getCalProducts(d){
+  const prods=D?.products||[];
+  const ds=d.toISOString().slice(0,10);
+  return prods.filter(p=>{
+    return (p.offers||[]).some(o=>{
+      if(!o.valid_from||!o.valid_until)return false;
+      return o.valid_from<=ds&&o.valid_until>=ds&&selectedStores.has(o.store);
+    });
+  });
+}
+
+function renderCalProducts(){
+  const el=document.getElementById('calList');
+  const prods=getCalProducts(calDate);
+  const fmtD=calDate.getDate()+'.'+(calDate.getMonth()+1)+'.'+calDate.getFullYear();
+  
+  if(!prods.length){
+    el.innerHTML='<div class="empty fi"><div class="empty-i">📅</div><div class="empty-t">Žiadne akcie pre '+fmtD+'</div></div>';
+    return;
+  }
+
+  // Group by store
+  const byStore={};
+  prods.forEach(p=>{
+    (p.offers||[]).filter(o=>selectedStores.has(o.store)&&o.valid_from<=calDate.toISOString().slice(0,10)&&o.valid_until>=calDate.toISOString().slice(0,10)).forEach(o=>{
+      if(!byStore[o.store])byStore[o.store]=[];
+      byStore[o.store].push({...p,_offer:o});
+    });
+  });
+
+  let html='<div style="padding:0 16px 8px;font-size:13px;color:var(--text2)">📅 Akcie platné <b style="color:var(--text)">'+fmtD+'</b> — '+prods.length+' produktov</div>';
+  
+  ['Lidl','Kaufland','Penny Market','Billa','Albert'].filter(s=>byStore[s]).forEach((store,si)=>{
+    const items=byStore[store];
+    html+='<div class="sg fi" style="animation-delay:'+(si*.06)+'s"><div class="sg-h"><div class="sg-i" style="background:'+SCOL[store]+'22;color:'+SCOL[store]+'">'+(SICO[store]||'🏪')+'</div><div><div class="sg-n">'+store+'</div><div class="sg-c">'+items.length+' produktov</div></div></div>';
+    items.forEach(it=>{
+      const o=it._offer;
+      const daysLeft=Math.ceil((new Date(o.valid_until)-calDate)/(86400000));
+      const urgent=daysLeft<=2;
+      html+='<div class="sp"><div><div class="sp-n">'+(it.is_priority?'⭐ ':'')+it.name+'</div>';
+      html+='<div class="sp-m">'+(CL[it.category]?.i||'')+' Score '+(it.clean_score||'-');
+      html+=' · <span style="color:'+(urgent?'var(--red)':'var(--green)')+'">'+
+        (urgent?'Končí o '+daysLeft+' dní!':'Platí do '+(new Date(o.valid_until).getDate())+'.'+(new Date(o.valid_until).getMonth()+1)+'.')+'</span>';
+      html+='</div></div><div><div class="sp-pr">'+fmt(o.sale_price)+' Kč</div>';
+      if(it.max_discount)html+='<div class="sp-dc">-'+it.max_discount+'%</div>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html;
 }
 
 // ==================== SCRAPE TRIGGER ====================

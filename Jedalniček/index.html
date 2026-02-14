@@ -68,77 +68,79 @@ h1,h2,h3,p{margin:0}
 
 <script>
     // ==========================================
-    // 1. KONFIGURÁCIA (SEM VLOŽ SVOJE ÚDAJE)
+    // 1. KONFIGURÁCIA
     // ==========================================
-    const SUPABASE_URL = 'https://tabrsayigbzrdeojbevi.supabase.co'; // ⚠️ Prepíš
-    const SUPABASE_KEY = 'sb_publishable_9eOfcs6_jxfJZGXruwDVuw_80f5M0r4';                     // ⚠️ Prepíš
+    const SUPABASE_URL = 'https://tabrsayigbzrdeojbevi.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_9eOfcs6_jxfJZGXruwDVuw_80f5M0r4';
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Tu sme zmenili názov premennej na _supabase, aby sa nebila s knižnicou
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let allProducts = []; // Tu budú žiť tvoje dáta z cloudu
+    let allProducts = []; 
 
     // ==========================================
     // 2. HLAVNÁ LOGIKA
     // ==========================================
 
     async function initApp() {
-        console.log("Startujem aplikáciu...");
+        console.log("Štartujem aplikáciu...");
         
-        // Stiahni dáta z tabuľky 'potraviny'
-        const { data, error } = await supabase
+        // OPRAVENÉ: Používame _supabase (s podčiarkovníkom)
+        const { data, error } = await _supabase
             .from('potraviny')
             .select('*');
 
         const feed = document.getElementById('feed');
         
         if (error) {
-            console.error(error);
-            feed.innerHTML = `<div style="text-align:center;color:red;padding:20px">Chyba pripojenia. Skontroluj konzolu.</div>`;
+            console.error("Chyba Supabase:", error);
+            feed.innerHTML = `<div style="text-align:center;color:red;padding:20px">Chyba: ${error.message}</div>`;
             return;
         }
 
         if (!data || data.length === 0) {
             feed.innerHTML = `<div style="text-align:center;padding:20px">
                 Databáza je prázdna.<br><br>
-                <button onclick="uploadDataToSupabase()" style="padding:10px;background:var(--accent);border:none;border-radius:8px">Nahrať dáta (Klikni raz)</button>
+                <button onclick="uploadDataToSupabase()" style="padding:10px;background:var(--accent);color:black;border:none;border-radius:8px;font-weight:bold;cursor:pointer">Nahrať dáta (Klikni raz)</button>
             </div>`;
             return;
         }
 
-        // Spracovanie dát (rozbalenie JSONu)
+        // Spracovanie dát
         allProducts = data.map(item => ({
             id: item.id,
             name: item.name,
             category: item.category,
             best_price: item.best_price,
             clean_score: item.clean_score,
-            ...item.full_data // Rozbalí detaily
+            ...item.full_data
         }));
 
         renderCards(allProducts);
         
-        // Aktivuj vyhľadávanie
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
-            renderCards(filtered);
-        });
+        // Vyhľadávanie
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
+                renderCards(filtered);
+            });
+        }
     }
 
     function renderCards(items) {
         const feed = document.getElementById('feed');
-        feed.innerHTML = ''; // Vyčisti
+        feed.innerHTML = ''; 
 
         items.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
             
-            // Farba skóre
             let scoreColor = '#34d399';
             if(item.clean_score < 80) scoreColor = '#fbbf24';
             if(item.clean_score < 60) scoreColor = '#f87171';
 
-            // Nájdi najlepšiu ponuku (ak existuje)
             const offer = item.offers ? item.offers[0] : null;
             const storeName = offer ? offer.store : 'Neznámy obchod';
             const regularPrice = item.regular_price || (item.best_price * 1.2);
@@ -174,8 +176,8 @@ h1,h2,h3,p{margin:0}
         });
     }
 
-    function filterData(category, element) {
-        // Vizuálna zmena tlačidiel
+    // Táto funkcia musí byť viditeľná pre HTML onclick
+    window.filterData = function(category, element) {
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         element.classList.add('active');
 
@@ -187,14 +189,13 @@ h1,h2,h3,p{margin:0}
         }
     }
 
-    // Spusti appku
+    // Spustenie
     initApp();
 
 
     // ==========================================
-    // 3. MIGRAČNÝ NÁSTROJ (Spusti iba raz)
+    // 3. MIGRAČNÝ NÁSTROJ
     // ==========================================
-    // Toto sú tvoje pôvodné dáta z JSONu
     const dataToUpload = [
     {
         "name": "Fazole v tomatě Heinz 400g",
@@ -224,12 +225,13 @@ h1,h2,h3,p{margin:0}
     }
     ];
 
-    async function uploadDataToSupabase() {
+    window.uploadDataToSupabase = async function() {
         console.log("Nahrávam dáta...");
         document.getElementById('feed').innerHTML = "Nahrávam dáta... Čakaj.";
         
         for (const item of dataToUpload) {
-            const { error } = await supabase
+            // OPRAVENÉ: Používame _supabase
+            const { error } = await _supabase
                 .from('potraviny')
                 .insert({
                     name: item.name,

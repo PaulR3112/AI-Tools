@@ -7,8 +7,7 @@ Profesionálny editor tabuliek pre VW/Audi/Škoda dokumentáciu.
 | Súbor | Veľkosť | Popis |
 |---|---|---|
 | **`index.offline.html`** | 1.4 MB | **⭐ Odporúčaná verzia** - úplne offline, funguje aj bez internetu |
-| `index.min.html` | 141 KB | Online verzia, minifikovaný kód (potrebuje internet pri prvom načítaní) |
-| `index.html` | 244 KB | Online verzia, čitateľný zdrojový kód (pre úpravy) |
+| `index.html` | 244 KB | Online/PWA verzia, čitateľný zdrojový kód (pre úpravy); vyžaduje internet pri prvom načítaní |
 | `SPUSTIT.bat` | 2 KB | Windows - spustí appku v samostatnom okne |
 | `manifest.json` | 3 KB | PWA metadata (pre PWA inštaláciu) |
 | `sw.js` | 4 KB | Service Worker (pre PWA cache) |
@@ -148,12 +147,9 @@ Aplikácia auto-ukladá vašu prácu každých 30 sekúnd. Ak browser spadne:
 
 ### Ochrana zdrojového kódu
 
-`index.min.html` má obfuskovaný kód - vhodné pre zdieľanie kolegom ktorí by sa nemali "hrabať" v zdroji.
-
-Pre **maximálnu ochranu**:
-1. Premenujte `index.min.html` → `index.html`
-2. Odstráňte ostatné HTML súbory
-3. Nastavte súbor "Iba na čítanie": pravý klik → Vlastnosti → ☑ Iba na čítanie
+Pre **maximálnu ochranu** pri zdieľaní kolegom:
+1. Použite `index.offline.html` (knižnice sú vnorené, kód nie je ľahko čitateľný)
+2. Nastavte súbor "Iba na čítanie": pravý klik → Vlastnosti → ☑ Iba na čítanie
 
 ---
 

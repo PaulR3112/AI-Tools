@@ -113,7 +113,7 @@
             background: var(--success); color: white;
             animation: fadeOut 2s forwards 2s;
         }
-        @keyframes fadeOut { to { opacity: 0; display: none; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
         /* File Handle Indicator */
         .file-handle-indicator {
@@ -1234,12 +1234,13 @@
 
             // Klávesové skratky
             document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.key === 'z') { e.preventDefault(); this.undo(); }
-                if (e.ctrlKey && e.key === 'y') { e.preventDefault(); this.redo(); }
-                if (e.ctrlKey && e.key === 'f' && document.getElementById('editorSection').style.display !== 'none') {
+                const k = e.key.toLowerCase();
+                if (e.ctrlKey && k === 'z') { e.preventDefault(); this.undo(); }
+                if (e.ctrlKey && k === 'y') { e.preventDefault(); this.redo(); }
+                if (e.ctrlKey && k === 'f' && document.getElementById('editorSection').style.display !== 'none') {
                     e.preventDefault(); openFindModal();
                 }
-                if (e.ctrlKey && e.key === 'd' && this.selectedRows.size > 0) {
+                if (e.ctrlKey && k === 'd' && this.selectedRows.size > 0) {
                     e.preventDefault(); this.duplicateSelectedRows();
                 }
                 if (e.key === 'Delete' && !this.currentEditingCell && this.selectedRows.size > 0) {
@@ -5051,20 +5052,21 @@ ${styles ? `        <footer class="document-footer">
         originalKeyHandler.call(this);
         
         document.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
             // Ctrl+O - Otvoriť
-            if (e.ctrlKey && e.key === 'o') {
+            if (e.ctrlKey && k === 'o') {
                 e.preventDefault();
                 this.openFileNative();
             }
             // Ctrl+S - Uložiť
-            if (e.ctrlKey && !e.shiftKey && e.key === 's') {
+            if (e.ctrlKey && !e.shiftKey && k === 's') {
                 e.preventDefault();
                 if (this.tableData.headers.length > 0) {
                     this.saveFileNative();
                 }
             }
             // Ctrl+Shift+S - Uložiť ako
-            if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+            if (e.ctrlKey && e.shiftKey && k === 's') {
                 e.preventDefault();
                 if (this.tableData.headers.length > 0) {
                     this.saveFileAsNative();

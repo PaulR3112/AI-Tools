@@ -1,10 +1,12 @@
 {
+  "id": "/tablemaster-pro/",
   "name": "TableMaster Pro",
   "short_name": "TableMaster",
   "description": "Profesionálny editor tabuliek s offline podporou",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "start_url": "./index.html",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#f3f4f6",
   "theme_color": "#2563eb",
   "orientation": "any",
@@ -13,16 +15,22 @@
   "categories": ["productivity", "utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%232563eb'/%3E%3Crect x='64' y='128' width='384' height='288' rx='16' fill='white'/%3E%3Cline x1='64' y1='192' x2='448' y2='192' stroke='%232563eb' stroke-width='4'/%3E%3Cline x1='64' y1='256' x2='448' y2='256' stroke='%23e5e7eb' stroke-width='2'/%3E%3Cline x1='64' y1='320' x2='448' y2='320' stroke='%23e5e7eb' stroke-width='2'/%3E%3Cline x1='192' y1='128' x2='192' y2='416' stroke='%23e5e7eb' stroke-width='2'/%3E%3Cline x1='320' y1='128' x2='320' y2='416' stroke='%23e5e7eb' stroke-width='2'/%3E%3Ctext x='256' y='100' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='48' fill='white'%3ETM%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='24' fill='%232563eb'/%3E%3Crect x='24' y='48' width='144' height='108' rx='8' fill='white'/%3E%3Cline x1='24' y1='72' x2='168' y2='72' stroke='%232563eb' stroke-width='2'/%3E%3Cline x1='24' y1='96' x2='168' y2='96' stroke='%23e5e7eb' stroke-width='1'/%3E%3Cline x1='24' y1='120' x2='168' y2='120' stroke='%23e5e7eb' stroke-width='1'/%3E%3Cline x1='72' y1='48' x2='72' y2='156' stroke='%23e5e7eb' stroke-width='1'/%3E%3Cline x1='120' y1='48' x2='120' y2='156' stroke='%23e5e7eb' stroke-width='1'/%3E%3Ctext x='96' y='38' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='20' fill='white'%3ETM%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "file_handlers": [

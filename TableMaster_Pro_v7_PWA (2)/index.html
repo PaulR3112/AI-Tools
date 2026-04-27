@@ -18,8 +18,9 @@
     <link rel="manifest" href="./manifest.json">
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%232563eb'/%3E%3Crect x='4' y='8' width='24' height='18' rx='2' fill='white'/%3E%3Cline x1='4' y1='12' x2='28' y2='12' stroke='%232563eb' stroke-width='1'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='22' fill='%232563eb'/%3E%3Crect x='22' y='45' width='136' height='102' rx='8' fill='white'/%3E%3Cline x1='22' y1='68' x2='158' y2='68' stroke='%232563eb' stroke-width='2'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -551,7 +552,7 @@
         <h1>TableMaster Pro <span class="version-badge">v7</span> <span class="version-badge pwa-badge"><span role="img" aria-hidden="true">📱</span> PWA</span></h1>
         <p>Profesionálny nástroj na konverziu a úpravu dát • Funguje offline</p>
         <div class="indicators" role="status" aria-live="polite">
-            <span class="connection-status" id="connectionStatus" aria-label="Stav pripojenia"><span role="img" aria-hidden="true">📶</span> Online</span>
+            <span class="connection-status" id="connectionStatus" aria-label="Stav pripojenia"></span>
             <span class="file-handle-indicator" id="fileHandleIndicator" aria-label="Aktuálny súbor"><span role="img" aria-hidden="true">📄</span> súbor.csv</span>
             <span class="unsaved-indicator" id="unsavedIndicator" aria-label="Upozornenie na neuložené zmeny"><span role="img" aria-hidden="true">⚠️</span> Neuložené zmeny</span>
             <span class="autosave-indicator" id="autosaveIndicator" aria-label="Stav automatického uloženia">✓ Automaticky uložené</span>
@@ -1256,12 +1257,12 @@
                 if (!e.target.closest('.dropdown')) closeAllDropdowns();
             });
 
-            window.onbeforeunload = (e) => {
+            window.addEventListener('beforeunload', (e) => {
                 if (this.hasUnsavedChanges) {
                     e.preventDefault();
-                    return e.returnValue = 'Máte neuložené zmeny.';
+                    e.returnValue = '';
                 }
-            };
+            });
         },
 
         moveRow(fromIdx, toIdx) {
@@ -2213,7 +2214,7 @@
         editHeader(index) {
             document.getElementById('headerEditInput').value = this.tableData.headers[index];
             document.getElementById('headerEditIndex').value = index;
-            document.getElementById('headerEditModal').classList.add('active');
+            activateModal('headerEditModal', '#headerEditInput');
             document.getElementById('headerEditInput').select();
         },
 
@@ -2435,7 +2436,7 @@
 
         addCol() {
             document.getElementById('newColName').value = '';
-            document.getElementById('columnModal').classList.add('active');
+            activateModal('columnModal', '#newColName');
         },
 
         addColConfirm() {
@@ -2849,6 +2850,7 @@
         setUnsavedChanges(val) {
             this.hasUnsavedChanges = val;
             document.getElementById('unsavedIndicator').classList.toggle('active', val);
+            if (typeof updateSaveButtons === 'function') updateSaveButtons();
         },
 
         getExportData() {
@@ -2890,7 +2892,7 @@
             }
             html += '</tbody></table>';
             document.getElementById('previewContent').innerHTML = html;
-            document.getElementById('previewModal').classList.add('active');
+            activateModal('previewModal');
         },
 
         exportExcel() {
@@ -4752,12 +4754,14 @@ ${styles ? `        <footer class="document-footer">
         document.getElementById('progressText').textContent = `${current} / ${total}`;
     }
 
+    let toastTimer = null;
     function toast(msg, type = 'success') {
         const t = document.getElementById('toast');
+        if (toastTimer) clearTimeout(toastTimer);
         t.textContent = msg;
         t.className = `toast ${type}`;
         t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 3000);
+        toastTimer = setTimeout(() => { t.style.display = 'none'; toastTimer = null; }, 3000);
     }
 
     function toggleFmt(btn) { btn.classList.toggle('active'); }
@@ -4796,37 +4800,71 @@ ${styles ? `        <footer class="document-footer">
         }); 
     }
     
-    function openFindModal() { 
-        const modal = document.getElementById('findModal');
-        modal.classList.add('active');
-        document.getElementById('findInput').focus();
-        // Trap focus in modal
-        modal.setAttribute('aria-hidden', 'false');
+    // Focus trap pre modálne dialógy
+    const FOCUSABLE_SEL = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const modalState = { previousFocus: null, currentModal: null };
+
+    function trapFocus(e) {
+        if (e.key !== 'Tab' || !modalState.currentModal) return;
+        const focusable = modalState.currentModal.querySelectorAll(FOCUSABLE_SEL);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault(); first.focus();
+        }
     }
-    
-    function closeFindModal() {
-        const modal = document.getElementById('findModal');
+
+    function activateModal(modalId, focusSelector) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modalState.previousFocus = document.activeElement;
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        modalState.currentModal = modal;
+        document.addEventListener('keydown', trapFocus);
+        const focusTarget = focusSelector
+            ? modal.querySelector(focusSelector)
+            : modal.querySelector(FOCUSABLE_SEL);
+        if (focusTarget) focusTarget.focus();
+    }
+
+    function deactivateModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
+        if (modalState.currentModal === modal) {
+            document.removeEventListener('keydown', trapFocus);
+            modalState.currentModal = null;
+            if (modalState.previousFocus && typeof modalState.previousFocus.focus === 'function') {
+                modalState.previousFocus.focus();
+            }
+            modalState.previousFocus = null;
+        }
+    }
+
+    function openFindModal() {
+        activateModal('findModal', '#findInput');
+    }
+
+    function closeFindModal() {
+        deactivateModal('findModal');
         document.querySelectorAll('td.highlight').forEach(td => td.classList.remove('highlight'));
     }
-    
-    function closeColumnModal() { 
-        const modal = document.getElementById('columnModal');
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
+
+    function closeColumnModal() {
+        deactivateModal('columnModal');
     }
-    
-    function closeHeaderEditModal() { 
-        const modal = document.getElementById('headerEditModal');
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
+
+    function closeHeaderEditModal() {
+        deactivateModal('headerEditModal');
     }
-    
-    function closePreviewModal() { 
-        const modal = document.getElementById('previewModal');
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
+
+    function closePreviewModal() {
+        deactivateModal('previewModal');
     }
     
     function closeAllModals() { closeFindModal(); closeColumnModal(); closeHeaderEditModal(); closePreviewModal(); closeAllDropdowns(); }
@@ -5133,6 +5171,14 @@ ${styles ? `        <footer class="document-footer">
         document.getElementById('installBanner').classList.remove('active');
         localStorage.setItem('pwa-install-dismissed', 'true');
     }
+
+    // Po úspešnej inštalácii skry banner natrvalo
+    window.addEventListener('appinstalled', () => {
+        document.getElementById('installBanner').classList.remove('active');
+        localStorage.setItem('pwa-install-dismissed', 'true');
+        deferredPrompt = null;
+        toast('🎉 Aplikácia úspešne nainštalovaná!', 'success');
+    });
     
     // Online/Offline detection
     function updateOnlineStatus() {
@@ -5201,13 +5247,11 @@ ${styles ? `        <footer class="document-footer">
         updateOnlineStatus();
         checkFileSystemAccess();
         handleUrlParams();
-        
-        // Observer pre update save buttons
+        updateSaveButtons();
+
+        // Observer reaguje keď sa editor zobrazí (style.display zmena)
         const observer = new MutationObserver(updateSaveButtons);
-        observer.observe(document.getElementById('editorSection'), { attributes: true });
-        
-        // Interval check
-        setInterval(updateSaveButtons, 1000);
+        observer.observe(document.getElementById('editorSection'), { attributes: true, attributeFilter: ['style'] });
     });
     
     // Handle file from File Handling API (keď sa otvára súbor asociovaný s aplikáciou)

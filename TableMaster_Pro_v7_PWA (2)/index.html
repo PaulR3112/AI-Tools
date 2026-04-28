@@ -337,6 +337,64 @@
         .stat-label { color: var(--text-muted); }
         .stat-value { font-weight: 600; }
 
+        /* === NUMERICKÉ ŠTATISTIKY VÝBERU === */
+        .selection-stats {
+            display: none; align-items: center; gap: 14px; padding: 8px 15px;
+            background: var(--primary-light); border: 1px solid var(--primary);
+            border-radius: 6px; margin-bottom: 15px; font-size: 13px; flex-wrap: wrap;
+        }
+        .selection-stats.visible { display: flex; }
+        .sel-stat { display: flex; align-items: center; gap: 5px; }
+        .sel-stat-lbl { font-size: 11px; color: var(--primary); font-weight: 600; text-transform: uppercase; }
+        .sel-stat-val { font-weight: 700; font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+        .sel-sep { color: var(--border); user-select: none; }
+
+        /* === NEDÁVNE SÚBORY === */
+        .recent-files { margin-top: 16px; padding: 14px; background: var(--header-bg); border: 1px solid var(--border); border-radius: 8px; }
+        .recent-files-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+        .recent-list { display: flex; flex-direction: column; gap: 4px; }
+        .recent-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+            cursor: pointer; transition: border-color .15s, background .15s;
+            text-align: left; width: 100%; font-family: inherit;
+        }
+        .recent-item:hover { border-color: var(--primary); background: var(--primary-light); }
+        .recent-icon { font-size: 18px; flex-shrink: 0; }
+        .recent-info { flex: 1; min-width: 0; }
+        .recent-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; color: var(--text-main); }
+        .recent-meta { font-size: 11px; color: var(--text-muted); }
+        .recent-warn { font-size: 11px; color: var(--warning); flex-shrink: 0; }
+
+        /* === DIFF VIEW === */
+        .diff-summary {
+            display: flex; gap: 16px; padding: 12px 16px; background: var(--header-bg);
+            border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;
+            flex-wrap: wrap; font-size: 13px;
+        }
+        .diff-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .diff-badge.added { background: #d1fae5; color: #065f46; }
+        .diff-badge.deleted { background: #fee2e2; color: #991b1b; }
+        .diff-badge.modified { background: #fef3c7; color: #92400e; }
+        .diff-badge.equal { background: var(--header-bg); color: var(--text-muted); border: 1px solid var(--border); }
+        [data-theme="dark"] .diff-badge.added { background: #064e3b; color: #6ee7b7; }
+        [data-theme="dark"] .diff-badge.deleted { background: #7f1d1d; color: #fca5a5; }
+        [data-theme="dark"] .diff-badge.modified { background: #78350f; color: #fde68a; }
+        .diff-table-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px; }
+        .diff-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .diff-table th { background: var(--header-bg); padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 5; white-space: nowrap; }
+        .diff-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); vertical-align: top; white-space: pre-wrap; word-break: break-word; }
+        .diff-row-added td { background: #d1fae530; }
+        .diff-row-deleted td { background: #fee2e230; text-decoration: line-through; opacity: .7; }
+        .diff-row-modified td { background: #fef3c730; }
+        .diff-row-equal td { }
+        .diff-cell-changed { background: #fef9c3; border-radius: 3px; padding: 1px 3px; }
+        [data-theme="dark"] .diff-row-added td { background: #064e3b30; }
+        [data-theme="dark"] .diff-row-deleted td { background: #7f1d1d30; }
+        [data-theme="dark"] .diff-row-modified td { background: #78350f30; }
+        [data-theme="dark"] .diff-cell-changed { background: #78350f60; }
+        .diff-status-col { width: 28px; text-align: center; font-size: 14px; }
+
         .column-stats {
             margin-top: 15px; padding: 15px; background: var(--header-bg);
             border: 1px solid var(--border); border-radius: 8px;
@@ -620,6 +678,8 @@
                     </label>
                 </div>
 
+                <div id="recentFiles" class="recent-files" style="display:none;" role="navigation" aria-label="Nedávne súbory"></div>
+
                 <div class="paste-hint" role="note">
                     <span role="img" aria-hidden="true">💡</span> <strong>Tip:</strong> Môžete tiež použiť <kbd>Ctrl+V</kbd> na vloženie dát priamo z Excelu!
                 </div>
@@ -650,6 +710,18 @@
                         <div class="stat-item"><span class="stat-label">Stĺpcov:</span><span class="stat-value" id="totalCols" aria-live="polite">0</span></div>
                         <div class="stat-item"><span class="stat-label">Vybrané:</span><span class="stat-value" id="rowCount" aria-live="polite">0</span></div>
                         <div class="stat-item"><span class="stat-label">Zobrazené:</span><span class="stat-value" id="visibleRows" aria-live="polite">0</span></div>
+                    </div>
+                    <div class="selection-stats" id="selectionStats" role="status" aria-live="polite">
+                        <span style="font-size:11px;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;">Výber čísel:</span>
+                        <span class="sel-stat"><span class="sel-stat-lbl">Σ</span><span class="sel-stat-val" id="selSum">—</span></span>
+                        <span class="sel-sep">|</span>
+                        <span class="sel-stat"><span class="sel-stat-lbl">Ø</span><span class="sel-stat-val" id="selAvg">—</span></span>
+                        <span class="sel-sep">|</span>
+                        <span class="sel-stat"><span class="sel-stat-lbl">Min</span><span class="sel-stat-val" id="selMin">—</span></span>
+                        <span class="sel-sep">|</span>
+                        <span class="sel-stat"><span class="sel-stat-lbl">Max</span><span class="sel-stat-val" id="selMax">—</span></span>
+                        <span class="sel-sep">|</span>
+                        <span class="sel-stat"><span class="sel-stat-lbl">n</span><span class="sel-stat-val" id="selCount">—</span></span>
                     </div>
 
                     <div class="toolbar" role="toolbar" aria-label="Nástroje pre úpravu tabuľky">
@@ -683,6 +755,10 @@
                         <div class="toolbar-group" role="group" aria-label="Vrátiť späť a opakovať">
                             <button class="btn btn-secondary" onclick="App.undo()" aria-label="Vrátiť späť poslednú akciu" aria-keyshortcuts="Control+Z">↶ Späť</button>
                             <button class="btn btn-secondary" onclick="App.redo()" aria-label="Opakovať poslednú akciu" aria-keyshortcuts="Control+Y">↷ Vpred</button>
+                        </div>
+                        <div class="separator" role="separator" aria-hidden="true"></div>
+                        <div class="toolbar-group" role="group" aria-label="Porovnanie">
+                            <button class="btn btn-secondary" onclick="App.openDiffFile()" aria-label="Porovnať s iným súborom">📊 Porovnať</button>
                         </div>
                     </div>
 
@@ -989,6 +1065,23 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="confirmModalCancel()" aria-label="Zrušiť akciu">Zrušiť</button>
             <button class="btn btn-danger" id="confirmModalOk" onclick="confirmModalConfirm()">Potvrdiť</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="diffModal" role="dialog" aria-modal="true" aria-labelledby="diffModalTitle">
+    <div class="modal-box" style="max-width:1200px;width:95vw;">
+        <h3 class="modal-title" id="diffModalTitle">📊 Porovnanie tabuliek</h3>
+        <div id="diffSummary" class="diff-summary"></div>
+        <div class="diff-table-wrap">
+            <table class="diff-table" id="diffTable">
+                <thead id="diffTableHead"></thead>
+                <tbody id="diffTableBody"></tbody>
+            </table>
+        </div>
+        <div class="modal-footer" style="margin-top:16px;">
+            <span id="diffInfo" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-secondary" onclick="closeDiffModal()">Zavrieť</button>
         </div>
     </div>
 </div>
@@ -2355,8 +2448,9 @@
 
         startCellEdit(td, rIdx, cIdx) {
             if (this.currentEditingCell) this.finishCellEdit();
-            
+
             this.currentEditingCell = { td, rIdx, cIdx };
+            this._nextMove = null;
             const value = this.tableData.rows[rIdx][cIdx] || '';
 
             td.classList.add('editing');
@@ -2367,15 +2461,41 @@
 
             textarea.onblur = () => this.finishCellEdit();
             textarea.onkeydown = (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.finishCellEdit(); }
-                if (e.key === 'Escape') { e.preventDefault(); this.cancelCellEdit(); }
+                if (e.key === 'Escape') { e.preventDefault(); this.cancelCellEdit(); return; }
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this._nextMove = { dr: 1, dc: 0 };
+                    this.finishCellEdit();
+                    return;
+                }
+                if (e.key === 'Enter' && e.shiftKey) {
+                    e.preventDefault();
+                    this._nextMove = { dr: -1, dc: 0 };
+                    this.finishCellEdit();
+                    return;
+                }
                 if (e.key === 'Tab') {
                     e.preventDefault();
+                    this._nextMove = { dr: 0, dc: e.shiftKey ? -1 : 1 };
                     this.finishCellEdit();
-                    const nextCol = e.shiftKey ? cIdx - 1 : cIdx + 1;
-                    if (nextCol >= 0 && nextCol < this.tableData.headers.length) {
-                        const nextTd = document.querySelector(`td[data-row="${rIdx}"][data-col="${nextCol}"]`);
-                        if (nextTd) this.startCellEdit(nextTd, rIdx, nextCol);
+                    return;
+                }
+                // Šípky — navigácia iba keď je textarea jednoriadková (prázdna alebo cursor na kraji)
+                if (e.key === 'ArrowDown' && !e.shiftKey) {
+                    const lines = textarea.value.split('\n');
+                    const curLine = textarea.value.substring(0, textarea.selectionStart).split('\n').length;
+                    if (curLine >= lines.length) {
+                        e.preventDefault();
+                        this._nextMove = { dr: 1, dc: 0 };
+                        this.finishCellEdit();
+                    }
+                }
+                if (e.key === 'ArrowUp' && !e.shiftKey) {
+                    const curLine = textarea.value.substring(0, textarea.selectionStart).split('\n').length;
+                    if (curLine <= 1) {
+                        e.preventDefault();
+                        this._nextMove = { dr: -1, dc: 0 };
+                        this.finishCellEdit();
                     }
                 }
             };
@@ -2384,12 +2504,13 @@
         finishCellEdit() {
             if (!this.currentEditingCell) return;
             const { td, rIdx, cIdx } = this.currentEditingCell;
+            const move = this._nextMove;
+            this._nextMove = null;
             const textarea = td.querySelector('textarea');
             if (textarea) {
                 const newVal = textarea.value;
                 if (newVal !== this.tableData.rows[rIdx][cIdx]) {
                     this.tableData.rows[rIdx][cIdx] = newVal;
-                    // Po manuálnej editácii rich formátovanie už nie je platné → odstrániť
                     if (this.tableData.richRows && this.tableData.richRows[rIdx]) {
                         this.tableData.richRows[rIdx][cIdx] = '';
                     }
@@ -2399,6 +2520,22 @@
             }
             this.currentEditingCell = null;
             this.renderTable();
+
+            // Navigácia na susednú bunku po uložení
+            if (move) {
+                const nr = rIdx + move.dr;
+                const nc = cIdx + move.dc;
+                if (nr >= 0 && nr < this.tableData.rows.length &&
+                    nc >= 0 && nc < this.tableData.headers.length) {
+                    requestAnimationFrame(() => {
+                        const next = document.querySelector(`td[data-row="${nr}"][data-col="${nc}"]`);
+                        if (next) {
+                            next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                            this.startCellEdit(next, nr, nc);
+                        }
+                    });
+                }
+            }
         },
 
         cancelCellEdit() {
@@ -2865,14 +3002,36 @@
             document.getElementById('totalCols').textContent = this.tableData.headers.length;
             document.getElementById('rowCount').textContent = this.selectedRows.size;
             document.getElementById('visibleRows').textContent = this.filteredIndices ? this.filteredIndices.length : this.tableData.rows.length;
-            // Počet formátovaných buniek (rich + farby)
             const fmtEl = document.getElementById('formattedCount');
             if (fmtEl) {
-                const richCount = (this.tableData.richRows || []).reduce((acc, r) => 
+                const richCount = (this.tableData.richRows || []).reduce((acc, r) =>
                     acc + (r || []).filter(c => hasRichFormatting(c)).length, 0);
                 const colorCount = Object.keys(this.tableData.formatting || {}).length;
                 fmtEl.textContent = richCount + colorCount;
             }
+
+            // === Numerické štatistiky výberu ===
+            const selBar = document.getElementById('selectionStats');
+            if (!selBar) return;
+            if (this.selectedRows.size === 0) { selBar.classList.remove('visible'); return; }
+
+            const nums = [];
+            for (const rIdx of this.selectedRows) {
+                for (const cell of (this.tableData.rows[rIdx] || [])) {
+                    const v = parseFloat(String(cell ?? '').replace(/\s/g, '').replace(',', '.'));
+                    if (isFinite(v) && !isNaN(v)) nums.push(v);
+                }
+            }
+            if (nums.length === 0) { selBar.classList.remove('visible'); return; }
+
+            selBar.classList.add('visible');
+            const fmt = n => n.toLocaleString('sk-SK', { maximumFractionDigits: 6 });
+            const sum = nums.reduce((a, b) => a + b, 0);
+            document.getElementById('selSum').textContent   = fmt(sum);
+            document.getElementById('selAvg').textContent   = fmt(sum / nums.length);
+            document.getElementById('selMin').textContent   = fmt(Math.min(...nums));
+            document.getElementById('selMax').textContent   = fmt(Math.max(...nums));
+            document.getElementById('selCount').textContent = nums.length;
         },
 
         setUnsavedChanges(val) {
@@ -3210,23 +3369,35 @@
                     const dateStr = now.toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' });
                     const timeStr = now.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' });
 
-                    // Helper: nahradí znaky, ktoré helvetica font nepodporuje 
-                    // (slovenské: ľ, ĺ, ť, ŕ, ď; české: ř, ě, ů)
-                    // Helvetica používa WinAnsi kódovanie a nemá tieto znaky
-                    const safeText = (s) => {
-                        if (!s) return '';
-                        return String(s)
-                            // Slovenské
-                            .replace(/ľ/g, 'l').replace(/Ľ/g, 'L')
-                            .replace(/ĺ/g, 'l').replace(/Ĺ/g, 'L')
-                            .replace(/ť/g, 't').replace(/Ť/g, 'T')
-                            .replace(/ŕ/g, 'r').replace(/Ŕ/g, 'R')
-                            .replace(/ď/g, 'd').replace(/Ď/g, 'D')
-                            // České
-                            .replace(/ř/g, 'r').replace(/Ř/g, 'R')
-                            .replace(/ě/g, 'e').replace(/Ě/g, 'E')
-                            .replace(/ů/g, 'u').replace(/Ů/g, 'U');
-                    };
+                    // Registruj DejaVu fonty ak sú dostupné (plná diakritika)
+                    const _fontData = this._dejaVuFontData;
+                    this._dejaVuFontData = null;
+                    let fontFamily = 'helvetica';
+                    if (_fontData && _fontData.normal && _fontData.bold) {
+                        try {
+                            doc.addFileToVFS('DejaVuSans.ttf', _fontData.normal);
+                            doc.addFont('DejaVuSans.ttf', 'DejaVuSans', 'normal');
+                            doc.addFileToVFS('DejaVuSans-Bold.ttf', _fontData.bold);
+                            doc.addFont('DejaVuSans-Bold.ttf', 'DejaVuSans', 'bold');
+                            fontFamily = 'DejaVuSans';
+                        } catch(e) { console.warn('Font registration failed', e); }
+                    }
+
+                    // Ak máme DejaVu → plný text; inak transliterácia pre Helvetica (WinAnsi)
+                    const safeText = fontFamily === 'DejaVuSans'
+                        ? (s) => String(s ?? '')
+                        : (s) => {
+                            if (!s) return '';
+                            return String(s)
+                                .replace(/ľ/g, 'l').replace(/Ľ/g, 'L')
+                                .replace(/ĺ/g, 'l').replace(/Ĺ/g, 'L')
+                                .replace(/ť/g, 't').replace(/Ť/g, 'T')
+                                .replace(/ŕ/g, 'r').replace(/Ŕ/g, 'R')
+                                .replace(/ď/g, 'd').replace(/Ď/g, 'D')
+                                .replace(/ř/g, 'r').replace(/Ř/g, 'R')
+                                .replace(/ě/g, 'e').replace(/Ě/g, 'E')
+                                .replace(/ů/g, 'u').replace(/Ů/g, 'U');
+                        };
 
                     // ===== MODERNÁ HLAVIČKA =====
                     const titleRgb = hexToRgb(t.titleColor);
@@ -3256,7 +3427,7 @@
                             doc.setDrawColor(120, 250, 174);
                             doc.setLineWidth(1.5);
                             doc.roundedRect(w - 60, 20, 45, 14, 1.5, 1.5, 'S');
-                            doc.setFont('helvetica', 'bold');
+                            doc.setFont(fontFamily, 'bold');
                             doc.setFontSize(20);
                             doc.setTextColor(120, 250, 174);
                             doc.text('SKODA', w - 37.5, 30, { align: 'center' });
@@ -3267,14 +3438,14 @@
                             doc.line(20, h / 2 - 35, 80, h / 2 - 35);
 
                             // Názov dokumentu
-                            doc.setFont('helvetica', 'bold');
+                            doc.setFont(fontFamily, 'bold');
                             doc.setFontSize(36);
                             doc.setTextColor(255, 255, 255);
                             doc.text(safeText(coverTitle), 20, h / 2 - 15, { maxWidth: w - 40 });
 
                             // Podnadpis
                             if (coverSubtitle) {
-                                doc.setFont('helvetica', 'normal');
+                                doc.setFont(fontFamily, 'normal');
                                 doc.setFontSize(16);
                                 doc.setTextColor(120, 250, 174);
                                 doc.text(safeText(coverSubtitle), 20, h / 2 + 5, { maxWidth: w - 40 });
@@ -3282,7 +3453,7 @@
 
                             // Popis
                             if (coverDescription) {
-                                doc.setFont('helvetica', 'normal');
+                                doc.setFont(fontFamily, 'normal');
                                 doc.setFontSize(11);
                                 doc.setTextColor(200, 230, 215);
                                 const descLines = doc.splitTextToSize(safeText(coverDescription), w - 40);
@@ -3294,7 +3465,7 @@
                             doc.setLineWidth(0.3);
                             doc.line(20, h - 50, w - 20, h - 50);
 
-                            doc.setFont('helvetica', 'normal');
+                            doc.setFont(fontFamily, 'normal');
                             doc.setFontSize(10);
                             doc.setTextColor(255, 255, 255);
                             
@@ -3333,7 +3504,7 @@
                             doc.circle(w + 20, h - 60, 80, 'F');
 
                             // "TECHNICAL DOCUMENT" malý text hore
-                            doc.setFont('helvetica', 'normal');
+                            doc.setFont(fontFamily, 'normal');
                             doc.setFontSize(10);
                             doc.setTextColor(...(brightness < 128 ? [255, 255, 255] : [255, 255, 255]));
                             doc.text(safeText('TECHNICKÁ DOKUMENTÁCIA'), 20, 22, { charSpace: 2 });
@@ -3344,7 +3515,7 @@
                             doc.line(20, h / 2 - 40, 20, h / 2 + 30);
 
                             // Názov dokumentu - veľký
-                            doc.setFont('helvetica', 'bold');
+                            doc.setFont(fontFamily, 'bold');
                             doc.setFontSize(40);
                             doc.setTextColor(...titleRgb);
                             const titleLines = doc.splitTextToSize(safeText(coverTitle), w - 60);
@@ -3352,7 +3523,7 @@
 
                             // Podnadpis
                             if (coverSubtitle) {
-                                doc.setFont('helvetica', 'normal');
+                                doc.setFont(fontFamily, 'normal');
                                 doc.setFontSize(18);
                                 doc.setTextColor(...primaryRgb);
                                 doc.text(safeText(coverSubtitle), 30, h / 2 + 5, { maxWidth: w - 60 });
@@ -3360,7 +3531,7 @@
 
                             // Popis
                             if (coverDescription) {
-                                doc.setFont('helvetica', 'normal');
+                                doc.setFont(fontFamily, 'normal');
                                 doc.setFontSize(11);
                                 doc.setTextColor(...mutedRgb);
                                 const descLines = doc.splitTextToSize(safeText(coverDescription), w - 60);
@@ -3379,26 +3550,26 @@
                                 doc.text('AUTOR', 30, metaY, { charSpace: 1 });
                                 doc.setFontSize(11);
                                 doc.setTextColor(...titleRgb);
-                                doc.setFont('helvetica', 'bold');
+                                doc.setFont(fontFamily, 'bold');
                                 doc.text(safeText(coverAuthor), 30, metaY + 6);
                             }
                             
-                            doc.setFont('helvetica', 'normal');
+                            doc.setFont(fontFamily, 'normal');
                             doc.setFontSize(9);
                             doc.setTextColor(...mutedRgb);
                             doc.text('DATUM', w / 2 - 30, metaY, { charSpace: 1 });
                             doc.setFontSize(11);
                             doc.setTextColor(...titleRgb);
-                            doc.setFont('helvetica', 'bold');
+                            doc.setFont(fontFamily, 'bold');
                             doc.text(safeText(dateStr), w / 2 - 30, metaY + 6);
                             
-                            doc.setFont('helvetica', 'normal');
+                            doc.setFont(fontFamily, 'normal');
                             doc.setFontSize(9);
                             doc.setTextColor(...mutedRgb);
                             doc.text('OBSAH', w - 80, metaY, { charSpace: 1 });
                             doc.setFontSize(11);
                             doc.setTextColor(...titleRgb);
-                            doc.setFont('helvetica', 'bold');
+                            doc.setFont(fontFamily, 'bold');
                             doc.text(safeText(`${data.rows.length} riadkov, ${data.headers.length} stlpcov`), w - 80, metaY + 6);
                         }
 
@@ -3416,27 +3587,27 @@
                         doc.setDrawColor(120, 250, 174); // #78FAAE
                         doc.setLineWidth(0.8);
                         doc.roundedRect(w - 52, 8, 38, 11, 1, 1, 'S');
-                        doc.setFont('helvetica', 'bold');
+                        doc.setFont(fontFamily, 'bold');
                         doc.setFontSize(16);
                         doc.setTextColor(120, 250, 174);
                         doc.text('SKODA', w - 33, 16, { align: 'center' });
                         
                         // Tagline pod logom
                         doc.setFontSize(6);
-                        doc.setFont('helvetica', 'normal');
+                        doc.setFont(fontFamily, 'normal');
                         doc.setTextColor(120, 250, 174);
                         doc.text('TECHNICAL REPORT', w - 33, 22, { align: 'center', charSpace: 1.5 });
                         
                         // Titulok - biely text na tmavom pozadí
                         doc.setFontSize(22);
                         doc.setTextColor(255, 255, 255);
-                        doc.setFont('helvetica', 'bold');
+                        doc.setFont(fontFamily, 'bold');
                         doc.text(safeText('Exportovana tabulka'), 14, 18);
                         
                         // Podnadpis - svetlozelený
                         doc.setFontSize(10);
                         doc.setTextColor(120, 250, 174);
-                        doc.setFont('helvetica', 'normal');
+                        doc.setFont(fontFamily, 'normal');
                         doc.text(safeText(`${dateStr} • ${timeStr}`), 14, 26);
                     } else {
                         // Klasická hlavička pre ostatné témy
@@ -3446,13 +3617,13 @@
                         // Titulok
                         doc.setFontSize(22);
                         doc.setTextColor(...titleRgb);
-                        doc.setFont('helvetica', 'bold');
+                        doc.setFont(fontFamily, 'bold');
                         doc.text(safeText('Exportovaná tabuľka'), 14, 18);
 
                         // Podnadpis s dátumom
                         doc.setFontSize(10);
                         doc.setTextColor(...mutedRgb);
-                        doc.setFont('helvetica', 'normal');
+                        doc.setFont(fontFamily, 'normal');
                         doc.text(safeText(`${dateStr} • ${timeStr}`), 14, 24);
                     }
 
@@ -3649,9 +3820,9 @@
                                 doc.rect(0, h - 6, w, 6, 'F');
                                 doc.setFontSize(8);
                                 doc.setTextColor(120, 250, 174);
-                                doc.setFont('helvetica', 'bold');
+                                doc.setFont(fontFamily, 'bold');
                                 doc.text('SKODA', 14, h - 2.3);
-                                doc.setFont('helvetica', 'normal');
+                                doc.setFont(fontFamily, 'normal');
                                 doc.text(safeText(`Strana ${displayPageNum} z ${displayTotalPages}`), w / 2, h - 2.3, { align: 'center' });
                                 doc.text(safeText(dateStr), w - 14, h - 2.3, { align: 'right' });
                             } else {
@@ -3662,7 +3833,7 @@
                                 // Footer text
                                 doc.setFontSize(8);
                                 doc.setTextColor(...mutedRgb);
-                                doc.setFont('helvetica', 'normal');
+                                doc.setFont(fontFamily, 'normal');
                                 doc.text('TableMaster Pro v7', 14, h - 8);
                                 doc.text(safeText(`Strana ${displayPageNum} z ${displayTotalPages}`), w / 2, h - 8, { align: 'center' });
                                 doc.text(safeText(dateStr), w - 14, h - 8, { align: 'right' });
@@ -4449,9 +4620,41 @@ table.freeze-header thead th {
     <title>TableMaster Export - ${dateStr}</title>
     <meta name="generator" content="TableMaster Pro v7">
     <meta name="description" content="Exportovaná tabuľka s ${data.rows.length} riadkami">
-${styles ? `    <style>${css}</style>` : ''}
+${styles ? `    <style>${css}
+
+/* ===== DARK MODE ===== */
+:root[data-dark] body { background: #0f172a; color: #e2e8f0; }
+:root[data-dark] .document-header { background: #1e293b; border-color: #334155; }
+:root[data-dark] .table-wrapper { background: #1e293b; border-color: #334155; }
+:root[data-dark] thead { background: #1e293b; }
+:root[data-dark] thead th { color: #94a3b8; border-color: #334155; background: #1e293b; }
+:root[data-dark] tbody td { color: #e2e8f0; border-color: #334155; }
+:root[data-dark] tbody tr:nth-child(even) td { background: #1a2744; }
+:root[data-dark] tbody tr:hover td { background: rgba(255,255,255,0.06) !important; }
+:root[data-dark] .chapter-nav { background: #1e293b; border-color: #334155; }
+:root[data-dark] .chapter-btn { background: #0f172a; color: #94a3b8; border-color: #334155; }
+:root[data-dark] .search-bar { border-color: #334155; }
+:root[data-dark] .search-input, :root[data-dark] .search-col-select { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+:root[data-dark] .stats-bar { background: rgba(255,255,255,0.04); border-color: #334155; }
+:root[data-dark] .stat-label { color: #64748b; }
+:root[data-dark] .stat-value { color: #e2e8f0; }
+:root[data-dark] .document-footer { color: #475569; }
+:root[data-dark] .document-footer a { color: #60a5fa; }
+
+.dm-toggle {
+    position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px;
+    border-radius: 50%; border: 2px solid rgba(255,255,255,.15);
+    background: rgba(15,23,42,.8); color: #fff; font-size: 20px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    z-index: 9999; backdrop-filter: blur(6px); transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.dm-toggle:hover { transform: scale(1.12); box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+@media print { .dm-toggle { display: none !important; } }
+</style>` : ''}
 </head>
 <body>
+    <button class="dm-toggle" id="dmBtn" onclick="tmToggleDark()" title="Prepnúť tmavý/svetlý režim" aria-label="Prepnúť tmavý/svetlý režim">🌙</button>
     <div class="container">
 ${styles ? `        <header class="document-header${t.isSkoda ? ' skoda-header' : ''}">
             ${t.isSkoda ? `<div class="skoda-logo-wrap">
@@ -4732,6 +4935,24 @@ ${styles ? `        <footer class="document-footer">
             if (scroll) updateScrollClass(scroll, table);
         }
     });
+
+    // ===== DARK MODE TOGGLE =====
+    (function() {
+        const DM_KEY = 'tm-export-dark';
+        const root = document.documentElement;
+        function applyDark(on) {
+            if (on) { root.setAttribute('data-dark', ''); document.getElementById('dmBtn').textContent = '☀️'; }
+            else     { root.removeAttribute('data-dark');  document.getElementById('dmBtn').textContent = '🌙'; }
+            try { localStorage.setItem(DM_KEY, on ? '1' : '0'); } catch(e) {}
+        }
+        // Obnov predvoľbu: localStorage → prefers-color-scheme
+        let saved = null;
+        try { saved = localStorage.getItem(DM_KEY); } catch(e) {}
+        if (saved === '1') applyDark(true);
+        else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) applyDark(true);
+
+        window.tmToggleDark = () => applyDark(!root.hasAttribute('data-dark'));
+    })();
     <\/script>
 </body>
 </html>`;
@@ -4906,7 +5127,7 @@ ${styles ? `        <footer class="document-footer">
         deactivateModal('previewModal');
     }
     
-    function closeAllModals() { closeFindModal(); closeColumnModal(); closeHeaderEditModal(); closePreviewModal(); confirmModalCancel(); closeAllDropdowns(); }
+    function closeAllModals() { closeFindModal(); closeColumnModal(); closeHeaderEditModal(); closePreviewModal(); confirmModalCancel(); closeDiffModal(); closeAllDropdowns(); }
 
     // ---- Generic confirm modal (replaces browser confirm()) ----
     let _confirmResolve = null;
@@ -5302,6 +5523,392 @@ ${styles ? `        <footer class="document-footer">
     window.installPWA = installPWA;
     window.dismissInstallBanner = dismissInstallBanner;
 
+    // =====================================================
+    // NEDÁVNE SÚBORY — IndexedDB + localStorage metadata
+    // =====================================================
+    const RecentFiles = {
+        MAX: 5,
+        META_KEY: 'tablemaster_recent_meta',
+        IDB_NAME: 'tablemaster_files',
+        IDB_VER: 1,
+        _db: null,
+
+        async getDB() {
+            if (this._db) return this._db;
+            this._db = await new Promise(resolve => {
+                const req = indexedDB.open(this.IDB_NAME, this.IDB_VER);
+                req.onupgradeneeded = e => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('handles'))
+                        db.createObjectStore('handles', { keyPath: 'name' });
+                };
+                req.onsuccess = e => resolve(e.target.result);
+                req.onerror   = ()  => resolve(null);
+            });
+            return this._db;
+        },
+
+        getMeta() {
+            try { return JSON.parse(localStorage.getItem(this.META_KEY) || '[]'); }
+            catch { return []; }
+        },
+
+        async addFile(name, size, handle = null) {
+            let meta = this.getMeta().filter(m => m.name !== name);
+            meta.unshift({ name, size: size || 0, ts: Date.now(), hasHandle: !!handle });
+            meta = meta.slice(0, this.MAX);
+            localStorage.setItem(this.META_KEY, JSON.stringify(meta));
+
+            if (handle) {
+                const db = await this.getDB();
+                if (db) {
+                    try {
+                        const tx = db.transaction('handles', 'readwrite');
+                        tx.objectStore('handles').put({ name, handle });
+                    } catch(e) { /* IndexedDB may refuse FileSystemFileHandle in some contexts */ }
+                }
+            }
+            this.render();
+        },
+
+        async getHandle(name) {
+            const db = await this.getDB();
+            if (!db) return null;
+            return new Promise(resolve => {
+                try {
+                    const req = db.transaction('handles', 'readonly').objectStore('handles').get(name);
+                    req.onsuccess = () => resolve(req.result?.handle || null);
+                    req.onerror   = () => resolve(null);
+                } catch { resolve(null); }
+            });
+        },
+
+        async open(name) {
+            const handle = await this.getHandle(name);
+            if (handle) {
+                try {
+                    let perm = await handle.queryPermission({ mode: 'read' });
+                    if (perm !== 'granted') perm = await handle.requestPermission({ mode: 'read' });
+                    if (perm === 'granted') {
+                        const file = await handle.getFile();
+                        App.processFile(file, handle);
+                        return;
+                    }
+                } catch(e) { /* handle stale or permission denied */ }
+            }
+            toast(`Súbor "${name}" nie je dostupný — otvorte ho manuálne`, 'warning');
+            App.openFileNative();
+        },
+
+        icon(name) {
+            if (/\.xlsx?$/i.test(name)) return '📊';
+            if (/\.csv$/i.test(name))   return '📋';
+            if (/\.html?$/i.test(name)) return '🌐';
+            if (/\.json$/i.test(name))  return '{}';
+            return '📁';
+        },
+
+        fmtSize(b) {
+            if (!b) return '';
+            if (b < 1024)    return b + ' B';
+            if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+            return (b / 1048576).toFixed(1) + ' MB';
+        },
+
+        fmtDate(ts) {
+            const diff = Date.now() - ts;
+            if (diff < 60000)    return 'práve teraz';
+            if (diff < 3600000)  return Math.floor(diff / 60000) + ' min';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hod';
+            const d = new Date(ts);
+            return d.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' });
+        },
+
+        render() {
+            const el = document.getElementById('recentFiles');
+            if (!el) return;
+            const meta = this.getMeta();
+            if (!meta.length) { el.style.display = 'none'; return; }
+            el.style.display = 'block';
+            el.innerHTML = `<div class="recent-files-title">🕐 Nedávne súbory</div>
+            <div class="recent-list">` +
+            meta.map(m => `
+                <button class="recent-item" type="button" onclick="RecentFiles.open(${JSON.stringify(m.name)})">
+                    <span class="recent-icon">${this.icon(m.name)}</span>
+                    <span class="recent-info">
+                        <span class="recent-name">${escapeHtml(m.name)}</span>
+                        <span class="recent-meta">${this.fmtSize(m.size)} · ${this.fmtDate(m.ts)}</span>
+                    </span>
+                    ${!m.hasHandle ? '<span class="recent-warn" title="Priamy prístup nedostupný, otvorí sa výber súborov">⚠</span>' : ''}
+                </button>`
+            ).join('') + '</div>';
+        }
+    };
+    window.RecentFiles = RecentFiles;
+
+    // Hook: každý processFile zaregistruje súbor do RecentFiles
+    const _origProcessFile = App.processFile.bind(App);
+    App.processFile = function(file, fileHandle = null) {
+        RecentFiles.addFile(file.name, file.size, fileHandle);
+        _origProcessFile(file, fileHandle);
+    };
+
+    // =====================================================
+    // DIFF VIEW — porovnanie dvoch tabuliek
+    // =====================================================
+
+    // LCS algoritmus na rovnaté porovnanie riadkov (O(m*n))
+    function computeLCS(a, b) {
+        const m = a.length, n = b.length;
+        // Pre veľké tabuľky skrátime LCS na max 500 riadkov aby bol výsledok rýchly
+        if (m > 500 || n > 500) {
+            // Fallback: porovnanie po prvom stĺpci (kľúč)
+            return computeKeyDiff(a, b);
+        }
+        const dp = [];
+        for (let i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+        for (let i = 1; i <= m; i++)
+            for (let j = 1; j <= n; j++)
+                dp[i][j] = a[i-1] === b[j-1]
+                    ? dp[i-1][j-1] + 1
+                    : Math.max(dp[i-1][j], dp[i][j-1]);
+
+        const pairs = [];
+        let i = m, j = n;
+        while (i > 0 && j > 0) {
+            if (a[i-1] === b[j-1]) { pairs.unshift([i-1, j-1]); i--; j--; }
+            else if (dp[i-1][j] > dp[i][j-1]) i--;
+            else j--;
+        }
+        return pairs;
+    }
+
+    // Fallback pre veľké tabuľky: match podľa prvého stĺpca (kľúč)
+    function computeKeyDiff(a, b) {
+        const bMap = new Map();
+        b.forEach((row, j) => { const k = row.split('')[0]; if (!bMap.has(k)) bMap.set(k, j); });
+        const pairs = [];
+        a.forEach((row, i) => {
+            const k = row.split('')[0];
+            if (bMap.has(k)) { pairs.push([i, bMap.get(k)]); bMap.delete(k); }
+        });
+        return pairs;
+    }
+
+    function buildDiff(keysA, keysB, rowsA, rowsB) {
+        const pairs = computeLCS(keysA, keysB);
+        const usedA = new Set(pairs.map(p => p[0]));
+        const usedB = new Set(pairs.map(p => p[1]));
+
+        const hunks = [];
+        let ai = 0, bi = 0, pi = 0;
+
+        while (ai < rowsA.length || bi < rowsB.length) {
+            if (pi < pairs.length) {
+                const [pa, pb] = pairs[pi];
+                // Flush deleted rows before this pair
+                while (ai < pa) { hunks.push({ type: 'delete', a: rowsA[ai++] }); }
+                // Flush added rows before this pair
+                while (bi < pb) { hunks.push({ type: 'insert', b: rowsB[bi++] }); }
+                // Equal row
+                hunks.push({ type: 'equal', a: rowsA[ai++], b: rowsB[bi++] });
+                pi++;
+            } else {
+                if (ai < rowsA.length) hunks.push({ type: 'delete', a: rowsA[ai++] });
+                if (bi < rowsB.length) hunks.push({ type: 'insert', b: rowsB[bi++] });
+            }
+        }
+        return hunks;
+    }
+
+    App.openDiffFile = async function() {
+        if (!this.tableData.headers.length) { toast('Najprv načítajte tabuľku', 'warning'); return; }
+
+        let file2 = null;
+        let handle2 = null;
+
+        if ('showOpenFilePicker' in window) {
+            try {
+                const [h] = await window.showOpenFilePicker({
+                    types: [{ description: 'Tabuľky', accept: {
+                        'text/html': ['.html', '.htm'],
+                        'text/csv': ['.csv'],
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+                        'application/json': ['.json']
+                    }}]
+                });
+                handle2 = h;
+                file2 = await h.getFile();
+            } catch(e) { if (e.name !== 'AbortError') toast('Chyba pri otváraní', 'error'); return; }
+        } else {
+            file2 = await new Promise(resolve => {
+                const inp = document.createElement('input');
+                inp.type = 'file';
+                inp.accept = '.html,.htm,.csv,.xlsx,.json';
+                inp.onchange = () => resolve(inp.files[0] || null);
+                inp.click();
+            });
+            if (!file2) return;
+        }
+
+        showLoading(true, 'Porovnávam tabuľky...');
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                // Dočasne vytvorím App kópiu pre parsovanie súboru 2
+                const tmpApp = Object.create(App);
+                tmpApp.tableData = { headers: [], rows: [], richRows: [], formatting: {} };
+                const name = file2.name.toLowerCase();
+                const content = e.target.result;
+                if (name.endsWith('.csv'))       tmpApp.parseCSV(content);
+                else if (name.match(/\.html?$/)) tmpApp.parseHTML(content);
+                else if (name.match(/\.xlsx?$/)) tmpApp.parseExcel(content);
+                else if (name.endsWith('.json')) tmpApp.parseJSON(content);
+                else { toast('Nepodporovaný formát', 'error'); showLoading(false); return; }
+
+                renderDiff(App.tableData, tmpApp.tableData, file2.name);
+            } catch(err) {
+                toast('Chyba pri parsovaní súboru: ' + err.message, 'error');
+            }
+            showLoading(false);
+        };
+        reader.readAsText(file2);
+    };
+
+    function renderDiff(tdA, tdB, file2Name) {
+        const headersA = tdA.headers;
+        const headersB = tdB.headers;
+        // Zjednotíme hlavičky
+        const allHeaders = [...new Set([...headersA, ...headersB])];
+
+        const rowKey = (row, headers) =>
+            allHeaders.map(h => { const i = headers.indexOf(h); return i >= 0 ? String(row[i] ?? '') : ''; }).join('');
+
+        const keysA = tdA.rows.map(r => rowKey(r, headersA));
+        const keysB = tdB.rows.map(r => rowKey(r, headersB));
+
+        const hunks = buildDiff(keysA, keysB, tdA.rows, tdB.rows);
+
+        let added = 0, deleted = 0, modified = 0, equal = 0;
+
+        // Spájame delete+insert do modified ak sú vedľa seba
+        const merged = [];
+        for (let i = 0; i < hunks.length; i++) {
+            if (hunks[i].type === 'delete' && i + 1 < hunks.length && hunks[i+1].type === 'insert') {
+                merged.push({ type: 'modified', a: hunks[i].a, b: hunks[i+1].b });
+                i++;
+                modified++;
+            } else {
+                merged.push(hunks[i]);
+                if (hunks[i].type === 'insert') added++;
+                else if (hunks[i].type === 'delete') deleted++;
+                else equal++;
+            }
+        }
+
+        // Render summary
+        document.getElementById('diffSummary').innerHTML = `
+            <span class="diff-badge added">✚ ${added} pridaných</span>
+            <span class="diff-badge deleted">✕ ${deleted} zmazaných</span>
+            <span class="diff-badge modified">✎ ${modified} zmenených</span>
+            <span class="diff-badge equal">= ${equal} rovnakých</span>`;
+
+        document.getElementById('diffInfo').textContent =
+            `Porovnanie: aktuálna tabuľka ↔ ${escapeHtml(file2Name)}`;
+
+        // Hlavičky tabuľky
+        const normalize = (row, headers) =>
+            allHeaders.map(h => { const i = headers.indexOf(h); return i >= 0 ? String(row[i] ?? '') : ''; });
+
+        document.getElementById('diffTableHead').innerHTML =
+            `<tr><th class="diff-status-col">±</th>${allHeaders.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>`;
+
+        const tbodyRows = merged.map(hunk => {
+            let icon = '', cls = '', cellsHtml = '';
+
+            if (hunk.type === 'equal') {
+                icon = '='; cls = 'diff-row-equal';
+                const cells = normalize(hunk.a, headersA);
+                cellsHtml = cells.map(c => `<td>${escapeHtml(c)}</td>`).join('');
+            } else if (hunk.type === 'insert') {
+                icon = '✚'; cls = 'diff-row-added';
+                const cells = normalize(hunk.b, headersB);
+                cellsHtml = cells.map(c => `<td>${escapeHtml(c)}</td>`).join('');
+            } else if (hunk.type === 'delete') {
+                icon = '✕'; cls = 'diff-row-deleted';
+                const cells = normalize(hunk.a, headersA);
+                cellsHtml = cells.map(c => `<td>${escapeHtml(c)}</td>`).join('');
+            } else { // modified
+                icon = '✎'; cls = 'diff-row-modified';
+                const cellsA = normalize(hunk.a, headersA);
+                const cellsB = normalize(hunk.b, headersB);
+                cellsHtml = cellsA.map((ca, i) => {
+                    const cb = cellsB[i];
+                    const changed = ca !== cb;
+                    const display = changed
+                        ? `<span class="diff-cell-changed" title="Bolo: ${escapeHtml(ca)}">${escapeHtml(cb)}</span>`
+                        : escapeHtml(cb);
+                    return `<td>${display}</td>`;
+                }).join('');
+            }
+
+            return `<tr class="${cls}"><td class="diff-status-col" title="${icon}">${icon}</td>${cellsHtml}</tr>`;
+        });
+
+        document.getElementById('diffTableBody').innerHTML = tbodyRows.join('');
+        activateModal('diffModal');
+    }
+
+    function closeDiffModal() { deactivateModal('diffModal'); }
+    window.closeDiffModal = closeDiffModal;
+
+    // =====================================================
+    // DejaVu font loader pre PDF (lazy, s cache)
+    // =====================================================
+    let _dejaVuCache = { normal: null, bold: null };
+
+    async function fetchFontBase64(url) {
+        const resp = await fetch(url, { cache: 'force-cache' });
+        if (!resp.ok) throw new Error('Font fetch failed: ' + url);
+        const buf = await resp.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let binary = '';
+        const chunk = 8192;
+        for (let i = 0; i < bytes.length; i += chunk)
+            binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunk, bytes.length)));
+        return btoa(binary);
+    }
+
+    async function loadDejaVuFonts() {
+        if (_dejaVuCache.normal && _dejaVuCache.bold) return _dejaVuCache;
+        const base = 'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/';
+        const [normal, bold] = await Promise.all([
+            fetchFontBase64(base + 'DejaVuSans.ttf'),
+            fetchFontBase64(base + 'DejaVuSans-Bold.ttf')
+        ]);
+        _dejaVuCache = { normal, bold };
+        return _dejaVuCache;
+    }
+
+    // Patch exportPDF: pred volaním setTimeout načítame font
+    const _origExportPDF = App.exportPDF.bind(App);
+    App.exportPDF = async function() {
+        const data = this.getExportData();
+        if (!data || !data.rows.length) { toast('Žiadne dáta', 'error'); return; }
+
+        let fontData = null;
+        try {
+            showLoading(true, 'Načítavam font pre PDF...', 0, 1);
+            fontData = await loadDejaVuFonts();
+        } catch(e) {
+            console.warn('[TableMaster] DejaVu font nedostupný, používam Helvetica s transliteráciou', e);
+        }
+
+        // Injektujeme fontData do App aby ich exportPDF mohol použiť
+        this._dejaVuFontData = fontData;
+        _origExportPDF();
+    };
+
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
         App.init();
@@ -5310,13 +5917,12 @@ ${styles ? `        <footer class="document-footer">
         checkFileSystemAccess();
         handleUrlParams();
         updateSaveButtons();
+        RecentFiles.render();
 
-        // Observer reaguje keď sa editor zobrazí (style.display zmena)
         const observer = new MutationObserver(updateSaveButtons);
         observer.observe(document.getElementById('editorSection'), { attributes: true, attributeFilter: ['style'] });
     });
-    
-    // Handle file from File Handling API (keď sa otvára súbor asociovaný s aplikáciou)
+
     if ('launchQueue' in window) {
         window.launchQueue.setConsumer(async (launchParams) => {
             if (launchParams.files && launchParams.files.length > 0) {

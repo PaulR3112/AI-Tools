@@ -14,6 +14,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#2563eb">
     
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:;">
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
     
@@ -226,6 +229,8 @@
         .btn-secondary:hover:not(:disabled) { background-color: var(--header-bg); border-color: var(--text-muted); }
         .btn-success { background-color: var(--success); color: white; }
         .btn-success:hover:not(:disabled) { background-color: #059669; }
+        .btn-danger { background-color: var(--error); color: white; border-color: var(--error); }
+        .btn-danger:hover:not(:disabled) { background-color: #dc2626; }
         .btn-icon { width: 36px; height: 36px; padding: 0; font-size: 16px; }
         .btn-icon.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
         .btn-sm { padding: 4px 10px; font-size: 12px; }
@@ -977,6 +982,17 @@
     </div>
 </div>
 
+<div class="modal-backdrop" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalMessage">
+    <div class="modal-box" style="max-width:420px;">
+        <h3 class="modal-title" id="confirmModalTitle">⚠️ Potvrdenie</h3>
+        <p id="confirmModalMessage" style="color:var(--text-muted);margin-bottom:20px;line-height:1.6;"></p>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="confirmModalCancel()" aria-label="Zrušiť akciu">Zrušiť</button>
+            <button class="btn btn-danger" id="confirmModalOk" onclick="confirmModalConfirm()">Potvrdiť</button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -1065,19 +1081,13 @@
     };
     
     // Extrahuje plain text z rich HTML (pre vyhľadávanie, export do CSV atď.)
+    // Používa DOMParser (izolovaný dokument) – scripty sa v ňom nevykonávajú
     const richToPlainText = (richHtml) => {
         if (!richHtml) return '';
         if (typeof richHtml !== 'string') return String(richHtml);
-        // Ak nie je rich (neobsahuje tagy), vráť ako je
-        if (!/<[bi]>|<u>|<br/i.test(richHtml)) {
-            // Môže obsahovať &amp; atď. - decoduj
-            const tmp = document.createElement('div');
-            tmp.innerHTML = richHtml;
-            return tmp.textContent || '';
-        }
-        const tmp = document.createElement('div');
-        tmp.innerHTML = richHtml.replace(/<br\s*\/?>/gi, '\n');
-        return tmp.textContent || '';
+        const prepared = richHtml.replace(/<br\s*\/?>/gi, '\n');
+        const doc = new DOMParser().parseFromString(prepared, 'text/html');
+        return doc.body.textContent || '';
     };
     
     // Detekuje, či string obsahuje rich formátovanie
@@ -2812,15 +2822,26 @@
             if (this.historyIndex < this.history.length - 1) {
                 this.history = this.history.slice(0, this.historyIndex + 1);
             }
-            if (this.history.length >= MAX_HISTORY) this.history.shift();
-            this.history.push(JSON.parse(JSON.stringify(this.tableData)));
+            // Store as serialized string — avoids double-parse on restore and is byte-measurable
+            const snapshot = JSON.stringify(this.tableData);
+            this.history.push(snapshot);
             this.historyIndex = this.history.length - 1;
+
+            // Trim: keep at most MAX_HISTORY entries and at most 50 MB total
+            const MAX_HISTORY_BYTES = 50 * 1024 * 1024;
+            while (this.history.length > 1 && (
+                this.history.length > MAX_HISTORY ||
+                this.history.reduce((s, e) => s + e.length, 0) > MAX_HISTORY_BYTES
+            )) {
+                this.history.shift();
+                this.historyIndex--;
+            }
         },
 
         undo() {
             if (this.historyIndex > 0) {
                 this.historyIndex--;
-                this.tableData = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+                this.tableData = JSON.parse(this.history[this.historyIndex]);
                 this.selectedRows.clear();
                 this.selectedCols.clear();
                 this.renderTable();
@@ -2831,7 +2852,7 @@
         redo() {
             if (this.historyIndex < this.history.length - 1) {
                 this.historyIndex++;
-                this.tableData = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+                this.tableData = JSON.parse(this.history[this.historyIndex]);
                 this.selectedRows.clear();
                 this.selectedCols.clear();
                 this.renderTable();
@@ -4006,6 +4027,8 @@ tbody tr:nth-child(even):hover td { background-color: ${t.primaryLight}; }` : ''
     font-size: 18px;
     font-weight: 700;
     color: ${t.text};
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
 }
 
 ${printReady ? `
@@ -4022,6 +4045,10 @@ ${printReady ? `
         box-shadow: none;
         border: 1px solid #ddd;
     }
+    /* Hide interactive elements when printing */
+    .search-bar, .chapter-nav { display: none !important; }
+    /* Don't print link URLs after anchors */
+    a[href]:after { content: ''; }
     thead th {
         background: #f5f5f5 !important;
         color: black !important;
@@ -4031,6 +4058,7 @@ ${printReady ? `
     tbody td {
         ${includeFormatting ? '' : 'background: white !important;'}
     }
+    tbody tr:hover td { background: inherit !important; }
     .document-footer {
         page-break-inside: avoid;
     }
@@ -4238,7 +4266,7 @@ table.freeze-header thead th {
 
 /* Print - vypne sticky (pri tlači by sa to zlomilo) */
 @media print {
-    .chapter-nav { display: none !important; }
+    .chapter-nav, .search-bar { display: none !important; }
     table.freeze-header thead th {
         position: static !important;
     }
@@ -4878,9 +4906,33 @@ ${styles ? `        <footer class="document-footer">
         deactivateModal('previewModal');
     }
     
-    function closeAllModals() { closeFindModal(); closeColumnModal(); closeHeaderEditModal(); closePreviewModal(); closeAllDropdowns(); }
-    function resetApp() {
-        if (App.hasUnsavedChanges && !confirm('Máte neuložené zmeny. Resetovať?')) return;
+    function closeAllModals() { closeFindModal(); closeColumnModal(); closeHeaderEditModal(); closePreviewModal(); confirmModalCancel(); closeAllDropdowns(); }
+
+    // ---- Generic confirm modal (replaces browser confirm()) ----
+    let _confirmResolve = null;
+    function showConfirmModal(message, confirmLabel = 'Potvrdiť') {
+        return new Promise(resolve => {
+            _confirmResolve = resolve;
+            document.getElementById('confirmModalMessage').textContent = message;
+            document.getElementById('confirmModalOk').textContent = confirmLabel;
+            activateModal('confirmModal', '#confirmModalOk');
+        });
+    }
+    function confirmModalConfirm() {
+        deactivateModal('confirmModal');
+        if (_confirmResolve) { _confirmResolve(true); _confirmResolve = null; }
+    }
+    function confirmModalCancel() {
+        if (!document.getElementById('confirmModal').classList.contains('active')) return;
+        deactivateModal('confirmModal');
+        if (_confirmResolve) { _confirmResolve(false); _confirmResolve = null; }
+    }
+
+    async function resetApp() {
+        if (App.hasUnsavedChanges) {
+            const ok = await showConfirmModal('Máte neuložené zmeny. Naozaj chcete resetovať aplikáciu?', 'Resetovať');
+            if (!ok) return;
+        }
         App.hasUnsavedChanges = false;
         localStorage.removeItem(AUTOSAVE_KEY);
         location.reload();
@@ -5066,9 +5118,10 @@ ${styles ? `        <footer class="document-footer">
         }
     };
     
-    App.createNewTable = function() {
-        if (this.hasUnsavedChanges && !confirm('Máte neuložené zmeny. Vytvoriť novú tabuľku?')) {
-            return;
+    App.createNewTable = async function() {
+        if (this.hasUnsavedChanges) {
+            const ok = await showConfirmModal('Máte neuložené zmeny. Naozaj vytvoriť novú tabuľku?', 'Vytvoriť');
+            if (!ok) return;
         }
         
         this.tableData = {

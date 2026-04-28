@@ -29,6 +29,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -395,6 +396,44 @@
         [data-theme="dark"] .diff-cell-changed { background: #78350f60; }
         .diff-status-col { width: 28px; text-align: center; font-size: 14px; }
 
+        /* === UNDO/REDO HISTORY BAR === */
+        .history-bar {
+            display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+            background: var(--header-bg); border: 1px solid var(--border);
+            border-radius: 6px; margin-bottom: 12px; font-size: 12px; overflow: hidden;
+        }
+        .history-bar-label { color: var(--text-muted); font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+        .history-dots { display: flex; gap: 3px; flex-wrap: nowrap; overflow: hidden; align-items: center; flex: 1; }
+        .history-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+            background: var(--border); transition: background .15s, transform .15s;
+        }
+        .history-dot.past { background: var(--primary-light); }
+        .history-dot.current { background: var(--primary); transform: scale(1.4); }
+        .history-dot.future { background: var(--border); opacity: .4; }
+        .history-steps { color: var(--text-muted); font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+        .undo-btn-wrap, .redo-btn-wrap { position: relative; }
+        .undo-count, .redo-count {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--primary); color: white; font-size: 9px; font-weight: 700;
+            width: 16px; height: 16px; border-radius: 50%; display: none;
+            align-items: center; justify-content: center; line-height: 1;
+        }
+        .undo-count.visible, .redo-count.visible { display: flex; }
+
+        /* === FORMULA CELLS === */
+        td.formula-cell { font-style: italic; }
+        td.formula-cell::before { content: 'f(x) '; font-size: 9px; color: var(--primary); opacity: .7; vertical-align: super; }
+        td.formula-error { color: var(--error) !important; font-weight: 600; }
+        .formula-hint {
+            position: absolute; z-index: 200; background: var(--bg-card);
+            border: 1px solid var(--primary); border-radius: 6px; padding: 8px 12px;
+            font-size: 12px; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+            pointer-events: none;
+        }
+        .formula-hint-title { font-weight: 600; color: var(--primary); margin-bottom: 4px; font-size: 11px; text-transform: uppercase; }
+        .formula-hint code { background: var(--header-bg); padding: 1px 4px; border-radius: 3px; font-family: monospace; }
+
         .column-stats {
             margin-top: 15px; padding: 15px; background: var(--header-bg);
             border: 1px solid var(--border); border-radius: 8px;
@@ -753,8 +792,14 @@
                         </div>
                         <div class="separator" role="separator" aria-hidden="true"></div>
                         <div class="toolbar-group" role="group" aria-label="Vrátiť späť a opakovať">
-                            <button class="btn btn-secondary" onclick="App.undo()" aria-label="Vrátiť späť poslednú akciu" aria-keyshortcuts="Control+Z">↶ Späť</button>
-                            <button class="btn btn-secondary" onclick="App.redo()" aria-label="Opakovať poslednú akciu" aria-keyshortcuts="Control+Y">↷ Vpred</button>
+                            <div class="undo-btn-wrap">
+                                <button class="btn btn-secondary" id="btnUndo" onclick="App.undo()" aria-label="Vrátiť späť poslednú akciu" aria-keyshortcuts="Control+Z">↶ Späť</button>
+                                <span class="undo-count" id="undoCount" aria-hidden="true"></span>
+                            </div>
+                            <div class="redo-btn-wrap">
+                                <button class="btn btn-secondary" id="btnRedo" onclick="App.redo()" aria-label="Opakovať poslednú akciu" aria-keyshortcuts="Control+Y">↷ Vpred</button>
+                                <span class="redo-count" id="redoCount" aria-hidden="true"></span>
+                            </div>
                         </div>
                         <div class="separator" role="separator" aria-hidden="true"></div>
                         <div class="toolbar-group" role="group" aria-label="Porovnanie">
@@ -768,6 +813,12 @@
                         <label for="filterInput" class="sr-only">Text na filtrovanie</label>
                         <input type="text" class="filter-input" id="filterInput" placeholder="Zadajte text na filtrovanie..." aria-label="Zadajte text na filtrovanie">
                         <button class="btn btn-sm btn-secondary" onclick="App.clearFilter()" aria-label="Vyčistiť filter">Vyčistiť</button>
+                    </div>
+
+                    <div class="history-bar" id="historyBar" aria-label="História zmien" role="status" aria-live="polite">
+                        <span class="history-bar-label">História:</span>
+                        <div class="history-dots" id="historyDots"></div>
+                        <span class="history-steps" id="historySteps">0/0</span>
                     </div>
 
                     <div class="table-container" id="tableContainer" role="region" aria-label="Tabuľkové dáta" aria-live="polite">
@@ -962,6 +1013,29 @@
                                 <button class="btn btn-primary btn-block" onclick="App.exportJSON()">⬇ JSON</button>
                             </div>
                         </article>
+                        <article class="export-item" role="listitem">
+                            <div class="export-content">
+                                <h3><span role="img" aria-hidden="true">📝</span> Word (DOCX)</h3>
+                                <p>Microsoft Word dokument s tabuľkou a formátovaním.</p>
+                                <div class="export-options" role="group" aria-label="Možnosti DOCX exportu">
+                                    <label class="export-option"><input type="checkbox" id="docxIncludeHeader" checked> Zahrnúť hlavičku dokumentu</label>
+                                    <label class="export-option"><input type="checkbox" id="docxBoldHeaders" checked> Tučné nadpisy stĺpcov</label>
+                                    <label class="export-option"><input type="checkbox" id="docxIncludeFormatting" checked> Zachovať farby buniek</label>
+                                    <label class="export-option">
+                                        <span style="font-size:12px;color:var(--text-muted);">Téma:</span>
+                                        <select id="docxTheme" style="margin-left:6px;font-size:12px;border:1px solid var(--border);border-radius:4px;padding:2px 6px;background:var(--bg-card);color:var(--text-main);">
+                                            <option value="modern">Modern (modrá)</option>
+                                            <option value="corporate">Corporate (tmavomodrá)</option>
+                                            <option value="minimal">Minimal (čiernobiela)</option>
+                                            <option value="skoda">Škoda (zelená)</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="export-footer">
+                                <button class="btn btn-primary btn-block" onclick="App.exportDOCX()" aria-label="Stiahnuť Word súbor"><span role="img" aria-hidden="true">⬇</span> DOCX</button>
+                            </div>
+                        </article>
                     </div>
                 </div>
             </div>
@@ -971,6 +1045,10 @@
             <button class="btn btn-reset" onclick="resetApp()">🔄 Resetovať aplikáciu</button>
         </div>
     </main>
+    <div id="formulaHint" class="formula-hint" style="display:none;">
+        <div class="formula-hint-title">Vzorce (Formula Engine)</div>
+        <div id="formulaHintBody"></div>
+    </div>
 </div>
 
 <div class="loading" id="loadingOverlay" role="progressbar" aria-label="Načítavanie" aria-valuemin="0" aria-valuemax="100" aria-busy="true">
@@ -2287,13 +2365,22 @@
                         if (styles.length) style = ` style="${styles.join(';')}"`;
                     }
                     
-                    // Rich content ak existuje, inak plain text
+                    // Rich content ak existuje, inak plain text; formula cells evaluujeme
                     const richContent = richRow[cIdx];
-                    const cellContent = (richContent !== undefined && hasRichFormatting(richContent))
+                    let displayVal = row[cIdx];
+                    let isFormula = false, isFormulaError = false;
+                    if (FormulaEngine.isFormula(displayVal)) {
+                        isFormula = true;
+                        const result = FormulaEngine.evaluate(displayVal, this.tableData, rIdx, cIdx);
+                        displayVal = String(result ?? '');
+                        isFormulaError = displayVal.startsWith('#');
+                    }
+                    const cellContent = (richContent !== undefined && hasRichFormatting(richContent) && !isFormula)
                         ? richContent.replace(/\n/g, '<br>')
-                        : escapeHtml(row[cIdx]);
-                    
-                    cells += `<td data-row="${rIdx}" data-col="${cIdx}"${style}>${cellContent}</td>`;
+                        : escapeHtml(displayVal);
+                    const formulaCls = isFormula ? (isFormulaError ? ' formula-error' : ' formula-cell') : '';
+
+                    cells += `<td data-row="${rIdx}" data-col="${cIdx}"${style}${formulaCls ? ` class="${formulaCls.trim()}"` : ''}>${cellContent}</td>`;
                 }
 
                 html += `<tr data-row-index="${rIdx}" class="${isSelected ? 'selected' : ''}">
@@ -5524,6 +5611,577 @@ ${styles ? `        <footer class="document-footer">
     window.dismissInstallBanner = dismissInstallBanner;
 
     // =====================================================
+    // FORMULA ENGINE
+    // Podporuje: =SUM, =COUNT, =COUNTA, =AVG/=AVERAGE,
+    //            =MIN, =MAX, =IF, =CONCAT, cell refs, ranges, aritmetika
+    // Adresácia: A=stĺpec 1, B=stĺpec 2... | 1=riadok 1...
+    // =====================================================
+    const FormulaEngine = (() => {
+        // Prevedie písmeno stĺpca na index (A→0, B→1, AA→26...)
+        function colLetterToIdx(col) {
+            col = col.toUpperCase();
+            let idx = 0;
+            for (let i = 0; i < col.length; i++) idx = idx * 26 + (col.charCodeAt(i) - 64);
+            return idx - 1;
+        }
+
+        // Získa hodnotu bunky (numerickú alebo string)
+        function cellVal(col, row, td) {
+            const c = colLetterToIdx(col), r = parseInt(row) - 1;
+            if (c < 0 || c >= td.headers.length || r < 0 || r >= td.rows.length) return 0;
+            const raw = td.rows[r][c] ?? '';
+            // Ak je bunka sama vzorec, vyhodnotíme rekurzívne (bez zacyklenia)
+            if (String(raw).startsWith('=')) {
+                try { return evalExpr(String(raw).slice(1), td, r, c); } catch { return 0; }
+            }
+            const n = parseFloat(String(raw).replace(/\s/g, '').replace(',', '.'));
+            return isNaN(n) ? String(raw) : n;
+        }
+
+        // Získa pole čísel z rozsahu (A:A, A1:A10, A1:C5)
+        function rangeNums(ref, td) {
+            const wholeCol = ref.match(/^([A-Z]+):([A-Z]+)$/i);
+            if (wholeCol) {
+                const c = colLetterToIdx(wholeCol[1]);
+                if (c < 0 || c >= td.headers.length) return [];
+                return td.rows.map(r => {
+                    const n = parseFloat(String(r[c] ?? '').replace(',', '.'));
+                    return isNaN(n) ? null : n;
+                }).filter(v => v !== null);
+            }
+            const rect = ref.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);
+            if (rect) {
+                const [, c1, r1, c2, r2] = rect;
+                const nums = [];
+                for (let r = parseInt(r1) - 1; r <= parseInt(r2) - 1; r++)
+                    for (let c = colLetterToIdx(c1); c <= colLetterToIdx(c2); c++)
+                        if (r >= 0 && r < td.rows.length && c >= 0 && c < td.headers.length) {
+                            const n = parseFloat(String(td.rows[r][c] ?? '').replace(',', '.'));
+                            if (!isNaN(n)) nums.push(n);
+                        }
+                return nums;
+            }
+            return [];
+        }
+
+        // Získa pole VŠETKÝCH (vrátane string) z rozsahu pre COUNTA
+        function rangeAll(ref, td) {
+            const wholeCol = ref.match(/^([A-Z]+):([A-Z]+)$/i);
+            if (wholeCol) {
+                const c = colLetterToIdx(wholeCol[1]);
+                return c >= 0 && c < td.headers.length
+                    ? td.rows.map(r => r[c] ?? '').filter(v => String(v).trim() !== '')
+                    : [];
+            }
+            return rangeNums(ref, td); // fallback
+        }
+
+        // Tokenizér
+        function tokenize(expr) {
+            const tokens = [];
+            let i = 0;
+            while (i < expr.length) {
+                if (/\s/.test(expr[i])) { i++; continue; }
+
+                // Číslo
+                const numM = expr.slice(i).match(/^\d+(\.\d*)?/);
+                if (numM) { tokens.push({ t: 'N', v: parseFloat(numM[0]) }); i += numM[0].length; continue; }
+
+                // Reťazec v úvodzovkách
+                if (expr[i] === '"') {
+                    let j = i + 1;
+                    while (j < expr.length && expr[j] !== '"') j++;
+                    tokens.push({ t: 'S', v: expr.slice(i + 1, j) });
+                    i = j + 1; continue;
+                }
+
+                // Identifikátor: funkcia, rozsah alebo odkaz na bunku
+                const idM = expr.slice(i).match(/^[A-Z]+(\d+)?(?::[A-Z]+\d*)?/i);
+                if (idM) {
+                    const id = idM[0].toUpperCase();
+                    if (id.includes(':')) tokens.push({ t: 'R', v: id }); // range
+                    else if (/[A-Z]+\d+$/.test(id)) tokens.push({ t: 'C', v: id }); // cell
+                    else tokens.push({ t: 'F', v: id }); // function/const
+                    i += idM[0].length; continue;
+                }
+
+                // Operátory a interpunkcia
+                if ('<>=!'.includes(expr[i])) {
+                    let op = expr[i++];
+                    if (i < expr.length && '>='.includes(expr[i])) op += expr[i++];
+                    tokens.push({ t: 'O', v: op }); continue;
+                }
+                tokens.push({ t: 'O', v: expr[i++] });
+            }
+            return tokens;
+        }
+
+        // Parser — rekurzívny zostup
+        function evalExpr(expr, td, selfR, selfC) {
+            const tokens = tokenize(expr);
+            let pos = 0;
+            const peek = () => tokens[pos];
+            const consume = () => tokens[pos++];
+
+            function parseOr() {
+                let left = parseAnd();
+                while (peek()?.v === 'OR') { consume(); parseAnd(); } // skip OR for now
+                return left;
+            }
+            function parseAnd() { return parseCompare(); }
+            function parseCompare() {
+                let left = parseAddSub();
+                while (peek() && ['=', '<>', '<', '>', '<=', '>='].includes(peek().v)) {
+                    const op = consume().v;
+                    const right = parseAddSub();
+                    if (op === '=')  left = left == right ? 1 : 0;
+                    if (op === '<>') left = left != right ? 1 : 0;
+                    if (op === '<')  left = left <  right ? 1 : 0;
+                    if (op === '>')  left = left >  right ? 1 : 0;
+                    if (op === '<=') left = left <= right ? 1 : 0;
+                    if (op === '>=') left = left >= right ? 1 : 0;
+                }
+                return left;
+            }
+            function parseAddSub() {
+                let left = parseMulDiv();
+                while (peek() && (peek().v === '+' || peek().v === '-' || peek().v === '&')) {
+                    const op = consume().v;
+                    const right = parseMulDiv();
+                    if (op === '+') left = Number(left) + Number(right);
+                    else if (op === '-') left = Number(left) - Number(right);
+                    else left = String(left) + String(right); // &
+                }
+                return left;
+            }
+            function parseMulDiv() {
+                let left = parseUnary();
+                while (peek() && (peek().v === '*' || peek().v === '/')) {
+                    const op = consume().v;
+                    const right = parseUnary();
+                    left = op === '*' ? Number(left) * Number(right) : Number(left) / Number(right);
+                }
+                return left;
+            }
+            function parseUnary() {
+                if (peek()?.v === '-') { consume(); return -parseAtom(); }
+                if (peek()?.v === '+') { consume(); return parseAtom(); }
+                return parseAtom();
+            }
+            function parseAtom() {
+                const tok = peek();
+                if (!tok) return 0;
+
+                // Číslo
+                if (tok.t === 'N') return consume().v;
+                // Reťazec
+                if (tok.t === 'S') return consume().v;
+                // Rozsah (priamy)
+                if (tok.t === 'R') return rangeNums(consume().v, td).reduce((a, b) => a + b, 0);
+                // Odkaz na bunku
+                if (tok.t === 'C') {
+                    const m = consume().v.match(/^([A-Z]+)(\d+)$/i);
+                    return m ? cellVal(m[1], m[2], td) : 0;
+                }
+                // Konštanty
+                if (tok.t === 'F' && tok.v === 'TRUE')  { consume(); return 1; }
+                if (tok.t === 'F' && tok.v === 'FALSE') { consume(); return 0; }
+                // Závorky
+                if (tok.v === '(') { consume(); const v = parseOr(); if (peek()?.v === ')') consume(); return v; }
+
+                // Funkcie
+                if (tok.t === 'F') {
+                    const fn = consume().v;
+                    if (peek()?.v !== '(') return 0;
+                    consume(); // (
+                    const args = [];
+                    while (peek() && peek().v !== ')') {
+                        if (peek().v === ',' || peek().v === ';') { consume(); continue; }
+                        // Rozsah ako argument
+                        if (peek()?.t === 'R') args.push({ type: 'range', ref: consume().v });
+                        else args.push({ type: 'val', v: parseOr() });
+                    }
+                    if (peek()?.v === ')') consume();
+
+                    const nums = () => args.flatMap(a =>
+                        a.type === 'range' ? rangeNums(a.ref, td) : [Number(a.v)]).filter(isFinite);
+                    const all  = () => args.flatMap(a =>
+                        a.type === 'range' ? rangeAll(a.ref, td)  : [a.v]);
+                    const vals = () => args.map(a => a.type === 'val' ? a.v : 0);
+
+                    switch (fn) {
+                        case 'SUM':     { const n = nums(); return n.reduce((a, b) => a + b, 0); }
+                        case 'COUNT':   return nums().length;
+                        case 'COUNTA':  return all().length;
+                        case 'AVG': case 'AVERAGE': {
+                            const n = nums();
+                            return n.length ? n.reduce((a, b) => a + b, 0) / n.length : 0;
+                        }
+                        case 'MIN':     { const n = nums(); return n.length ? Math.min(...n) : 0; }
+                        case 'MAX':     { const n = nums(); return n.length ? Math.max(...n) : 0; }
+                        case 'ABS':     return Math.abs(Number(vals()[0]));
+                        case 'ROUND':   return Math.round(Number(vals()[0]) * Math.pow(10, Number(vals()[1] ?? 0))) / Math.pow(10, Number(vals()[1] ?? 0));
+                        case 'INT':     return Math.trunc(Number(vals()[0]));
+                        case 'SQRT':    return Math.sqrt(Number(vals()[0]));
+                        case 'POWER':   return Math.pow(Number(vals()[0]), Number(vals()[1] ?? 1));
+                        case 'IF': {
+                            const condition = vals()[0];
+                            return condition ? (vals()[1] ?? '') : (vals()[2] ?? '');
+                        }
+                        case 'CONCAT': case 'CONCATENATE':
+                            return vals().join('');
+                        case 'LEN':
+                            return String(vals()[0] ?? '').length;
+                        case 'UPPER':   return String(vals()[0] ?? '').toUpperCase();
+                        case 'LOWER':   return String(vals()[0] ?? '').toLowerCase();
+                        case 'TRIM':    return String(vals()[0] ?? '').trim();
+                        case 'LEFT':    return String(vals()[0] ?? '').slice(0, Number(vals()[1] ?? 1));
+                        case 'RIGHT': {
+                            const s = String(vals()[0] ?? '');
+                            return s.slice(Math.max(0, s.length - Number(vals()[1] ?? 1)));
+                        }
+                        case 'MID': {
+                            const s = String(vals()[0] ?? '');
+                            return s.slice(Number(vals()[1] ?? 1) - 1, Number(vals()[1] ?? 1) - 1 + Number(vals()[2] ?? 1));
+                        }
+                        case 'NOW':     return new Date().toLocaleString('sk-SK');
+                        case 'TODAY':   return new Date().toLocaleDateString('sk-SK');
+                        case 'ROW':     return selfR + 1;
+                        case 'COLUMN':  return selfC + 1;
+                        default: return `#NAME:${fn}`;
+                    }
+                }
+                consume(); return 0;
+            }
+            return parseOr();
+        }
+
+        return {
+            isFormula: (v) => typeof v === 'string' && v.startsWith('='),
+            evaluate(formula, tableData, rIdx, cIdx) {
+                if (!this.isFormula(formula)) return formula;
+                try {
+                    const result = evalExpr(formula.slice(1), tableData, rIdx, cIdx);
+                    // Zaokrúhlenie floating point chýb
+                    if (typeof result === 'number' && !Number.isInteger(result)) {
+                        const rounded = parseFloat(result.toPrecision(12));
+                        return isFinite(rounded) ? rounded : result;
+                    }
+                    return result;
+                } catch(e) {
+                    return '#ERR: ' + e.message;
+                }
+            },
+            FUNCTIONS_HELP: [
+                '=SUM(A:A)  — súčet stĺpca A',
+                '=AVG(A1:A10)  — priemer rozsahu',
+                '=COUNT(B:B)  — počet čísel',
+                '=COUNTA(B:B)  — počet neprázdnych',
+                '=MIN(A:A) / =MAX(A:A)',
+                '=IF(A1>0,"kladné","záporné")',
+                '=CONCAT(A1," ",B1)',
+                '=ROUND(A1,2)  — zaokrúhlenie',
+                '=A1+B1  — aritmetika',
+                '=A1  — odkaz na bunku',
+            ]
+        };
+    })();
+    window.FormulaEngine = FormulaEngine;
+
+    // =====================================================
+    // UNDO/REDO VIZUÁLNY INDIKÁTOR
+    // =====================================================
+    function updateHistoryUI() {
+        const total = App.history.length;
+        const cur   = App.historyIndex;
+
+        // Počítadlá na tlačidlách
+        const undoN = document.getElementById('undoCount');
+        const redoN = document.getElementById('redoCount');
+        if (undoN) { const n = cur; undoN.textContent = n; undoN.classList.toggle('visible', n > 0); }
+        if (redoN) { const n = total - 1 - cur; redoN.textContent = n; redoN.classList.toggle('visible', n > 0); }
+
+        // History dots bar (max 20 bodiek)
+        const dots  = document.getElementById('historyDots');
+        const steps = document.getElementById('historySteps');
+        if (!dots) return;
+
+        const MAX_DOTS = 20;
+        const ratio   = total > MAX_DOTS ? MAX_DOTS / total : 1;
+        const shown   = Math.min(total, MAX_DOTS);
+
+        let html = '';
+        for (let i = 0; i < shown; i++) {
+            const realIdx = Math.round(i / ratio);
+            let cls = realIdx < cur ? 'past' : realIdx > cur ? 'future' : 'current';
+            html += `<span class="history-dot ${cls}"></span>`;
+        }
+        dots.innerHTML = html;
+        if (steps) steps.textContent = `${cur + 1}/${total}`;
+    }
+
+    // Obalíme undo/redo aby aktualizoval UI
+    const _uiUndo = App.undo.bind(App);
+    const _uiRedo = App.redo.bind(App);
+    App.undo = function() { _uiUndo(); updateHistoryUI(); };
+    App.redo = function() { _uiRedo(); updateHistoryUI(); };
+
+    // saveHistory tiež aktualizuje UI
+    const _origSaveHistory = App.saveHistory.bind(App);
+    App.saveHistory = function() { _origSaveHistory(); updateHistoryUI(); };
+
+    // =====================================================
+    // WEB WORKER PRE EXCEL EXPORT (non-blocking)
+    // =====================================================
+    function exportExcelInWorker(data, options) {
+        return new Promise((resolve, reject) => {
+            const workerCode = `
+importScripts('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js');
+self.onmessage = function(e) {
+    try {
+        const { headers, rows, richRows, formatting, options } = e.data;
+        const wb = XLSX.utils.book_new();
+
+        // Zostav pole riadkov
+        const wsData = [headers];
+        rows.forEach(r => wsData.push(r.map(v => v ?? '')));
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Šírky stĺpcov (auto)
+        if (options.autoWidth) {
+            ws['!cols'] = headers.map((h, i) => {
+                let max = String(h).length;
+                rows.forEach(r => { const l = String(r[i] ?? '').length; if (l > max) max = l; });
+                return { wch: Math.min(Math.max(max + 2, 8), 60) };
+            });
+        }
+
+        // Zmraz hlavičku
+        if (options.freezeHeader) ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+        // Štýl hlavičky
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let c = range.s.c; c <= range.e.c; c++) {
+            const addr = XLSX.utils.encode_cell({ r: 0, c });
+            if (!ws[addr]) continue;
+            ws[addr].s = {
+                font: { bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '2563EB' } },
+                alignment: { vertical: 'center', wrapText: true },
+                border: { bottom: { style: 'thin', color: { rgb: 'FFFFFF' } } }
+            };
+        }
+
+        // Formátovanie dátových buniek
+        if (options.includeFormatting && formatting) {
+            Object.entries(formatting).forEach(([key, fmt]) => {
+                const [r, c] = key.split('-').map(Number);
+                const addr = XLSX.utils.encode_cell({ r: r + 1, c });
+                if (!ws[addr]) return;
+                if (!ws[addr].s) ws[addr].s = {};
+                if (fmt.bg) ws[addr].s.fill = { fgColor: { rgb: fmt.bg.replace('#','') } };
+                if (fmt.b) ws[addr].s.font = { ...(ws[addr].s.font || {}), bold: true };
+                if (fmt.i) ws[addr].s.font = { ...(ws[addr].s.font || {}), italic: true };
+                if (fmt.c) ws[addr].s.font = { ...(ws[addr].s.font || {}), color: { rgb: fmt.c.replace('#','') } };
+            });
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Tabuľka');
+        const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        self.postMessage({ ok: true, buffer: buf });
+    } catch(err) {
+        self.postMessage({ ok: false, error: err.message });
+    }
+};`;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const url  = URL.createObjectURL(blob);
+            const worker = new Worker(url);
+
+            worker.onmessage = (e) => {
+                URL.revokeObjectURL(url);
+                worker.terminate();
+                if (e.data.ok) resolve(e.data.buffer);
+                else reject(new Error(e.data.error));
+            };
+            worker.onerror = (e) => {
+                URL.revokeObjectURL(url);
+                worker.terminate();
+                reject(new Error(e.message));
+            };
+            worker.postMessage({ ...data, options });
+        });
+    }
+
+    // Nahradíme exportExcel async workerom
+    const _origExportExcel = App.exportExcel.bind(App);
+    App.exportExcel = async function() {
+        const data = this.getExportData();
+        if (!data || !data.rows.length) { toast('Žiadne dáta', 'error'); return; }
+
+        // Fallback ak Worker nie je dostupný
+        if (typeof Worker === 'undefined') { _origExportExcel(); return; }
+
+        showLoading(true, 'Generujem Excel (Worker)...');
+        try {
+            const options = {
+                autoWidth:          document.getElementById('xlsxAutoWidth')?.checked ?? true,
+                freezeHeader:       document.getElementById('xlsxFreezeHeader')?.checked ?? true,
+                includeFormatting:  document.getElementById('xlsxIncludeFormatting')?.checked ?? true,
+            };
+            const buffer = await exportExcelInWorker({
+                headers:    data.headers,
+                rows:       data.rows,
+                richRows:   this.tableData.richRows || [],
+                formatting: this.tableData.formatting || {},
+            }, options);
+
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `TableMaster_Export_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            toast('Excel vytvorený (Worker)', 'success');
+        } catch(err) {
+            console.warn('[Worker] Excel failed, fallback:', err.message);
+            _origExportExcel(); // fallback
+        } finally {
+            showLoading(false);
+        }
+    };
+
+    // =====================================================
+    // DOCX EXPORT
+    // =====================================================
+    App.exportDOCX = function() {
+        if (typeof docx === 'undefined') { toast('docx.js nie je načítané', 'error'); return; }
+        const data = this.getExportData();
+        if (!data || !data.rows.length) { toast('Žiadne dáta', 'error'); return; }
+
+        showLoading(true, 'Generujem Word dokument...');
+
+        const {
+            Document, Packer, Table, TableRow, TableCell, Paragraph,
+            TextRun, HeadingLevel, WidthType, AlignmentType,
+            ShadingType, BorderStyle, Header
+        } = docx;
+
+        const theme = document.getElementById('docxTheme')?.value || 'modern';
+        const boldHeaders    = document.getElementById('docxBoldHeaders')?.checked ?? true;
+        const includeHeader  = document.getElementById('docxIncludeHeader')?.checked ?? true;
+        const inclFormatting = document.getElementById('docxIncludeFormatting')?.checked ?? true;
+
+        const themeColors = {
+            modern:    { header: '2563EB', headerText: 'FFFFFF', accent: '1E40AF' },
+            corporate: { header: '1E3A8A', headerText: 'FFFFFF', accent: '1E40AF' },
+            minimal:   { header: 'F5F5F5', headerText: '000000', accent: '000000' },
+            skoda:     { header: '0E3A2F', headerText: '78FAAE', accent: '0E3A2F' },
+        };
+        const tc = themeColors[theme] || themeColors.modern;
+
+        const hexToPct = (hex) => {
+            const r = parseInt(hex.substr(0,2),16)/255;
+            const g = parseInt(hex.substr(2,2),16)/255;
+            const b = parseInt(hex.substr(4,2),16)/255;
+            return (0.299*r + 0.587*g + 0.114*b) > 0.5;
+        };
+
+        // Hlavičkový riadok
+        const headerRow = new TableRow({
+            tableHeader: true,
+            children: data.headers.map(h => new TableCell({
+                shading: { fill: tc.header, type: ShadingType.CLEAR, color: 'auto' },
+                children: [new Paragraph({
+                    children: [new TextRun({
+                        text: String(h),
+                        bold: boldHeaders,
+                        color: tc.headerText,
+                        size: 20,
+                    })],
+                    spacing: { before: 60, after: 60 },
+                })],
+                margins: { top: 80, bottom: 80, left: 120, right: 120 },
+            })),
+        });
+
+        // Dátové riadky
+        const dataRows = data.rows.map((row, rIdx) =>
+            new TableRow({
+                children: data.headers.map((_, cIdx) => {
+                    const cellVal = String(row[cIdx] ?? '');
+                    const fmt = inclFormatting ? (this.tableData.formatting[`${rIdx}-${data.colIndices ? data.colIndices[cIdx] : cIdx}`] || {}) : {};
+                    const bgHex = fmt.bg ? fmt.bg.replace('#', '') : null;
+                    return new TableCell({
+                        ...(bgHex ? { shading: { fill: bgHex, type: ShadingType.CLEAR, color: 'auto' } } : {}),
+                        children: [new Paragraph({
+                            children: [new TextRun({
+                                text: cellVal,
+                                bold:   !!fmt.b,
+                                italics: !!fmt.i,
+                                underline: fmt.u ? {} : undefined,
+                                color: fmt.c ? fmt.c.replace('#','') : undefined,
+                                size: 18,
+                            })],
+                            spacing: { before: 40, after: 40 },
+                        })],
+                        margins: { top: 60, bottom: 60, left: 120, right: 120 },
+                    });
+                }),
+            })
+        );
+
+        const table = new Table({
+            rows: [headerRow, ...dataRows],
+            width: { size: 100, type: WidthType.PERCENTAGE },
+        });
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const children = [];
+        if (includeHeader) {
+            children.push(
+                new Paragraph({
+                    children: [new TextRun({ text: 'Exportovaná tabuľka', bold: true, size: 40, color: tc.accent })],
+                    heading: HeadingLevel.HEADING_1,
+                    spacing: { after: 160 },
+                }),
+                new Paragraph({
+                    children: [new TextRun({ text: `${dateStr} · ${data.rows.length} riadkov · ${data.headers.length} stĺpcov`, size: 18, color: '666666' })],
+                    spacing: { after: 320 },
+                })
+            );
+        }
+        children.push(table);
+
+        const doc = new Document({
+            creator: 'TableMaster Pro v7',
+            title: 'Exportovaná tabuľka',
+            styles: {
+                default: {
+                    document: { run: { font: 'Calibri' } },
+                },
+            },
+            sections: [{
+                properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
+                children,
+            }],
+        });
+
+        Packer.toBlob(doc).then(blob => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `TableMaster_Export_${now.toISOString().slice(0,10)}.docx`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            toast('Word dokument vytvorený');
+        }).catch(err => {
+            toast('Chyba DOCX: ' + err.message, 'error');
+        }).finally(() => showLoading(false));
+    };
+
+    // =====================================================
     // NEDÁVNE SÚBORY — IndexedDB + localStorage metadata
     // =====================================================
     const RecentFiles = {
@@ -5918,6 +6576,7 @@ ${styles ? `        <footer class="document-footer">
         handleUrlParams();
         updateSaveButtons();
         RecentFiles.render();
+        updateHistoryUI();
 
         const observer = new MutationObserver(updateSaveButtons);
         observer.observe(document.getElementById('editorSection'), { attributes: true, attributeFilter: ['style'] });

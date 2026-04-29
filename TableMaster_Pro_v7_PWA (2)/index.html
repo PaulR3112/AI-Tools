@@ -939,6 +939,10 @@
                                     <label class="export-option"><input type="checkbox" id="pdfPrintReady" checked> Optimalizované pre tlač</label>
                                     <label class="export-option"><input type="checkbox" id="pdfCoverPage" onchange="document.getElementById('pdfCoverFields').style.display=this.checked?'block':'none'"> Pridať titulnú stranu</label>
                                 </div>
+                                <div class="form-group" style="margin-top:10px;">
+                                    <label for="exportDocTitle" style="font-size:12px;color:var(--text-muted);font-weight:600;">Názov dokumentu (hlavička):</label>
+                                    <input type="text" id="exportDocTitle" class="form-control" placeholder="Použije sa názov importovaného súboru" style="padding:6px 8px;font-size:13px;" oninput="document.getElementById('htmlDocTitle') && (document.getElementById('htmlDocTitle').value=this.value)">
+                                </div>
                                 <div id="pdfCoverFields" style="display:none;margin-top:10px;padding:12px;background:var(--header-bg);border:1px solid var(--border);border-radius:6px;">
                                     <div class="form-group" style="margin-bottom:8px;">
                                         <label for="pdfCoverTitle" style="font-size:11px;color:var(--text-muted);font-weight:600;">Názov dokumentu:</label>
@@ -982,6 +986,10 @@
                                     <label class="export-option"><input type="checkbox" id="htmlIncludeFormatting" checked> Zachovať formátovanie buniek</label>
                                     <label class="export-option"><input type="checkbox" id="htmlZebra" checked> Zebra riadky</label>
                                     <label class="export-option"><input type="checkbox" id="htmlPrintReady" checked> Pripravené pre tlač</label>
+                                </div>
+                                <div class="form-group" style="margin-top:10px;">
+                                    <label for="htmlDocTitle" style="font-size:12px;color:var(--text-muted);font-weight:600;">Názov dokumentu (hlavička):</label>
+                                    <input type="text" id="htmlDocTitle" class="form-control" placeholder="Použije sa názov importovaného súboru" style="padding:6px 8px;font-size:13px;">
                                 </div>
                                 <div class="form-group" style="margin-top:10px;">
                                     <label for="htmlTheme" style="font-size:12px;color:var(--text-muted);">Téma:</label>
@@ -1600,6 +1608,15 @@
                     else if (name.endsWith('.html') || name.endsWith('.htm')) this.parseHTML(content);
                     else if (name.match(/\.xlsx?$/)) this.parseExcel(content);
                     else if (name.endsWith('.json')) this.parseJSON(content);
+
+                    // Uložíme názov pôvodného súboru (bez prípony) pre použitie v exporte
+                    const baseName = file.name.replace(/\.[^.]+$/, '');
+                    this.tableData.sourceFilename = baseName;
+                    // Predvyplníme title input v export paneli
+                    const titleInput = document.getElementById('exportDocTitle');
+                    if (titleInput && !titleInput.value.trim()) titleInput.value = baseName;
+                    const coverTitleInput = document.getElementById('pdfCoverTitle');
+                    if (coverTitleInput && !coverTitleInput.value.trim()) coverTitleInput.value = baseName;
 
                     this.initExportCols();
                     this.autoFormatChapters();
@@ -3492,10 +3509,15 @@
                     const primaryRgb = hexToRgb(t.primary);
                     const primaryLightRgb = hexToRgb(t.primaryLight);
 
+                    // ===== Načítanie názvu dokumentu (zo súboru alebo z input poľa) =====
+                    const docTitle = document.getElementById('exportDocTitle')?.value.trim()
+                        || this.tableData.sourceFilename
+                        || 'Exportovaná tabuľka';
+
                     // ===== COVER PAGE (titulná strana) =====
                     const coverPage = document.getElementById('pdfCoverPage')?.checked;
                     if (coverPage) {
-                        const coverTitle = document.getElementById('pdfCoverTitle')?.value.trim() || 'Exportovaná tabuľka';
+                        const coverTitle = document.getElementById('pdfCoverTitle')?.value.trim() || docTitle;
                         const coverSubtitle = document.getElementById('pdfCoverSubtitle')?.value.trim() || '';
                         const coverAuthor = document.getElementById('pdfCoverAuthor')?.value.trim() || '';
                         const coverDescription = document.getElementById('pdfCoverDescription')?.value.trim() || '';
@@ -3595,6 +3617,7 @@
                             doc.setFontSize(10);
                             doc.setTextColor(...(brightness < 128 ? [255, 255, 255] : [255, 255, 255]));
                             doc.text(safeText('TECHNICKÁ DOKUMENTÁCIA'), 20, 22, { charSpace: 2 });
+                            doc.setCharSpace(0);
                             
                             // Vertikálna čiara dekoratívna
                             doc.setDrawColor(...primaryRgb);
@@ -3635,6 +3658,7 @@
                                 doc.setFontSize(9);
                                 doc.setTextColor(...mutedRgb);
                                 doc.text('AUTOR', 30, metaY, { charSpace: 1 });
+                                doc.setCharSpace(0);
                                 doc.setFontSize(11);
                                 doc.setTextColor(...titleRgb);
                                 doc.setFont(fontFamily, 'bold');
@@ -3645,6 +3669,7 @@
                             doc.setFontSize(9);
                             doc.setTextColor(...mutedRgb);
                             doc.text('DATUM', w / 2 - 30, metaY, { charSpace: 1 });
+                            doc.setCharSpace(0);
                             doc.setFontSize(11);
                             doc.setTextColor(...titleRgb);
                             doc.setFont(fontFamily, 'bold');
@@ -3654,6 +3679,7 @@
                             doc.setFontSize(9);
                             doc.setTextColor(...mutedRgb);
                             doc.text('OBSAH', w - 80, metaY, { charSpace: 1 });
+                            doc.setCharSpace(0);
                             doc.setFontSize(11);
                             doc.setTextColor(...titleRgb);
                             doc.setFont(fontFamily, 'bold');
@@ -3666,36 +3692,50 @@
 
                     // Farebný akcent pásik hore + ŠKODA logo (iba pre Škoda tému)
                     if (t.isSkoda) {
-                        // Tmavozelené pozadie hore na celú šírku (výška 36mm pre logo+titulok)
+                        // Tmavozelené pozadie hore na celú šírku (výška 38mm pre logo+titulok)
                         doc.setFillColor(14, 58, 47); // #0E3A2F
-                        doc.rect(0, 0, w, 36, 'F');
-                        
-                        // ŠKODA wordmark rámček v pravom hornom rohu
+                        doc.rect(0, 0, w, 38, 'F');
+
+                        // === ŠKODA logo v pravom hornom rohu (modernizovaná verzia) ===
+                        // Logo box: outline rámček s ŠKODA wordmark vnútri
+                        const logoRight = w - 14;
+                        const logoTop = 7;
+                        const logoBoxW = 50;
+                        const logoBoxH = 14;
+                        const logoLeft = logoRight - logoBoxW;
+
+                        // Outline rámček (dvojitá hrúbka pre lepšiu viditeľnosť)
                         doc.setDrawColor(120, 250, 174); // #78FAAE
-                        doc.setLineWidth(0.8);
-                        doc.roundedRect(w - 52, 8, 38, 11, 1, 1, 'S');
+                        doc.setLineWidth(1.0);
+                        doc.roundedRect(logoLeft, logoTop, logoBoxW, logoBoxH, 1.2, 1.2, 'S');
+
+                        // ŠKODA wordmark - veľký, tučný, vycentrovaný
                         doc.setFont(fontFamily, 'bold');
-                        doc.setFontSize(16);
+                        doc.setFontSize(20);
                         doc.setTextColor(120, 250, 174);
-                        doc.text('SKODA', w - 33, 16, { align: 'center' });
-                        
-                        // Tagline pod logom
-                        doc.setFontSize(6);
+                        doc.setCharSpace(0.6);
+                        doc.text('SKODA', logoLeft + logoBoxW / 2, logoTop + 10, { align: 'center' });
+                        doc.setCharSpace(0); // CRITICAL: reset charSpace aby neovplyvňoval ostatné texty
+
+                        // TECHNICAL REPORT - vycentrované presne pod boxom (zarovnané so šírkou loga)
+                        doc.setFontSize(6.5);
                         doc.setFont(fontFamily, 'normal');
                         doc.setTextColor(120, 250, 174);
-                        doc.text('TECHNICAL REPORT', w - 33, 22, { align: 'center', charSpace: 1.5 });
-                        
-                        // Titulok - biely text na tmavom pozadí
+                        doc.setCharSpace(1.2);
+                        doc.text('TECHNICAL  REPORT', logoLeft + logoBoxW / 2, logoTop + logoBoxH + 4.2, { align: 'center' });
+                        doc.setCharSpace(0); // reset
+
+                        // Titulok - biely text na tmavom pozadí (šírka obmedzená aby nezasahoval do loga)
                         doc.setFontSize(22);
                         doc.setTextColor(255, 255, 255);
                         doc.setFont(fontFamily, 'bold');
-                        doc.text(safeText('Exportovana tabulka'), 14, 18);
-                        
+                        doc.text(safeText(docTitle), 14, 19, { maxWidth: w - logoBoxW - 35 });
+
                         // Podnadpis - svetlozelený
                         doc.setFontSize(10);
                         doc.setTextColor(120, 250, 174);
                         doc.setFont(fontFamily, 'normal');
-                        doc.text(safeText(`${dateStr} • ${timeStr}`), 14, 26);
+                        doc.text(safeText(`${dateStr} • ${timeStr}`), 14, 27);
                     } else {
                         // Klasická hlavička pre ostatné témy
                         doc.setFillColor(...primaryRgb);
@@ -3705,7 +3745,7 @@
                         doc.setFontSize(22);
                         doc.setTextColor(...titleRgb);
                         doc.setFont(fontFamily, 'bold');
-                        doc.text(safeText('Exportovaná tabuľka'), 14, 18);
+                        doc.text(safeText(docTitle), 14, 18, { maxWidth: w - 28 });
 
                         // Podnadpis s dátumom
                         doc.setFontSize(10);
@@ -3821,6 +3861,10 @@
                     const safeHeaders = filteredHeaders.map(h => safeText(h));
                     const safeRowsData = filteredRows.map(row => row.map(cell => safeText(cell)));
 
+                    // CRITICAL: pred autoTable resetujeme charSpace aby sa nepretiahol do hlavičky tabuľky
+                    // (jsPDF si pamätá charSpace medzi text() volaniami a aplikuje ho aj v autoTable headers)
+                    doc.setCharSpace(0);
+
                     doc.autoTable({
                         head: [safeHeaders],
                         body: safeRowsData,
@@ -3928,7 +3972,9 @@
                         }
                     }
 
-                    const filename = `TableMaster_Export_${now.toISOString().slice(0, 10)}.pdf`;
+                    const safeFileBase = (docTitle || 'TableMaster_Export')
+                        .replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
+                    const filename = `${safeFileBase}_${now.toISOString().slice(0, 10)}.pdf`;
                     doc.save(filename);
                     this.setUnsavedChanges(false);
                     toast(`PDF vytvorený (${theme})`);
@@ -3949,6 +3995,12 @@
             const zebra = document.getElementById('htmlZebra').checked;
             const printReady = document.getElementById('htmlPrintReady').checked;
             const theme = document.getElementById('htmlTheme').value;
+
+            // Názov dokumentu: HTML input → globálny export title → názov súboru → fallback
+            const docTitle = document.getElementById('htmlDocTitle')?.value.trim()
+                || document.getElementById('exportDocTitle')?.value.trim()
+                || this.tableData.sourceFilename
+                || 'Exportovaná tabuľka';
 
             // Témy
             const themes = {
@@ -4054,8 +4106,8 @@ body {
     position: absolute;
     top: 0;
     right: 0;
-    width: 180px;
-    height: 180px;
+    width: 240px;
+    height: 240px;
     background: radial-gradient(circle at top right, rgba(120, 250, 174, 0.15), transparent 70%);
     pointer-events: none;
 }
@@ -4065,13 +4117,15 @@ body {
     font-size: 32px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin-bottom: 10px;
+    margin: 0 0 10px 0;
     position: relative;
     z-index: 1;
 }
 
 .document-header.skoda-header .subtitle {
     color: rgba(255, 255, 255, 0.85);
+    position: relative;
+    z-index: 1;
 }
 
 .document-header.skoda-header .subtitle .badge {
@@ -4080,10 +4134,26 @@ body {
     border: 1px solid rgba(120, 250, 174, 0.3);
 }
 
+/* Škoda — stats-bar prepíše defaultné okraje a roztiahne sa na celú šírku hlavičky */
 .document-header.skoda-header .stats-bar {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(120, 250, 174, 0.25);
     backdrop-filter: blur(4px);
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 18px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 16px 24px;
+    justify-content: flex-start;
+    gap: 56px;
+    position: relative;
+    z-index: 1;
+}
+
+.document-header.skoda-header .stat {
+    flex: 0 1 auto;
+    min-width: 110px;
 }
 
 .document-header.skoda-header .stat-label {
@@ -4094,41 +4164,37 @@ body {
     color: #78FAAE;
 }
 
-/* Škoda logo wrapper */
+/* Škoda logo wrapper - logo + tagline v jednom riadku, vycentrované vertikálne */
 .skoda-logo-wrap {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 18px;
+    margin: 0 0 22px 0;
     padding-bottom: 18px;
     border-bottom: 1px solid rgba(120, 250, 174, 0.25);
     position: relative;
     z-index: 1;
 }
 
-.skoda-wordmark {
-    font-family: 'Arial Black', 'Helvetica', sans-serif;
-    font-size: 36px;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    color: #78FAAE;
-    line-height: 1;
-    padding: 8px 18px;
-    border: 3px solid #78FAAE;
-    border-radius: 4px;
-    background: transparent;
-    text-shadow: 0 0 20px rgba(120, 250, 174, 0.3);
+/* Nové ŠKODA logo - SVG s charakteristickými výrezmi v písmenách */
+.skoda-logo-svg {
+    height: 46px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 14px rgba(120, 250, 174, 0.25));
 }
 
 .skoda-tagline {
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.25em;
-    color: rgba(120, 250, 174, 0.8);
+    letter-spacing: 0.32em;
+    color: #78FAAE;
     text-transform: uppercase;
-    padding-left: 4px;
-    border-left: 2px solid rgba(120, 250, 174, 0.4);
-    padding: 4px 0 4px 16px;
+    padding: 6px 0 6px 16px;
+    border-left: 2px solid rgba(120, 250, 174, 0.5);
+    line-height: 1.3;
+    align-self: center;
 }
 
 .document-header h1 {
@@ -4704,9 +4770,9 @@ table.freeze-header thead th {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TableMaster Export - ${dateStr}</title>
+    <title>${escapeHtml(docTitle)} - ${dateStr}</title>
     <meta name="generator" content="TableMaster Pro v7">
-    <meta name="description" content="Exportovaná tabuľka s ${data.rows.length} riadkami">
+    <meta name="description" content="${escapeHtml(docTitle)} - ${data.rows.length} riadkov">
 ${styles ? `    <style>${css}
 
 /* ===== DARK MODE ===== */
@@ -4745,10 +4811,38 @@ ${styles ? `    <style>${css}
     <div class="container">
 ${styles ? `        <header class="document-header${t.isSkoda ? ' skoda-header' : ''}">
             ${t.isSkoda ? `<div class="skoda-logo-wrap">
-                <div class="skoda-wordmark">ŠKODA</div>
-                <div class="skoda-tagline">TECHNICAL REPORT</div>
+                <svg class="skoda-logo-svg" viewBox="0 0 380 80" xmlns="http://www.w3.org/2000/svg" aria-label="ŠKODA">
+                    <defs>
+                        <style>
+                            .sk-stroke { fill: none; stroke: #78FAAE; stroke-width: 9; stroke-linecap: square; stroke-linejoin: miter; }
+                        </style>
+                    </defs>
+                    <!-- Š háčik (caron) - vycentrovaný nad S (S je v rozsahu x=16..60, stred x=38) -->
+                    <polyline class="sk-stroke" points="28,8 38,20 48,8" />
+                    <!-- S - tvar písmena S so štyrmi segmentmi (charakteristický výrez) -->
+                    <path class="sk-stroke" d="M 60 30 L 16 30 L 16 50 L 50 50" />
+                    <path class="sk-stroke" d="M 16 50 L 16 70 L 60 70" />
+                    <line class="sk-stroke" x1="60" y1="30" x2="60" y2="36" />
+                    <line class="sk-stroke" x1="16" y1="64" x2="16" y2="70" />
+                    <!-- K - dva ťahy -->
+                    <line class="sk-stroke" x1="86" y1="30" x2="86" y2="70" />
+                    <polyline class="sk-stroke" points="130,30 86,50 130,70" />
+                    <!-- O - obdĺžnik s rezom v hornej časti -->
+                    <polyline class="sk-stroke" points="160,30 200,30" />
+                    <polyline class="sk-stroke" points="156,34 156,70 204,70 204,34" />
+                    <line class="sk-stroke" x1="156" y1="34" x2="156" y2="44" />
+                    <line class="sk-stroke" x1="204" y1="34" x2="204" y2="44" />
+                    <!-- D - tvar D s výrezom -->
+                    <line class="sk-stroke" x1="226" y1="30" x2="226" y2="70" />
+                    <path class="sk-stroke" d="M 226 30 L 260 30 L 270 40 L 270 60 L 260 70 L 226 70" />
+                    <!-- A - dva diagonály + priečka, s výrezom v špici -->
+                    <polyline class="sk-stroke" points="294,70 314,30 334,70" />
+                    <line class="sk-stroke" x1="302" y1="56" x2="326" y2="56" />
+                    <line class="sk-stroke" x1="310" y1="38" x2="318" y2="38" />
+                </svg>
+                <div class="skoda-tagline">TECHNICAL<br>REPORT</div>
             </div>` : ''}
-            <h1>Exportovaná tabuľka</h1>
+            <h1>${escapeHtml(docTitle)}</h1>
             <div class="subtitle">
                 <span>📅 ${dateStr}</span>
                 <span>🕐 ${timeStr}</span>
@@ -5047,7 +5141,8 @@ ${styles ? `        <footer class="document-footer">
             const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `TableMaster_Export_${now.toISOString().slice(0, 10)}.html`;
+            const _safeHtmlName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
+            link.download = `${_safeHtmlName}_${now.toISOString().slice(0, 10)}.html`;
             link.click();
             URL.revokeObjectURL(link.href);
             this.setUnsavedChanges(false);
@@ -6139,11 +6234,16 @@ self.onmessage = function(e) {
         const now = new Date();
         const dateStr = now.toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' });
 
+        // Názov dokumentu (z input poľa, sourceFilename alebo fallback)
+        const docTitle = document.getElementById('exportDocTitle')?.value.trim()
+            || this.tableData.sourceFilename
+            || 'Exportovaná tabuľka';
+
         const children = [];
         if (includeHeader) {
             children.push(
                 new Paragraph({
-                    children: [new TextRun({ text: 'Exportovaná tabuľka', bold: true, size: 40, color: tc.accent })],
+                    children: [new TextRun({ text: docTitle, bold: true, size: 40, color: tc.accent })],
                     heading: HeadingLevel.HEADING_1,
                     spacing: { after: 160 },
                 }),
@@ -6157,7 +6257,7 @@ self.onmessage = function(e) {
 
         const doc = new Document({
             creator: 'TableMaster Pro v7',
-            title: 'Exportovaná tabuľka',
+            title: docTitle,
             styles: {
                 default: {
                     document: { run: { font: 'Calibri' } },
@@ -6172,7 +6272,8 @@ self.onmessage = function(e) {
         Packer.toBlob(doc).then(blob => {
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `TableMaster_Export_${now.toISOString().slice(0,10)}.docx`;
+            const _safeDocxName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
+            link.download = `${_safeDocxName}_${now.toISOString().slice(0,10)}.docx`;
             link.click();
             URL.revokeObjectURL(link.href);
             toast('Word dokument vytvorený');

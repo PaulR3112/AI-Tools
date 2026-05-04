@@ -1701,6 +1701,8 @@
             dataRows.forEach(tr => {
                 const cells = tr.querySelectorAll('td, th');
                 if (cells.length === 0) return;
+                // Preskočiť riadky kde všetky bunky sú prázdne (prázdne <tr> oddeľovače)
+                if (Array.from(cells).every(td => !td.textContent.trim())) return;
 
                 const row = [];
                 const richRow = [];
@@ -2225,14 +2227,23 @@
         // Normalizuje medzery v rich HTML - pracuje len s textovými časťami, tagy zachová
         normalizeRichHtmlWhitespace(html) {
             if (!html) return '';
-            // Rozdelí HTML na časti: tagy (zostávajú) a text (normalizovaný)
+            // Rozdelí HTML na časti: tagy (zostávajú) a text (normalizovaný).
+            // DÔLEŽITÉ: zachovaj jednoduchú medzeru na ZAČIATKU textovej časti ktorá
+            // nasleduje po inline tagu (napr. "</b> Ausgabe:" → medzera je word-separator).
             return html.replace(/>([^<]+)</g, (match, textPart) => {
+                const leadingSpace  = /^[  ]/.test(textPart) ? ' ' : '';
+                const trailingSpace = /[  ]$/.test(textPart) ? ' ' : '';
                 const normalized = this.normalizeWhitespace(textPart);
-                return '>' + normalized + '<';
+                const withSpaces = leadingSpace + normalized + trailingSpace;
+                return '>' + withSpaces + '<';
             })
-            // Normalizuje aj text na začiatku/konci (mimo tagov)
             .replace(/^([^<]+)/, (match) => this.normalizeWhitespace(match))
-            .replace(/([^>]+)$/, (match) => this.normalizeWhitespace(match));
+            .replace(/([^>]+)$/, (match) => {
+                // Text za posledným tagom — zachovaj medzeru na začiatku (word-separator)
+                const leadingSpace = /^[  ]/.test(match) ? ' ' : '';
+                const normalized = this.normalizeWhitespace(match);
+                return leadingSpace + normalized;
+            });
         },
 
         initExportCols() {

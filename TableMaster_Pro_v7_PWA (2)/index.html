@@ -3156,6 +3156,7 @@
             let rows;
 
             if (this.selectedRows.size > 0) {
+                toast(`Export: iba ${this.selectedRows.size} vybraných riadkov z ${this.tableData.rows.length} celkovo. Odznač výber pre export všetkých.`, 'warning');
                 rows = this.tableData.rows
                     .filter((_, i) => this.selectedRows.has(i))
                     .map(row => colIndices.map(i => row[i]));
@@ -3690,48 +3691,30 @@
                         doc.addPage();
                     }
 
-                    // Farebný akcent pásik hore + ŠKODA logo (iba pre Škoda tému)
+                    // Hlavička stránky — auto-scale font titulku na dostupnú šírku
+                    const titleMaxW = w - 28;
+                    const autoScaleTitle = (text) => {
+                        let fs = 20;
+                        doc.setFont(fontFamily, 'bold');
+                        doc.setFontSize(fs);
+                        while (doc.getTextWidth(text) > titleMaxW && fs > 8) {
+                            fs -= 1;
+                            doc.setFontSize(fs);
+                        }
+                        return fs;
+                    };
+
                     if (t.isSkoda) {
-                        // Tmavozelené pozadie hore na celú šírku (výška 38mm pre logo+titulok)
+                        // Tmavozelené pozadie hore na celú šírku
                         doc.setFillColor(14, 58, 47); // #0E3A2F
                         doc.rect(0, 0, w, 38, 'F');
 
-                        // === ŠKODA logo v pravom hornom rohu (modernizovaná verzia) ===
-                        // Logo box: outline rámček s ŠKODA wordmark vnútri
-                        const logoRight = w - 14;
-                        const logoTop = 7;
-                        const logoBoxW = 50;
-                        const logoBoxH = 14;
-                        const logoLeft = logoRight - logoBoxW;
-
-                        // Outline rámček (dvojitá hrúbka pre lepšiu viditeľnosť)
-                        doc.setDrawColor(120, 250, 174); // #78FAAE
-                        doc.setLineWidth(1.0);
-                        doc.roundedRect(logoLeft, logoTop, logoBoxW, logoBoxH, 1.2, 1.2, 'S');
-
-                        // ŠKODA wordmark - veľký, tučný, vycentrovaný
-                        doc.setFont(fontFamily, 'bold');
-                        doc.setFontSize(20);
-                        doc.setTextColor(120, 250, 174);
-                        doc.setCharSpace(0.6);
-                        doc.text('SKODA', logoLeft + logoBoxW / 2, logoTop + 10, { align: 'center' });
-                        doc.setCharSpace(0); // CRITICAL: reset charSpace aby neovplyvňoval ostatné texty
-
-                        // TECHNICAL REPORT - vycentrované presne pod boxom (zarovnané so šírkou loga)
-                        doc.setFontSize(6.5);
-                        doc.setFont(fontFamily, 'normal');
-                        doc.setTextColor(120, 250, 174);
-                        doc.setCharSpace(1.2);
-                        doc.text('TECHNICAL  REPORT', logoLeft + logoBoxW / 2, logoTop + logoBoxH + 4.2, { align: 'center' });
-                        doc.setCharSpace(0); // reset
-
-                        // Titulok - biely text na tmavom pozadí (šírka obmedzená aby nezasahoval do loga)
-                        doc.setFontSize(22);
+                        // Titulok — auto-scale, biely, celá šírka (bez loga)
+                        autoScaleTitle(safeText(docTitle));
                         doc.setTextColor(255, 255, 255);
-                        doc.setFont(fontFamily, 'bold');
-                        doc.text(safeText(docTitle), 14, 19, { maxWidth: w - logoBoxW - 35 });
+                        doc.text(safeText(docTitle), 14, 19, { maxWidth: titleMaxW });
 
-                        // Podnadpis - svetlozelený
+                        // Podnadpis — svetlozelený
                         doc.setFontSize(10);
                         doc.setTextColor(120, 250, 174);
                         doc.setFont(fontFamily, 'normal');
@@ -3741,11 +3724,10 @@
                         doc.setFillColor(...primaryRgb);
                         doc.rect(0, 0, w, 3, 'F');
 
-                        // Titulok
-                        doc.setFontSize(22);
+                        // Titulok — auto-scale
+                        autoScaleTitle(safeText(docTitle));
                         doc.setTextColor(...titleRgb);
-                        doc.setFont(fontFamily, 'bold');
-                        doc.text(safeText(docTitle), 14, 18, { maxWidth: w - 28 });
+                        doc.text(safeText(docTitle), 14, 18, { maxWidth: titleMaxW });
 
                         // Podnadpis s dátumom
                         doc.setFontSize(10);
@@ -4786,39 +4768,9 @@ table.freeze-header thead th {
     <meta name="description" content="${escapeHtml(docTitle)} - ${data.rows.length} riadkov">
 ${styles ? `    <style>${css}
 
-/* ===== DARK MODE ===== */
-:root[data-dark] body { background: #0f172a; color: #e2e8f0; }
-:root[data-dark] .document-header { background: #1e293b; border-color: #334155; }
-:root[data-dark] .table-wrapper { background: #1e293b; border-color: #334155; }
-:root[data-dark] thead { background: #0E3A2F; }
-:root[data-dark] thead th { color: #78FAAE; border-color: rgba(120,250,174,0.3); background: #0E3A2F; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-:root[data-dark] tbody td { color: #e2e8f0; border-color: #334155; }
-:root[data-dark] tbody tr:nth-child(even) td { background: #1a2744; }
-:root[data-dark] tbody tr:hover td { background: rgba(255,255,255,0.06) !important; }
-:root[data-dark] .chapter-nav { background: #1e293b; border-color: #334155; }
-:root[data-dark] .chapter-btn { background: #0f172a; color: #94a3b8; border-color: #334155; }
-:root[data-dark] .search-bar { border-color: #334155; }
-:root[data-dark] .search-input, :root[data-dark] .search-col-select { background: #1e293b; border-color: #334155; color: #e2e8f0; }
-:root[data-dark] .stats-bar { background: rgba(255,255,255,0.04); border-color: #334155; }
-:root[data-dark] .stat-label { color: #64748b; }
-:root[data-dark] .stat-value { color: #e2e8f0; }
-:root[data-dark] .document-footer { color: #475569; }
-:root[data-dark] .document-footer a { color: #60a5fa; }
-
-.dm-toggle {
-    position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px;
-    border-radius: 50%; border: 2px solid rgba(255,255,255,.15);
-    background: rgba(15,23,42,.8); color: #fff; font-size: 20px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    z-index: 9999; backdrop-filter: blur(6px); transition: transform .2s, box-shadow .2s;
-    box-shadow: 0 2px 12px rgba(0,0,0,.4);
-}
-.dm-toggle:hover { transform: scale(1.12); box-shadow: 0 4px 20px rgba(0,0,0,.5); }
-@media print { .dm-toggle { display: none !important; } }
 </style>` : ''}
 </head>
 <body>
-    <button class="dm-toggle" id="dmBtn" onclick="tmToggleDark()" title="Prepnúť tmavý/svetlý režim" aria-label="Prepnúť tmavý/svetlý režim">🌙</button>
     <div class="container">
 ${styles ? `        <header class="document-header${t.isSkoda ? ' skoda-header' : ''}">
             ${t.isSkoda ? `<div class="skoda-logo-wrap">
@@ -5099,23 +5051,6 @@ ${styles ? `        <footer class="document-footer">
         }
     });
 
-    // ===== DARK MODE TOGGLE =====
-    (function() {
-        const DM_KEY = 'tm-export-dark';
-        const root = document.documentElement;
-        function applyDark(on) {
-            if (on) { root.setAttribute('data-dark', ''); document.getElementById('dmBtn').textContent = '☀️'; }
-            else     { root.removeAttribute('data-dark');  document.getElementById('dmBtn').textContent = '🌙'; }
-            try { localStorage.setItem(DM_KEY, on ? '1' : '0'); } catch(e) {}
-        }
-        // Default: SVETLÝ režim. Dark mode sa zapne LEN ak ho user explicitne aktivoval.
-        // (prefers-color-scheme sa zámerne neberie do úvahy — zachovávame predvídateľný export.)
-        let saved = null;
-        try { saved = localStorage.getItem(DM_KEY); } catch(e) {}
-        if (saved === '1') applyDark(true);
-
-        window.tmToggleDark = () => applyDark(!root.hasAttribute('data-dark'));
-    })();
     <\/script>
 </body>
 </html>`;

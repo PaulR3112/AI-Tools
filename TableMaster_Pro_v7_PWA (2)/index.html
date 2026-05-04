@@ -1215,8 +1215,8 @@
             // BR - špeciálne, vráti newline pre čisté texty aj pre rich
             if (tag === 'BR') return '\n';
 
-            // IMG - vráti alt text (napr. bullet ikony majú alt="point")
-            if (tag === 'IMG') return (node.getAttribute('alt') || '').trim();
+            // IMG - obrázky sa zahodia (bullet ikony, logá atď.)
+            if (tag === 'IMG') return '';
 
             // <a> - vezme len text, vynechá link
             if (tag === 'A') {
@@ -1732,6 +1732,13 @@
                     // Normalizácia medzier aj v rich HTML (mimo tagov)
                     if (this.shouldNormalizeSpaces() && richHtml) {
                         richHtml = this.normalizeRichHtmlWhitespace(richHtml);
+                    }
+                    // Zabezpeč medzeru pred a za inline formátovacími tagmi (<b>, <i>, <u>)
+                    // keď bezprostredne susedia s ne-bielym znakom (napr. "logisches<b>ODER</b>")
+                    if (richHtml) {
+                        richHtml = richHtml
+                            .replace(/([^\s\n>])<(b|i|u)>/g, '$1 <$2>')
+                            .replace(/<\/(b|i|u)>([^\s\n<])/g, '</$1> $2');
                     }
                     
                     row.push(plainText);

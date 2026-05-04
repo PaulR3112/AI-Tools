@@ -1214,13 +1214,28 @@
             
             // BR - špeciálne, vráti newline pre čisté texty aj pre rich
             if (tag === 'BR') return '\n';
-            
+
+            // IMG - vráti alt text (napr. bullet ikony majú alt="point")
+            if (tag === 'IMG') return (node.getAttribute('alt') || '').trim();
+
             // <a> - vezme len text, vynechá link
             if (tag === 'A') {
                 return Array.from(node.childNodes).map(walk).join('');
             }
-            
-            // <p>, <div> - pridá newline
+
+            // <li> - odsadený riadok s pomlčkou ako náhrada za bullet
+            if (tag === 'LI') {
+                const inner = Array.from(node.childNodes).map(walk).join('');
+                return '\n  – ' + inner.trim();
+            }
+
+            // <ul>, <ol> - zalamovanie zoznamu
+            if (tag === 'UL' || tag === 'OL') {
+                const inner = Array.from(node.childNodes).map(walk).join('');
+                return inner + '\n';
+            }
+
+            // <p>, <div> - pridá newline pred aj za obsah (oddeľovač odsekov)
             if (tag === 'P' || tag === 'DIV') {
                 const inner = Array.from(node.childNodes).map(walk).join('');
                 return inner + '\n';
@@ -2227,23 +2242,22 @@
         // Normalizuje medzery v rich HTML - pracuje len s textovými časťami, tagy zachová
         normalizeRichHtmlWhitespace(html) {
             if (!html) return '';
-            // Rozdelí HTML na časti: tagy (zostávajú) a text (normalizovaný).
-            // DÔLEŽITÉ: zachovaj jednoduchú medzeru na ZAČIATKU textovej časti ktorá
-            // nasleduje po inline tagu (napr. "</b> Ausgabe:" → medzera je word-separator).
-            return html.replace(/>([^<]+)</g, (match, textPart) => {
-                const leadingSpace  = /^[  ]/.test(textPart) ? ' ' : '';
-                const trailingSpace = /[  ]$/.test(textPart) ? ' ' : '';
-                const normalized = this.normalizeWhitespace(textPart);
-                const withSpaces = leadingSpace + normalized + trailingSpace;
-                return '>' + withSpaces + '<';
-            })
-            .replace(/^([^<]+)/, (match) => this.normalizeWhitespace(match))
-            .replace(/([^>]+)$/, (match) => {
-                // Text za posledným tagom — zachovaj medzeru na začiatku (word-separator)
-                const leadingSpace = /^[  ]/.test(match) ? ' ' : '';
-                const normalized = this.normalizeWhitespace(match);
-                return leadingSpace + normalized;
-            });
+            // Zachová \n (oddeľovač odsekov) a medzeru (word-separator za inline tagom)
+            // na hraniciach textových úsekov — normalizeWhitespace by ich inak orezal.
+            const restoreEdges = (textPart) => {
+                const leadNL  = /^\n/.test(textPart);
+                const trailNL = /\n$/.test(textPart);
+                const leadSp  = !leadNL  && /^ /.test(textPart);
+                const trailSp = !trailNL && / $/.test(textPart);
+                const norm = this.normalizeWhitespace(textPart);
+                return (leadNL ? '\n' : leadSp ? ' ' : '')
+                     + norm
+                     + (trailNL ? '\n' : trailSp ? ' ' : '');
+            };
+            return html
+                .replace(/>([^<]+)</g, (_, tp) => '>' + restoreEdges(tp) + '<')
+                .replace(/^([^<]+)/, (m) => this.normalizeWhitespace(m))
+                .replace(/([^>]+)$/, (m) => restoreEdges(m));
         },
 
         initExportCols() {

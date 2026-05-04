@@ -3528,30 +3528,26 @@
                             // Škoda: tmavozelené pozadie + svetlozelené akcenty
                             doc.setFillColor(14, 58, 47);
                             doc.rect(0, 0, w, h, 'F');
-                            // Akcent: rastrový gradient v rohu
                             doc.setFillColor(120, 250, 174, 0.05);
                             doc.circle(w - 30, 30, 60, 'F');
                             doc.circle(30, h - 30, 80, 'F');
-                            
-                            // ŠKODA logo v pravom hornom rohu
-                            doc.setDrawColor(120, 250, 174);
-                            doc.setLineWidth(1.5);
-                            doc.roundedRect(w - 60, 20, 45, 14, 1.5, 1.5, 'S');
-                            doc.setFont(fontFamily, 'bold');
-                            doc.setFontSize(20);
-                            doc.setTextColor(120, 250, 174);
-                            doc.text('SKODA', w - 37.5, 30, { align: 'center' });
 
                             // Decoračná čiara
                             doc.setDrawColor(120, 250, 174);
                             doc.setLineWidth(0.5);
                             doc.line(20, h / 2 - 35, 80, h / 2 - 35);
 
-                            // Názov dokumentu
+                            // Názov dokumentu — auto-scale font
+                            const coverMaxW = w - 40;
+                            let coverFs = 36;
                             doc.setFont(fontFamily, 'bold');
-                            doc.setFontSize(36);
+                            doc.setFontSize(coverFs);
+                            while (doc.getTextWidth(safeText(coverTitle)) > coverMaxW && coverFs > 12) {
+                                coverFs -= 2;
+                                doc.setFontSize(coverFs);
+                            }
                             doc.setTextColor(255, 255, 255);
-                            doc.text(safeText(coverTitle), 20, h / 2 - 15, { maxWidth: w - 40 });
+                            doc.text(safeText(coverTitle), 20, h / 2 - 15, { maxWidth: coverMaxW });
 
                             // Podnadpis
                             if (coverSubtitle) {
@@ -3933,9 +3929,9 @@
                                 doc.rect(0, h - 6, w, 6, 'F');
                                 doc.setFontSize(8);
                                 doc.setTextColor(120, 250, 174);
-                                doc.setFont(fontFamily, 'bold');
-                                doc.text('SKODA', 14, h - 2.3);
                                 doc.setFont(fontFamily, 'normal');
+                                const footerTitle = safeText(docTitle).slice(0, 40) + (docTitle.length > 40 ? '…' : '');
+                                doc.text(footerTitle, 14, h - 2.3);
                                 doc.text(safeText(`Strana ${displayPageNum} z ${displayTotalPages}`), w / 2, h - 2.3, { align: 'center' });
                                 doc.text(safeText(dateStr), w - 14, h - 2.3, { align: 'right' });
                             } else {

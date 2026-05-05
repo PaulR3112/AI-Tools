@@ -3226,6 +3226,36 @@
             const total = data.rows.length;
             showLoading(true, 'Generujem Excel...', 0, total);
 
+            // Helper: konvertuje richHtml (<b>,<i>,<u>) na xlsx-js-style rich text runs
+            const richHtmlToXlsxRuns = (richHtml, baseFont) => {
+                const runs = [];
+                const st = { b: false, i: false, u: false };
+                const re = /<(\/?)([biu])>/g;
+                let last = 0, m;
+                const push = (text) => {
+                    if (!text) return;
+                    text.split('\n').forEach((part, idx, arr) => {
+                        const font = Object.assign({}, baseFont);
+                        if (st.b) font.bold = true;
+                        if (st.i) font.italic = true;
+                        if (st.u) font.underline = true;
+                        if (part.length > 0) runs.push({ t: part, s: { font } });
+                        if (idx < arr.length - 1) runs.push({ t: '\n', s: { font: Object.assign({}, baseFont) } });
+                    });
+                };
+                while ((m = re.exec(richHtml)) !== null) {
+                    push(richHtml.slice(last, m.index));
+                    last = m.index + m[0].length;
+                    const tag = m[2].toLowerCase(), close = m[1] === '/';
+                    if (tag === 'b') st.b = !close;
+                    else if (tag === 'i') st.i = !close;
+                    else if (tag === 'u') st.u = !close;
+                }
+                push(richHtml.slice(last));
+                const hasFmt = runs.some(r => r.s?.font?.bold || r.s?.font?.italic || r.s?.font?.underline);
+                return hasFmt ? runs : null;
+            };
+
             // Helper: detekuje či je CELÁ bunka tučná/kurzíva/podčiarknutá
             const isFullyBold = (richHtml, plainText) => {
                 if (!richHtml || !plainText) return false;
@@ -3286,27 +3316,33 @@
                                 const origCol = data.colIndices[cIdx];
                                 const f = this.tableData.formatting[`${origIdx}-${origCol}`];
                                 const richCell = richRow[origCol];
-                                
-                                const font = {};
-                                let hasFontStyle = false;
 
-                                // Rich formátovanie - aplikovať len ak je celá bunka tučná/kurzíva
-                                if (richCell && hasRichFormatting(richCell)) {
-                                    if (isFullyBold(richCell, cell)) { font.bold = true; hasFontStyle = true; }
-                                    if (isFullyItalic(richCell, cell)) { font.italic = true; hasFontStyle = true; }
-                                    if (/<u>/i.test(richCell)) { font.underline = true; hasFontStyle = true; }
-                                }
-
-                                // Farby/bg z formatting
+                                // Základ fontu z cell-level formatting (farba, bg)
+                                const baseFont = {};
                                 if (f) {
-                                    if (f.b) { font.bold = true; hasFontStyle = true; }
-                                    if (f.i) { font.italic = true; hasFontStyle = true; }
-                                    if (f.u) { font.underline = true; hasFontStyle = true; }
-                                    if (f.c) { font.color = { rgb: 'FF' + f.c.replace('#', '').toUpperCase() }; hasFontStyle = true; }
+                                    if (f.b) baseFont.bold = true;
+                                    if (f.i) baseFont.italic = true;
+                                    if (f.u) baseFont.underline = true;
+                                    if (f.c) baseFont.color = { rgb: 'FF' + f.c.replace('#', '').toUpperCase() };
                                     if (f.bg) style.fill = { patternType: 'solid', fgColor: { rgb: 'FF' + f.bg.replace('#', '').toUpperCase() } };
                                 }
-                                
-                                if (hasFontStyle) style.font = font;
+
+                                // Rich text runs pre inline formátovanie (tučné/kurzíva/podč. časti)
+                                if (!isNum && richCell && hasRichFormatting(richCell)) {
+                                    const runs = richHtmlToXlsxRuns(richCell, baseFont);
+                                    if (runs) {
+                                        obj.t = 'inlineStr';
+                                        obj.r = runs;
+                                    } else {
+                                        // Celá bunka jednotne formátovaná
+                                        if (isFullyBold(richCell, cell)) baseFont.bold = true;
+                                        if (isFullyItalic(richCell, cell)) baseFont.italic = true;
+                                        if (/<u>/i.test(richCell)) baseFont.underline = true;
+                                        if (Object.keys(baseFont).length) style.font = baseFont;
+                                    }
+                                } else if (Object.keys(baseFont).length) {
+                                    style.font = baseFont;
+                                }
                             }
                             obj.s = style;
                             return obj;
@@ -3825,7 +3861,6 @@
                     const richRows = this.tableData.richRows || [];
 
                     // ===== AUTOMATICKÝ VÝPOČET ŠÍRKY STĹPCOV =====
-                    // Získam max dĺžku textu pre každý stĺpec (vrátane hlavičky)
                     const pageContentWidth = w - 14 - 14; // margin L+R
                     const colMaxLen = filteredHeaders.map((h, i) => {
                         let max = h.length;
@@ -3837,33 +3872,40 @@
                         });
                         return Math.min(max, 80);
                     });
-                    
-                    const totalLen = colMaxLen.reduce((a, b) => a + b, 0) || 1;
-                    const minColWidth = 18;
+
+                    const minColW = 14;   // mm
+                    const SHORT = 25;     // kratší ako SHORT = "krátky" stĺpec (ID, číslo...)
                     const columnStyles = {};
-                    let allocatedWidth = 0;
-                    
+
+                    // Fáza 1: krátke stĺpce dostanú kompaktnú fixnú šírku
+                    const shortWidths = {};
+                    let shortTotal = 0;
                     colMaxLen.forEach((len, i) => {
-                        let w = Math.max((len / totalLen) * pageContentWidth, minColWidth);
-                        if (len <= 20) {
-                            w = Math.max(len * 2.2 + 6, minColWidth);
+                        if (len <= SHORT) {
+                            const cw = Math.max(len * 1.8 + 4, minColW);
+                            shortWidths[i] = cw;
+                            shortTotal += cw;
                         }
-                        columnStyles[i] = { cellWidth: w };
-                        allocatedWidth += w;
                     });
-                    
-                    if (allocatedWidth > pageContentWidth) {
-                        const scale = pageContentWidth / allocatedWidth;
+
+                    // Fáza 2: dlhé stĺpce si delia zostatok proporcionálne
+                    const longBudget = Math.max(pageContentWidth - shortTotal, 0);
+                    const longIdxs = colMaxLen.map((len, i) => len > SHORT ? i : -1).filter(x => x >= 0);
+                    const longLenTotal = longIdxs.reduce((a, i) => a + colMaxLen[i], 0) || 1;
+                    colMaxLen.forEach((len, i) => {
+                        if (shortWidths[i] !== undefined) {
+                            columnStyles[i] = { cellWidth: shortWidths[i] };
+                        } else {
+                            columnStyles[i] = { cellWidth: Math.max((len / longLenTotal) * longBudget, minColW) };
+                        }
+                    });
+
+                    // Fáza 3: ak celková šírka prekročí stránku, škálujeme
+                    const totalAlloc = Object.values(columnStyles).reduce((s, c) => s + c.cellWidth, 0);
+                    if (totalAlloc > pageContentWidth) {
+                        const scale = pageContentWidth / totalAlloc;
                         Object.keys(columnStyles).forEach(k => {
-                            columnStyles[k].cellWidth *= scale;
-                        });
-                    } else {
-                        const remaining = pageContentWidth - allocatedWidth;
-                        colMaxLen.forEach((len, i) => {
-                            if (len > 20) {
-                                const longTotal = colMaxLen.filter(l => l > 20).reduce((a, b) => a + b, 0);
-                                columnStyles[i].cellWidth += (len / longTotal) * remaining;
-                            }
+                            columnStyles[k].cellWidth = Math.max(columnStyles[k].cellWidth * scale, minColW);
                         });
                     }
 
@@ -5646,6 +5688,8 @@ ${styles ? `        <footer class="document-footer">
     window.closeColumnModal = closeColumnModal;
     window.closeHeaderEditModal = closeHeaderEditModal;
     window.closePreviewModal = closePreviewModal;
+    window.confirmModalConfirm = confirmModalConfirm;
+    window.confirmModalCancel = confirmModalCancel;
     window.resetApp = resetApp;
     window.installPWA = installPWA;
     window.dismissInstallBanner = dismissInstallBanner;

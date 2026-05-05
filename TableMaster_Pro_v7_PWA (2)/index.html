@@ -210,11 +210,22 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .toolbar {
-            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; align-items: center;
-            background: var(--bg-card); padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; align-items: center;
+            background: var(--bg-card); padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
         }
-        .toolbar-group { display: flex; gap: 5px; align-items: center; }
-        .separator { width: 1px; height: 24px; background: var(--border); margin: 0 5px; }
+        .toolbar-group {
+            display: flex; gap: 4px; align-items: center;
+            background: rgba(0,0,0,0.03); border-radius: 7px; padding: 4px 6px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] .toolbar-group {
+            background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07);
+        }
+        .separator {
+            width: 1px; height: 30px;
+            background: linear-gradient(to bottom, transparent, var(--border), transparent);
+            margin: 0 2px; flex-shrink: 0;
+        }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
@@ -310,7 +321,18 @@
             background: var(--bg-card); color: var(--text-main); resize: vertical;
         }
         tr:last-child td { border-bottom: none; }
-        tr.selected td { background-color: var(--primary-light) !important; }
+        tr.selected td {
+            background-color: var(--primary-light) !important;
+        }
+        tr.selected td:first-child {
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
+        [data-theme="dark"] tr.selected td {
+            background-color: rgba(78,205,100,0.12) !important;
+        }
+        [data-theme="dark"] tr.selected td:first-child {
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
         tr.filtered-out { display: none; }
         td.highlight { background-color: #fef08a !important; }
         [data-theme="dark"] td.highlight { background-color: #854d0e !important; }
@@ -337,6 +359,11 @@
         .stat-item { display: flex; align-items: center; gap: 5px; }
         .stat-label { color: var(--text-muted); }
         .stat-value { font-weight: 600; }
+        .stat-item.selection-active .stat-label { color: var(--primary); font-weight: 600; }
+        .stat-item.selection-active .stat-value {
+            color: white; background: var(--primary); border-radius: 10px;
+            padding: 1px 8px; font-size: 12px; min-width: 20px; text-align: center;
+        }
 
         /* === NUMERICKÉ ŠTATISTIKY VÝBERU === */
         .selection-stats {
@@ -3161,7 +3188,9 @@
         updateStats() {
             document.getElementById('totalRows').textContent = this.tableData.rows.length;
             document.getElementById('totalCols').textContent = this.tableData.headers.length;
-            document.getElementById('rowCount').textContent = this.selectedRows.size;
+            const rowCountEl = document.getElementById('rowCount');
+            rowCountEl.textContent = this.selectedRows.size;
+            rowCountEl.closest('.stat-item')?.classList.toggle('selection-active', this.selectedRows.size > 0);
             document.getElementById('visibleRows').textContent = this.filteredIndices ? this.filteredIndices.length : this.tableData.rows.length;
             const fmtEl = document.getElementById('formattedCount');
             if (fmtEl) {
@@ -4791,7 +4820,7 @@ table.freeze-header thead th {
                         <option value="">-- Vyberte kapitolu --</option>
                         ${chapterOptions}
                     </select>
-                    <button class="chapter-btn" onclick="toggleFreezeHeader()" id="freezeHeaderBtn" title="Fixovať hlavičku pri scrollovaní">📌 Fix hlavička</button>
+                    <button class="chapter-btn freeze-btn" onclick="toggleFreezeHeader()" title="Fixovať hlavičku pri scrollovaní">📌 Fix hlavička</button>
                     <button class="chapter-btn" onclick="scrollToTop()" title="Späť na začiatok">⬆ Hore</button>
                 </div>
                 ${searchBarHtml}
@@ -4799,7 +4828,7 @@ table.freeze-header thead th {
             <nav class="chapter-nav" role="navigation" aria-label="Ovládanie">
                 <div class="chapter-nav-inner">
                     <span class="chapter-nav-label">📌 Fixovanie:</span>
-                    <button class="chapter-btn" onclick="toggleFreezeHeader()" id="freezeHeaderBtn" title="Fixovať hlavičku pri scrollovaní">Fix hlavička</button>
+                    <button class="chapter-btn freeze-btn" onclick="toggleFreezeHeader()" title="Fixovať hlavičku pri scrollovaní">Fix hlavička</button>
                     <button class="chapter-btn" onclick="scrollToTop()" title="Späť na začiatok">⬆ Hore</button>
                 </div>
                 ${searchBarHtml}
@@ -4854,7 +4883,7 @@ ${styles ? `        <header class="document-header${t.isSkoda ? ' skoda-header' 
 ${navPanelHtml}
         <main class="table-wrapper">
             <div class="table-scroll">
-                <table id="mainTable">
+                <table id="exportTable">
                     <thead>
                         <tr>${headersHtml}</tr>
                     </thead>
@@ -4876,7 +4905,7 @@ ${styles ? `        <footer class="document-footer">
         if (!target) return;
         
         const scroll = document.querySelector('.table-scroll');
-        const table = document.getElementById('mainTable');
+        const table = document.getElementById('exportTable');
         const isFreeze = table && table.classList.contains('freeze-header');
         
         if (isFreeze && scroll && !scroll.classList.contains('no-freeze')) {
@@ -4898,8 +4927,8 @@ ${styles ? `        <footer class="document-footer">
     }
     // Toggle fixovania hlavičky tabuľky
     function toggleFreezeHeader() {
-        const table = document.getElementById('mainTable');
-        const btn = document.getElementById('freezeHeaderBtn');
+        const table = document.getElementById('exportTable');
+        const btn = document.querySelector('.freeze-btn');
         const scroll = document.querySelector('.table-scroll');
         if (!table || !scroll) return;
         table.classList.toggle('freeze-header');
@@ -4918,7 +4947,7 @@ ${styles ? `        <footer class="document-footer">
     // Scroll na začiatok (tabuľky alebo stránky)
     function scrollToTop() {
         const scroll = document.querySelector('.table-scroll');
-        const table = document.getElementById('mainTable');
+        const table = document.getElementById('exportTable');
         const isFreeze = table && table.classList.contains('freeze-header');
         if (isFreeze && scroll && !scroll.classList.contains('no-freeze')) {
             scroll.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4960,7 +4989,7 @@ ${styles ? `        <footer class="document-footer">
         const rawQuery = input.value.trim();
         const query = normalizeForSearch(rawQuery);
         const searchCol = parseInt(colSelect.value, 10); // -1 = všetky
-        const rows = document.querySelectorAll('#mainTable tbody tr');
+        const rows = document.querySelectorAll('#exportTable tbody tr');
         
         // Vždy najprv vyčistím predošlé highlighty
         clearHighlights();
@@ -5066,7 +5095,7 @@ ${styles ? `        <footer class="document-footer">
     
     // Odstráni všetky <mark class="search-match"> elementy a spojí texty späť
     function clearHighlights() {
-        const marks = document.querySelectorAll('#mainTable mark.search-match');
+        const marks = document.querySelectorAll('#exportTable mark.search-match');
         marks.forEach(mark => {
             const parent = mark.parentNode;
             const textNode = document.createTextNode(mark.textContent);
@@ -5082,13 +5111,13 @@ ${styles ? `        <footer class="document-footer">
         const resultsEl = document.getElementById('searchResults');
         if (input) input.value = '';
         if (colSelect) colSelect.value = '-1';
-        document.querySelectorAll('#mainTable tbody tr').forEach(r => r.classList.remove('search-hidden'));
+        document.querySelectorAll('#exportTable tbody tr').forEach(r => r.classList.remove('search-hidden'));
         clearHighlights();
         if (resultsEl) resultsEl.style.display = 'none';
     }
     // Default: hlavička fixovaná
     document.addEventListener('DOMContentLoaded', () => {
-        const table = document.getElementById('mainTable');
+        const table = document.getElementById('exportTable');
         const scroll = document.querySelector('.table-scroll');
         if (table) {
             table.classList.add('freeze-header');

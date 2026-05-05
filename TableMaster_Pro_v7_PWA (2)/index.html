@@ -1290,6 +1290,28 @@
         return /<\/?(b|i|u)>/i.test(str);
     };
 
+    // Zdieľané helpery pre rich text — používané v exportExcel aj exportPDF
+    const isFullyBold = (richHtml, plainText) => {
+        if (!richHtml || !plainText || !/<b>/i.test(richHtml)) return false;
+        const inner = (richHtml.match(/<b>([\s\S]*?)<\/b>/gi) || [])
+            .map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = inner;
+        const bt = (tmp.textContent || '').replace(/\s+/g, '');
+        const pt = plainText.replace(/\s+/g, '');
+        return pt.length > 0 && bt.length / pt.length > 0.8;
+    };
+    const isFullyItalic = (richHtml, plainText) => {
+        if (!richHtml || !plainText || !/<i>/i.test(richHtml)) return false;
+        const inner = (richHtml.match(/<i>([\s\S]*?)<\/i>/gi) || [])
+            .map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = inner;
+        const it = (tmp.textContent || '').replace(/\s+/g, '');
+        const pt = plainText.replace(/\s+/g, '');
+        return pt.length > 0 && it.length / pt.length > 0.8;
+    };
+
     const App = {
         tableData: { headers: [], rows: [], richRows: [], formatting: {} },
         history: [],
@@ -1555,7 +1577,10 @@
                 const indicator = document.getElementById('autosaveIndicator');
                 indicator.classList.add('active');
                 setTimeout(() => indicator.classList.remove('active'), 2000);
-            } catch (e) { console.warn('Autosave failed:', e); }
+            } catch (e) {
+                console.warn('Autosave failed:', e);
+                toast('Autouloženie zlyhalo (plné úložisko)', 'warning');
+            }
         },
 
         checkForSavedSession() {
@@ -3256,32 +3281,6 @@
                 return hasFmt ? runs : null;
             };
 
-            // Helper: detekuje či je CELÁ bunka tučná/kurzíva/podčiarknutá
-            const isFullyBold = (richHtml, plainText) => {
-                if (!richHtml || !plainText) return false;
-                if (!/<b>/i.test(richHtml)) return false;
-                // Odstráni <b></b> tagy a porovná dĺžku
-                const innerBold = (richHtml.match(/<b>([\s\S]*?)<\/b>/gi) || [])
-                    .map(m => m.replace(/<\/?[bi]>|<\/?u>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerBold;
-                const boldText = (tmp.textContent || '').replace(/\s+/g, '');
-                const cleanPlain = plainText.replace(/\s+/g, '');
-                // Ak tučný text tvorí >80% celej bunky, považujeme celú bunku za tučnú
-                return cleanPlain.length > 0 && boldText.length / cleanPlain.length > 0.8;
-            };
-            const isFullyItalic = (richHtml, plainText) => {
-                if (!richHtml || !plainText) return false;
-                if (!/<i>/i.test(richHtml)) return false;
-                const innerItalic = (richHtml.match(/<i>([\s\S]*?)<\/i>/gi) || [])
-                    .map(m => m.replace(/<\/?[bi]>|<\/?u>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerItalic;
-                const italicText = (tmp.textContent || '').replace(/\s+/g, '');
-                const cleanPlain = plainText.replace(/\s+/g, '');
-                return cleanPlain.length > 0 && italicText.length / cleanPlain.length > 0.8;
-            };
-
             setTimeout(() => {
                 try {
                     const autoW = document.getElementById('xlsxAutoWidth').checked;
@@ -3393,28 +3392,6 @@
             const hexToRgb = (hex) => {
                 const h = hex.replace('#', '');
                 return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
-            };
-
-            // Helper: detekuje celobunkový bold/italic z rich HTML
-            const isFullyBold = (richHtml, plainText) => {
-                if (!richHtml || !plainText || !/<b>/i.test(richHtml)) return false;
-                const boldMatches = richHtml.match(/<b>([\s\S]*?)<\/b>/gi) || [];
-                const innerBold = boldMatches.map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerBold;
-                const bt = (tmp.textContent || '').replace(/\s+/g, '');
-                const pt = plainText.replace(/\s+/g, '');
-                return pt.length > 0 && bt.length / pt.length > 0.8;
-            };
-            const isFullyItalic = (richHtml, plainText) => {
-                if (!richHtml || !plainText || !/<i>/i.test(richHtml)) return false;
-                const italicMatches = richHtml.match(/<i>([\s\S]*?)<\/i>/gi) || [];
-                const innerItalic = italicMatches.map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerItalic;
-                const it = (tmp.textContent || '').replace(/\s+/g, '');
-                const pt = plainText.replace(/\s+/g, '');
-                return pt.length > 0 && it.length / pt.length > 0.8;
             };
 
             setTimeout(() => {
@@ -5691,6 +5668,9 @@ ${styles ? `        <footer class="document-footer">
     window.confirmModalConfirm = confirmModalConfirm;
     window.confirmModalCancel = confirmModalCancel;
     window.resetApp = resetApp;
+    window.clearSearch = clearSearch;
+    window.toggleFreezeHeader = toggleFreezeHeader;
+    window.scrollToTop = scrollToTop;
     window.installPWA = installPWA;
     window.dismissInstallBanner = dismissInstallBanner;
 

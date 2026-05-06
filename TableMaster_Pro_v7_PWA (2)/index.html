@@ -5137,7 +5137,6 @@ ${styles ? `        <footer class="document-footer">
             const _safeHtmlName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
             link.download = `${_safeHtmlName}_${now.toISOString().slice(0, 10)}.html`;
             link.click();
-            URL.revokeObjectURL(link.href);
             this.setUnsavedChanges(false);
             toast(`HTML vytvorený (${theme})`);
         },

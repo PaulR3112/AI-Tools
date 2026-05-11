@@ -3406,6 +3406,7 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'TableMaster_Export.csv';
             link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             this.setUnsavedChanges(false);
             toast('CSV vytvorený');
         },
@@ -5121,7 +5122,7 @@ ${styles ? `        <footer class="document-footer">
         const scroll = document.querySelector('.table-scroll');
         if (table) {
             table.classList.add('freeze-header');
-            const btn = document.getElementById('freezeHeaderBtn');
+            const btn = document.querySelector('.freeze-btn');
             if (btn) btn.classList.add('active');
             if (scroll) updateScrollClass(scroll, table);
         }
@@ -5137,6 +5138,7 @@ ${styles ? `        <footer class="document-footer">
             const _safeHtmlName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
             link.download = `${_safeHtmlName}_${now.toISOString().slice(0, 10)}.html`;
             link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             this.setUnsavedChanges(false);
             toast(`HTML vytvorený (${theme})`);
         },
@@ -5165,6 +5167,7 @@ ${styles ? `        <footer class="document-footer">
             link.href = URL.createObjectURL(blob);
             link.download = 'TableMaster_Export.json';
             link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             this.setUnsavedChanges(false);
             toast('JSON vytvorený');
         }

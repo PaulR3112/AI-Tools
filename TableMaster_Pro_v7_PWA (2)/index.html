@@ -5861,7 +5861,8 @@ ${styles ? `        <footer class="document-footer">
                 while (peek() && (peek().v === '*' || peek().v === '/')) {
                     const op = consume().v;
                     const right = parseUnary();
-                    left = op === '*' ? Number(left) * Number(right) : Number(left) / Number(right);
+                    left = op === '*' ? Number(left) * Number(right) :
+                           (Number(right) === 0 ? '#DIV/0!' : Number(left) / Number(right));
                 }
                 return left;
             }
@@ -6000,8 +6001,14 @@ ${styles ? `        <footer class="document-footer">
         // Počítadlá na tlačidlách
         const undoN = document.getElementById('undoCount');
         const redoN = document.getElementById('redoCount');
-        if (undoN) { const n = cur; undoN.textContent = n; undoN.classList.toggle('visible', n > 0); }
-        if (redoN) { const n = total - 1 - cur; redoN.textContent = n; redoN.classList.toggle('visible', n > 0); }
+        const canUndo = cur > 0;
+        const canRedo = cur < total - 1;
+        if (undoN) { undoN.textContent = cur; undoN.classList.toggle('visible', canUndo); }
+        if (redoN) { const n = total - 1 - cur; redoN.textContent = n; redoN.classList.toggle('visible', canRedo); }
+        const btnUndo = document.getElementById('btnUndo');
+        const btnRedo = document.getElementById('btnRedo');
+        if (btnUndo) btnUndo.disabled = !canUndo;
+        if (btnRedo) btnRedo.disabled = !canRedo;
 
         // History dots bar (max 20 bodiek)
         const dots  = document.getElementById('historyDots');

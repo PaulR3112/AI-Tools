@@ -210,11 +210,22 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .toolbar {
-            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; align-items: center;
-            background: var(--bg-card); padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; align-items: center;
+            background: var(--bg-card); padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
         }
-        .toolbar-group { display: flex; gap: 5px; align-items: center; }
-        .separator { width: 1px; height: 24px; background: var(--border); margin: 0 5px; }
+        .toolbar-group {
+            display: flex; gap: 4px; align-items: center;
+            background: rgba(0,0,0,0.03); border-radius: 7px; padding: 4px 6px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] .toolbar-group {
+            background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07);
+        }
+        .separator {
+            width: 1px; height: 30px;
+            background: linear-gradient(to bottom, transparent, var(--border), transparent);
+            margin: 0 2px; flex-shrink: 0;
+        }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
@@ -310,7 +321,18 @@
             background: var(--bg-card); color: var(--text-main); resize: vertical;
         }
         tr:last-child td { border-bottom: none; }
-        tr.selected td { background-color: var(--primary-light) !important; }
+        tr.selected td {
+            background-color: var(--primary-light) !important;
+        }
+        tr.selected td:first-child {
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
+        [data-theme="dark"] tr.selected td {
+            background-color: rgba(78,205,100,0.12) !important;
+        }
+        [data-theme="dark"] tr.selected td:first-child {
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
         tr.filtered-out { display: none; }
         td.highlight { background-color: #fef08a !important; }
         [data-theme="dark"] td.highlight { background-color: #854d0e !important; }
@@ -337,6 +359,11 @@
         .stat-item { display: flex; align-items: center; gap: 5px; }
         .stat-label { color: var(--text-muted); }
         .stat-value { font-weight: 600; }
+        .stat-item.selection-active .stat-label { color: var(--primary); font-weight: 600; }
+        .stat-item.selection-active .stat-value {
+            color: white; background: var(--primary); border-radius: 10px;
+            padding: 1px 8px; font-size: 12px; min-width: 20px; text-align: center;
+        }
 
         /* === NUMERICKÉ ŠTATISTIKY VÝBERU === */
         .selection-stats {
@@ -1214,13 +1241,28 @@
             
             // BR - špeciálne, vráti newline pre čisté texty aj pre rich
             if (tag === 'BR') return '\n';
-            
+
+            // IMG - obrázky sa zahodia (bullet ikony, logá atď.)
+            if (tag === 'IMG') return '';
+
             // <a> - vezme len text, vynechá link
             if (tag === 'A') {
                 return Array.from(node.childNodes).map(walk).join('');
             }
-            
-            // <p>, <div> - pridá newline
+
+            // <li> - odsadený riadok s pomlčkou ako náhrada za bullet
+            if (tag === 'LI') {
+                const inner = Array.from(node.childNodes).map(walk).join('');
+                return '\n  – ' + inner.trim();
+            }
+
+            // <ul>, <ol> - zalamovanie zoznamu
+            if (tag === 'UL' || tag === 'OL') {
+                const inner = Array.from(node.childNodes).map(walk).join('');
+                return inner + '\n';
+            }
+
+            // <p>, <div> - pridá newline pred aj za obsah (oddeľovač odsekov)
             if (tag === 'P' || tag === 'DIV') {
                 const inner = Array.from(node.childNodes).map(walk).join('');
                 return inner + '\n';
@@ -1273,6 +1315,28 @@
     const hasRichFormatting = (str) => {
         if (!str || typeof str !== 'string') return false;
         return /<\/?(b|i|u)>/i.test(str);
+    };
+
+    // Zdieľané helpery pre rich text — používané v exportExcel aj exportPDF
+    const isFullyBold = (richHtml, plainText) => {
+        if (!richHtml || !plainText || !/<b>/i.test(richHtml)) return false;
+        const inner = (richHtml.match(/<b>([\s\S]*?)<\/b>/gi) || [])
+            .map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = inner;
+        const bt = (tmp.textContent || '').replace(/\s+/g, '');
+        const pt = plainText.replace(/\s+/g, '');
+        return pt.length > 0 && bt.length / pt.length > 0.8;
+    };
+    const isFullyItalic = (richHtml, plainText) => {
+        if (!richHtml || !plainText || !/<i>/i.test(richHtml)) return false;
+        const inner = (richHtml.match(/<i>([\s\S]*?)<\/i>/gi) || [])
+            .map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = inner;
+        const it = (tmp.textContent || '').replace(/\s+/g, '');
+        const pt = plainText.replace(/\s+/g, '');
+        return pt.length > 0 && it.length / pt.length > 0.8;
     };
 
     const App = {
@@ -1540,7 +1604,10 @@
                 const indicator = document.getElementById('autosaveIndicator');
                 indicator.classList.add('active');
                 setTimeout(() => indicator.classList.remove('active'), 2000);
-            } catch (e) { console.warn('Autosave failed:', e); }
+            } catch (e) {
+                console.warn('Autosave failed:', e);
+                toast('Autouloženie zlyhalo (plné úložisko)', 'warning');
+            }
         },
 
         checkForSavedSession() {
@@ -1552,7 +1619,9 @@
                         document.getElementById('restoreSession').classList.add('active');
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('Session load failed:', e);
+            }
         },
 
         restoreSession() {
@@ -1572,6 +1641,7 @@
         clearSession() {
             localStorage.removeItem(AUTOSAVE_KEY);
             document.getElementById('restoreSession').classList.remove('active');
+            toast('Relácia zahodená');
         },
 
         showEditor() {
@@ -1640,6 +1710,10 @@
             Papa.parse(content, {
                 skipEmptyLines: true,
                 complete: (res) => {
+                    if (res.errors.length && !res.data.length) {
+                        toast('CSV parse chyba: ' + res.errors[0].message, 'error');
+                        return;
+                    }
                     if (!res.data.length) {
                         toast('CSV súbor je prázdny', 'error');
                         return;
@@ -1651,6 +1725,9 @@
                     delete this.tableData.headerBg;
                     this.renderTable();
                     this.saveHistory();
+                },
+                error: (err) => {
+                    toast('CSV parse chyba: ' + err.message, 'error');
                 }
             });
         },
@@ -1701,6 +1778,8 @@
             dataRows.forEach(tr => {
                 const cells = tr.querySelectorAll('td, th');
                 if (cells.length === 0) return;
+                // Preskočiť riadky kde všetky bunky sú prázdne (prázdne <tr> oddeľovače)
+                if (Array.from(cells).every(td => !td.textContent.trim())) return;
 
                 const row = [];
                 const richRow = [];
@@ -1715,6 +1794,13 @@
                     // Normalizácia medzier aj v rich HTML (mimo tagov)
                     if (this.shouldNormalizeSpaces() && richHtml) {
                         richHtml = this.normalizeRichHtmlWhitespace(richHtml);
+                    }
+                    // Zabezpeč medzeru pred a za inline formátovacími tagmi (<b>, <i>, <u>)
+                    // keď bezprostredne susedia s ne-bielym znakom (napr. "logisches<b>ODER</b>")
+                    if (richHtml) {
+                        richHtml = richHtml
+                            .replace(/([^\s\n>])<(b|i|u)>/g, '$1 <$2>')
+                            .replace(/<\/(b|i|u)>([^\s\n<])/g, '</$1> $2');
                     }
                     
                     row.push(plainText);
@@ -2225,14 +2311,22 @@
         // Normalizuje medzery v rich HTML - pracuje len s textovými časťami, tagy zachová
         normalizeRichHtmlWhitespace(html) {
             if (!html) return '';
-            // Rozdelí HTML na časti: tagy (zostávajú) a text (normalizovaný)
-            return html.replace(/>([^<]+)</g, (match, textPart) => {
-                const normalized = this.normalizeWhitespace(textPart);
-                return '>' + normalized + '<';
-            })
-            // Normalizuje aj text na začiatku/konci (mimo tagov)
-            .replace(/^([^<]+)/, (match) => this.normalizeWhitespace(match))
-            .replace(/([^>]+)$/, (match) => this.normalizeWhitespace(match));
+            // Zachová \n (oddeľovač odsekov) a medzeru (word-separator za inline tagom)
+            // na hraniciach textových úsekov — normalizeWhitespace by ich inak orezal.
+            const restoreEdges = (textPart) => {
+                const leadNL  = /^\n/.test(textPart);
+                const trailNL = /\n$/.test(textPart);
+                const leadSp  = !leadNL  && /^ /.test(textPart);
+                const trailSp = !trailNL && / $/.test(textPart);
+                const norm = this.normalizeWhitespace(textPart);
+                return (leadNL ? '\n' : leadSp ? ' ' : '')
+                     + norm
+                     + (trailNL ? '\n' : trailSp ? ' ' : '');
+            };
+            return html
+                .replace(/>([^<]+)</g, (_, tp) => '>' + restoreEdges(tp) + '<')
+                .replace(/^([^<]+)/, (m) => this.normalizeWhitespace(m))
+                .replace(/([^>]+)$/, (m) => restoreEdges(m));
         },
 
         initExportCols() {
@@ -3104,7 +3198,9 @@
         updateStats() {
             document.getElementById('totalRows').textContent = this.tableData.rows.length;
             document.getElementById('totalCols').textContent = this.tableData.headers.length;
-            document.getElementById('rowCount').textContent = this.selectedRows.size;
+            const rowCountEl = document.getElementById('rowCount');
+            rowCountEl.textContent = this.selectedRows.size;
+            rowCountEl.closest('.stat-item')?.classList.toggle('selection-active', this.selectedRows.size > 0);
             document.getElementById('visibleRows').textContent = this.filteredIndices ? this.filteredIndices.length : this.tableData.rows.length;
             const fmtEl = document.getElementById('formattedCount');
             if (fmtEl) {
@@ -3156,6 +3252,7 @@
             let rows;
 
             if (this.selectedRows.size > 0) {
+                toast(`Export: iba ${this.selectedRows.size} vybraných riadkov z ${this.tableData.rows.length} celkovo. Odznač výber pre export všetkých.`, 'warning');
                 rows = this.tableData.rows
                     .filter((_, i) => this.selectedRows.has(i))
                     .map(row => colIndices.map(i => row[i]));
@@ -3193,30 +3290,34 @@
             const total = data.rows.length;
             showLoading(true, 'Generujem Excel...', 0, total);
 
-            // Helper: detekuje či je CELÁ bunka tučná/kurzíva/podčiarknutá
-            const isFullyBold = (richHtml, plainText) => {
-                if (!richHtml || !plainText) return false;
-                if (!/<b>/i.test(richHtml)) return false;
-                // Odstráni <b></b> tagy a porovná dĺžku
-                const innerBold = (richHtml.match(/<b>([\s\S]*?)<\/b>/gi) || [])
-                    .map(m => m.replace(/<\/?[bi]>|<\/?u>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerBold;
-                const boldText = (tmp.textContent || '').replace(/\s+/g, '');
-                const cleanPlain = plainText.replace(/\s+/g, '');
-                // Ak tučný text tvorí >80% celej bunky, považujeme celú bunku za tučnú
-                return cleanPlain.length > 0 && boldText.length / cleanPlain.length > 0.8;
-            };
-            const isFullyItalic = (richHtml, plainText) => {
-                if (!richHtml || !plainText) return false;
-                if (!/<i>/i.test(richHtml)) return false;
-                const innerItalic = (richHtml.match(/<i>([\s\S]*?)<\/i>/gi) || [])
-                    .map(m => m.replace(/<\/?[bi]>|<\/?u>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerItalic;
-                const italicText = (tmp.textContent || '').replace(/\s+/g, '');
-                const cleanPlain = plainText.replace(/\s+/g, '');
-                return cleanPlain.length > 0 && italicText.length / cleanPlain.length > 0.8;
+            // Helper: konvertuje richHtml (<b>,<i>,<u>) na xlsx-js-style rich text runs
+            const richHtmlToXlsxRuns = (richHtml, baseFont) => {
+                const runs = [];
+                const st = { b: false, i: false, u: false };
+                const re = /<(\/?)([biu])>/g;
+                let last = 0, m;
+                const push = (text) => {
+                    if (!text) return;
+                    text.split('\n').forEach((part, idx, arr) => {
+                        const font = Object.assign({}, baseFont);
+                        if (st.b) font.bold = true;
+                        if (st.i) font.italic = true;
+                        if (st.u) font.underline = true;
+                        if (part.length > 0) runs.push({ t: part, s: { font } });
+                        if (idx < arr.length - 1) runs.push({ t: '\n', s: { font: Object.assign({}, baseFont) } });
+                    });
+                };
+                while ((m = re.exec(richHtml)) !== null) {
+                    push(richHtml.slice(last, m.index));
+                    last = m.index + m[0].length;
+                    const tag = m[2].toLowerCase(), close = m[1] === '/';
+                    if (tag === 'b') st.b = !close;
+                    else if (tag === 'i') st.i = !close;
+                    else if (tag === 'u') st.u = !close;
+                }
+                push(richHtml.slice(last));
+                const hasFmt = runs.some(r => r.s?.font?.bold || r.s?.font?.italic || r.s?.font?.underline);
+                return hasFmt ? runs : null;
             };
 
             setTimeout(() => {
@@ -3253,27 +3354,33 @@
                                 const origCol = data.colIndices[cIdx];
                                 const f = this.tableData.formatting[`${origIdx}-${origCol}`];
                                 const richCell = richRow[origCol];
-                                
-                                const font = {};
-                                let hasFontStyle = false;
 
-                                // Rich formátovanie - aplikovať len ak je celá bunka tučná/kurzíva
-                                if (richCell && hasRichFormatting(richCell)) {
-                                    if (isFullyBold(richCell, cell)) { font.bold = true; hasFontStyle = true; }
-                                    if (isFullyItalic(richCell, cell)) { font.italic = true; hasFontStyle = true; }
-                                    if (/<u>/i.test(richCell)) { font.underline = true; hasFontStyle = true; }
-                                }
-
-                                // Farby/bg z formatting
+                                // Základ fontu z cell-level formatting (farba, bg)
+                                const baseFont = {};
                                 if (f) {
-                                    if (f.b) { font.bold = true; hasFontStyle = true; }
-                                    if (f.i) { font.italic = true; hasFontStyle = true; }
-                                    if (f.u) { font.underline = true; hasFontStyle = true; }
-                                    if (f.c) { font.color = { rgb: 'FF' + f.c.replace('#', '').toUpperCase() }; hasFontStyle = true; }
+                                    if (f.b) baseFont.bold = true;
+                                    if (f.i) baseFont.italic = true;
+                                    if (f.u) baseFont.underline = true;
+                                    if (f.c) baseFont.color = { rgb: 'FF' + f.c.replace('#', '').toUpperCase() };
                                     if (f.bg) style.fill = { patternType: 'solid', fgColor: { rgb: 'FF' + f.bg.replace('#', '').toUpperCase() } };
                                 }
-                                
-                                if (hasFontStyle) style.font = font;
+
+                                // Rich text runs pre inline formátovanie (tučné/kurzíva/podč. časti)
+                                if (!isNum && richCell && hasRichFormatting(richCell)) {
+                                    const runs = richHtmlToXlsxRuns(richCell, baseFont);
+                                    if (runs) {
+                                        obj.t = 'inlineStr';
+                                        obj.r = runs;
+                                    } else {
+                                        // Celá bunka jednotne formátovaná
+                                        if (isFullyBold(richCell, cell)) baseFont.bold = true;
+                                        if (isFullyItalic(richCell, cell)) baseFont.italic = true;
+                                        if (/<u>/i.test(richCell)) baseFont.underline = true;
+                                        if (Object.keys(baseFont).length) style.font = baseFont;
+                                    }
+                                } else if (Object.keys(baseFont).length) {
+                                    style.font = baseFont;
+                                }
                             }
                             obj.s = style;
                             return obj;
@@ -3309,6 +3416,7 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'TableMaster_Export.csv';
             link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             this.setUnsavedChanges(false);
             toast('CSV vytvorený');
         },
@@ -3324,28 +3432,6 @@
             const hexToRgb = (hex) => {
                 const h = hex.replace('#', '');
                 return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
-            };
-
-            // Helper: detekuje celobunkový bold/italic z rich HTML
-            const isFullyBold = (richHtml, plainText) => {
-                if (!richHtml || !plainText || !/<b>/i.test(richHtml)) return false;
-                const boldMatches = richHtml.match(/<b>([\s\S]*?)<\/b>/gi) || [];
-                const innerBold = boldMatches.map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerBold;
-                const bt = (tmp.textContent || '').replace(/\s+/g, '');
-                const pt = plainText.replace(/\s+/g, '');
-                return pt.length > 0 && bt.length / pt.length > 0.8;
-            };
-            const isFullyItalic = (richHtml, plainText) => {
-                if (!richHtml || !plainText || !/<i>/i.test(richHtml)) return false;
-                const italicMatches = richHtml.match(/<i>([\s\S]*?)<\/i>/gi) || [];
-                const innerItalic = italicMatches.map(m => m.replace(/<\/?[biu]>/gi, '')).join('');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = innerItalic;
-                const it = (tmp.textContent || '').replace(/\s+/g, '');
-                const pt = plainText.replace(/\s+/g, '');
-                return pt.length > 0 && it.length / pt.length > 0.8;
             };
 
             setTimeout(() => {
@@ -3527,30 +3613,26 @@
                             // Škoda: tmavozelené pozadie + svetlozelené akcenty
                             doc.setFillColor(14, 58, 47);
                             doc.rect(0, 0, w, h, 'F');
-                            // Akcent: rastrový gradient v rohu
                             doc.setFillColor(120, 250, 174, 0.05);
                             doc.circle(w - 30, 30, 60, 'F');
                             doc.circle(30, h - 30, 80, 'F');
-                            
-                            // ŠKODA logo v pravom hornom rohu
-                            doc.setDrawColor(120, 250, 174);
-                            doc.setLineWidth(1.5);
-                            doc.roundedRect(w - 60, 20, 45, 14, 1.5, 1.5, 'S');
-                            doc.setFont(fontFamily, 'bold');
-                            doc.setFontSize(20);
-                            doc.setTextColor(120, 250, 174);
-                            doc.text('SKODA', w - 37.5, 30, { align: 'center' });
 
                             // Decoračná čiara
                             doc.setDrawColor(120, 250, 174);
                             doc.setLineWidth(0.5);
                             doc.line(20, h / 2 - 35, 80, h / 2 - 35);
 
-                            // Názov dokumentu
+                            // Názov dokumentu — auto-scale font
+                            const coverMaxW = w - 40;
+                            let coverFs = 36;
                             doc.setFont(fontFamily, 'bold');
-                            doc.setFontSize(36);
+                            doc.setFontSize(coverFs);
+                            while (doc.getTextWidth(safeText(coverTitle)) > coverMaxW && coverFs > 12) {
+                                coverFs -= 2;
+                                doc.setFontSize(coverFs);
+                            }
                             doc.setTextColor(255, 255, 255);
-                            doc.text(safeText(coverTitle), 20, h / 2 - 15, { maxWidth: w - 40 });
+                            doc.text(safeText(coverTitle), 20, h / 2 - 15, { maxWidth: coverMaxW });
 
                             // Podnadpis
                             if (coverSubtitle) {
@@ -3690,48 +3772,30 @@
                         doc.addPage();
                     }
 
-                    // Farebný akcent pásik hore + ŠKODA logo (iba pre Škoda tému)
+                    // Hlavička stránky — auto-scale font titulku na dostupnú šírku
+                    const titleMaxW = w - 28;
+                    const autoScaleTitle = (text) => {
+                        let fs = 20;
+                        doc.setFont(fontFamily, 'bold');
+                        doc.setFontSize(fs);
+                        while (doc.getTextWidth(text) > titleMaxW && fs > 8) {
+                            fs -= 1;
+                            doc.setFontSize(fs);
+                        }
+                        return fs;
+                    };
+
                     if (t.isSkoda) {
-                        // Tmavozelené pozadie hore na celú šírku (výška 38mm pre logo+titulok)
+                        // Tmavozelené pozadie hore na celú šírku
                         doc.setFillColor(14, 58, 47); // #0E3A2F
                         doc.rect(0, 0, w, 38, 'F');
 
-                        // === ŠKODA logo v pravom hornom rohu (modernizovaná verzia) ===
-                        // Logo box: outline rámček s ŠKODA wordmark vnútri
-                        const logoRight = w - 14;
-                        const logoTop = 7;
-                        const logoBoxW = 50;
-                        const logoBoxH = 14;
-                        const logoLeft = logoRight - logoBoxW;
-
-                        // Outline rámček (dvojitá hrúbka pre lepšiu viditeľnosť)
-                        doc.setDrawColor(120, 250, 174); // #78FAAE
-                        doc.setLineWidth(1.0);
-                        doc.roundedRect(logoLeft, logoTop, logoBoxW, logoBoxH, 1.2, 1.2, 'S');
-
-                        // ŠKODA wordmark - veľký, tučný, vycentrovaný
-                        doc.setFont(fontFamily, 'bold');
-                        doc.setFontSize(20);
-                        doc.setTextColor(120, 250, 174);
-                        doc.setCharSpace(0.6);
-                        doc.text('SKODA', logoLeft + logoBoxW / 2, logoTop + 10, { align: 'center' });
-                        doc.setCharSpace(0); // CRITICAL: reset charSpace aby neovplyvňoval ostatné texty
-
-                        // TECHNICAL REPORT - vycentrované presne pod boxom (zarovnané so šírkou loga)
-                        doc.setFontSize(6.5);
-                        doc.setFont(fontFamily, 'normal');
-                        doc.setTextColor(120, 250, 174);
-                        doc.setCharSpace(1.2);
-                        doc.text('TECHNICAL  REPORT', logoLeft + logoBoxW / 2, logoTop + logoBoxH + 4.2, { align: 'center' });
-                        doc.setCharSpace(0); // reset
-
-                        // Titulok - biely text na tmavom pozadí (šírka obmedzená aby nezasahoval do loga)
-                        doc.setFontSize(22);
+                        // Titulok — auto-scale, biely, celá šírka (bez loga)
+                        autoScaleTitle(safeText(docTitle));
                         doc.setTextColor(255, 255, 255);
-                        doc.setFont(fontFamily, 'bold');
-                        doc.text(safeText(docTitle), 14, 19, { maxWidth: w - logoBoxW - 35 });
+                        doc.text(safeText(docTitle), 14, 19, { maxWidth: titleMaxW });
 
-                        // Podnadpis - svetlozelený
+                        // Podnadpis — svetlozelený
                         doc.setFontSize(10);
                         doc.setTextColor(120, 250, 174);
                         doc.setFont(fontFamily, 'normal');
@@ -3741,11 +3805,10 @@
                         doc.setFillColor(...primaryRgb);
                         doc.rect(0, 0, w, 3, 'F');
 
-                        // Titulok
-                        doc.setFontSize(22);
+                        // Titulok — auto-scale
+                        autoScaleTitle(safeText(docTitle));
                         doc.setTextColor(...titleRgb);
-                        doc.setFont(fontFamily, 'bold');
-                        doc.text(safeText(docTitle), 14, 18, { maxWidth: w - 28 });
+                        doc.text(safeText(docTitle), 14, 18, { maxWidth: titleMaxW });
 
                         // Podnadpis s dátumom
                         doc.setFontSize(10);
@@ -3815,7 +3878,6 @@
                     const richRows = this.tableData.richRows || [];
 
                     // ===== AUTOMATICKÝ VÝPOČET ŠÍRKY STĹPCOV =====
-                    // Získam max dĺžku textu pre každý stĺpec (vrátane hlavičky)
                     const pageContentWidth = w - 14 - 14; // margin L+R
                     const colMaxLen = filteredHeaders.map((h, i) => {
                         let max = h.length;
@@ -3827,33 +3889,40 @@
                         });
                         return Math.min(max, 80);
                     });
-                    
-                    const totalLen = colMaxLen.reduce((a, b) => a + b, 0) || 1;
-                    const minColWidth = 18;
+
+                    const minColW = 14;   // mm
+                    const SHORT = 25;     // kratší ako SHORT = "krátky" stĺpec (ID, číslo...)
                     const columnStyles = {};
-                    let allocatedWidth = 0;
-                    
+
+                    // Fáza 1: krátke stĺpce dostanú kompaktnú fixnú šírku
+                    const shortWidths = {};
+                    let shortTotal = 0;
                     colMaxLen.forEach((len, i) => {
-                        let w = Math.max((len / totalLen) * pageContentWidth, minColWidth);
-                        if (len <= 20) {
-                            w = Math.max(len * 2.2 + 6, minColWidth);
+                        if (len <= SHORT) {
+                            const cw = Math.max(len * 1.8 + 4, minColW);
+                            shortWidths[i] = cw;
+                            shortTotal += cw;
                         }
-                        columnStyles[i] = { cellWidth: w };
-                        allocatedWidth += w;
                     });
-                    
-                    if (allocatedWidth > pageContentWidth) {
-                        const scale = pageContentWidth / allocatedWidth;
+
+                    // Fáza 2: dlhé stĺpce si delia zostatok proporcionálne
+                    const longBudget = Math.max(pageContentWidth - shortTotal, 0);
+                    const longIdxs = colMaxLen.map((len, i) => len > SHORT ? i : -1).filter(x => x >= 0);
+                    const longLenTotal = longIdxs.reduce((a, i) => a + colMaxLen[i], 0) || 1;
+                    colMaxLen.forEach((len, i) => {
+                        if (shortWidths[i] !== undefined) {
+                            columnStyles[i] = { cellWidth: shortWidths[i] };
+                        } else {
+                            columnStyles[i] = { cellWidth: Math.max((len / longLenTotal) * longBudget, minColW) };
+                        }
+                    });
+
+                    // Fáza 3: ak celková šírka prekročí stránku, škálujeme
+                    const totalAlloc = Object.values(columnStyles).reduce((s, c) => s + c.cellWidth, 0);
+                    if (totalAlloc > pageContentWidth) {
+                        const scale = pageContentWidth / totalAlloc;
                         Object.keys(columnStyles).forEach(k => {
-                            columnStyles[k].cellWidth *= scale;
-                        });
-                    } else {
-                        const remaining = pageContentWidth - allocatedWidth;
-                        colMaxLen.forEach((len, i) => {
-                            if (len > 20) {
-                                const longTotal = colMaxLen.filter(l => l > 20).reduce((a, b) => a + b, 0);
-                                columnStyles[i].cellWidth += (len / longTotal) * remaining;
-                            }
+                            columnStyles[k].cellWidth = Math.max(columnStyles[k].cellWidth * scale, minColW);
                         });
                     }
 
@@ -3951,9 +4020,9 @@
                                 doc.rect(0, h - 6, w, 6, 'F');
                                 doc.setFontSize(8);
                                 doc.setTextColor(120, 250, 174);
-                                doc.setFont(fontFamily, 'bold');
-                                doc.text('SKODA', 14, h - 2.3);
                                 doc.setFont(fontFamily, 'normal');
+                                const footerTitle = safeText(docTitle).slice(0, 40) + (docTitle.length > 40 ? '…' : '');
+                                doc.text(footerTitle, 14, h - 2.3);
                                 doc.text(safeText(`Strana ${displayPageNum} z ${displayTotalPages}`), w / 2, h - 2.3, { align: 'center' });
                                 doc.text(safeText(dateStr), w - 14, h - 2.3, { align: 'right' });
                             } else {
@@ -4762,7 +4831,7 @@ table.freeze-header thead th {
                         <option value="">-- Vyberte kapitolu --</option>
                         ${chapterOptions}
                     </select>
-                    <button class="chapter-btn" onclick="toggleFreezeHeader()" id="freezeHeaderBtn" title="Fixovať hlavičku pri scrollovaní">📌 Fix hlavička</button>
+                    <button class="chapter-btn freeze-btn" onclick="toggleFreezeHeader()" title="Fixovať hlavičku pri scrollovaní">📌 Fix hlavička</button>
                     <button class="chapter-btn" onclick="scrollToTop()" title="Späť na začiatok">⬆ Hore</button>
                 </div>
                 ${searchBarHtml}
@@ -4770,7 +4839,7 @@ table.freeze-header thead th {
             <nav class="chapter-nav" role="navigation" aria-label="Ovládanie">
                 <div class="chapter-nav-inner">
                     <span class="chapter-nav-label">📌 Fixovanie:</span>
-                    <button class="chapter-btn" onclick="toggleFreezeHeader()" id="freezeHeaderBtn" title="Fixovať hlavičku pri scrollovaní">Fix hlavička</button>
+                    <button class="chapter-btn freeze-btn" onclick="toggleFreezeHeader()" title="Fixovať hlavičku pri scrollovaní">Fix hlavička</button>
                     <button class="chapter-btn" onclick="scrollToTop()" title="Späť na začiatok">⬆ Hore</button>
                 </div>
                 ${searchBarHtml}
@@ -4786,39 +4855,9 @@ table.freeze-header thead th {
     <meta name="description" content="${escapeHtml(docTitle)} - ${data.rows.length} riadkov">
 ${styles ? `    <style>${css}
 
-/* ===== DARK MODE ===== */
-:root[data-dark] body { background: #0f172a; color: #e2e8f0; }
-:root[data-dark] .document-header { background: #1e293b; border-color: #334155; }
-:root[data-dark] .table-wrapper { background: #1e293b; border-color: #334155; }
-:root[data-dark] thead { background: #0E3A2F; }
-:root[data-dark] thead th { color: #78FAAE; border-color: rgba(120,250,174,0.3); background: #0E3A2F; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-:root[data-dark] tbody td { color: #e2e8f0; border-color: #334155; }
-:root[data-dark] tbody tr:nth-child(even) td { background: #1a2744; }
-:root[data-dark] tbody tr:hover td { background: rgba(255,255,255,0.06) !important; }
-:root[data-dark] .chapter-nav { background: #1e293b; border-color: #334155; }
-:root[data-dark] .chapter-btn { background: #0f172a; color: #94a3b8; border-color: #334155; }
-:root[data-dark] .search-bar { border-color: #334155; }
-:root[data-dark] .search-input, :root[data-dark] .search-col-select { background: #1e293b; border-color: #334155; color: #e2e8f0; }
-:root[data-dark] .stats-bar { background: rgba(255,255,255,0.04); border-color: #334155; }
-:root[data-dark] .stat-label { color: #64748b; }
-:root[data-dark] .stat-value { color: #e2e8f0; }
-:root[data-dark] .document-footer { color: #475569; }
-:root[data-dark] .document-footer a { color: #60a5fa; }
-
-.dm-toggle {
-    position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px;
-    border-radius: 50%; border: 2px solid rgba(255,255,255,.15);
-    background: rgba(15,23,42,.8); color: #fff; font-size: 20px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    z-index: 9999; backdrop-filter: blur(6px); transition: transform .2s, box-shadow .2s;
-    box-shadow: 0 2px 12px rgba(0,0,0,.4);
-}
-.dm-toggle:hover { transform: scale(1.12); box-shadow: 0 4px 20px rgba(0,0,0,.5); }
-@media print { .dm-toggle { display: none !important; } }
 </style>` : ''}
 </head>
 <body>
-    <button class="dm-toggle" id="dmBtn" onclick="tmToggleDark()" title="Prepnúť tmavý/svetlý režim" aria-label="Prepnúť tmavý/svetlý režim">🌙</button>
     <div class="container">
 ${styles ? `        <header class="document-header${t.isSkoda ? ' skoda-header' : ''}">
             ${t.isSkoda ? `<div class="skoda-logo-wrap">
@@ -4855,7 +4894,7 @@ ${styles ? `        <header class="document-header${t.isSkoda ? ' skoda-header' 
 ${navPanelHtml}
         <main class="table-wrapper">
             <div class="table-scroll">
-                <table id="mainTable">
+                <table id="exportTable">
                     <thead>
                         <tr>${headersHtml}</tr>
                     </thead>
@@ -4877,7 +4916,7 @@ ${styles ? `        <footer class="document-footer">
         if (!target) return;
         
         const scroll = document.querySelector('.table-scroll');
-        const table = document.getElementById('mainTable');
+        const table = document.getElementById('exportTable');
         const isFreeze = table && table.classList.contains('freeze-header');
         
         if (isFreeze && scroll && !scroll.classList.contains('no-freeze')) {
@@ -4899,8 +4938,8 @@ ${styles ? `        <footer class="document-footer">
     }
     // Toggle fixovania hlavičky tabuľky
     function toggleFreezeHeader() {
-        const table = document.getElementById('mainTable');
-        const btn = document.getElementById('freezeHeaderBtn');
+        const table = document.getElementById('exportTable');
+        const btn = document.querySelector('.freeze-btn');
         const scroll = document.querySelector('.table-scroll');
         if (!table || !scroll) return;
         table.classList.toggle('freeze-header');
@@ -4919,7 +4958,7 @@ ${styles ? `        <footer class="document-footer">
     // Scroll na začiatok (tabuľky alebo stránky)
     function scrollToTop() {
         const scroll = document.querySelector('.table-scroll');
-        const table = document.getElementById('mainTable');
+        const table = document.getElementById('exportTable');
         const isFreeze = table && table.classList.contains('freeze-header');
         if (isFreeze && scroll && !scroll.classList.contains('no-freeze')) {
             scroll.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4961,7 +5000,7 @@ ${styles ? `        <footer class="document-footer">
         const rawQuery = input.value.trim();
         const query = normalizeForSearch(rawQuery);
         const searchCol = parseInt(colSelect.value, 10); // -1 = všetky
-        const rows = document.querySelectorAll('#mainTable tbody tr');
+        const rows = document.querySelectorAll('#exportTable tbody tr');
         
         // Vždy najprv vyčistím predošlé highlighty
         clearHighlights();
@@ -5067,7 +5106,7 @@ ${styles ? `        <footer class="document-footer">
     
     // Odstráni všetky <mark class="search-match"> elementy a spojí texty späť
     function clearHighlights() {
-        const marks = document.querySelectorAll('#mainTable mark.search-match');
+        const marks = document.querySelectorAll('#exportTable mark.search-match');
         marks.forEach(mark => {
             const parent = mark.parentNode;
             const textNode = document.createTextNode(mark.textContent);
@@ -5083,39 +5122,22 @@ ${styles ? `        <footer class="document-footer">
         const resultsEl = document.getElementById('searchResults');
         if (input) input.value = '';
         if (colSelect) colSelect.value = '-1';
-        document.querySelectorAll('#mainTable tbody tr').forEach(r => r.classList.remove('search-hidden'));
+        document.querySelectorAll('#exportTable tbody tr').forEach(r => r.classList.remove('search-hidden'));
         clearHighlights();
         if (resultsEl) resultsEl.style.display = 'none';
     }
     // Default: hlavička fixovaná
     document.addEventListener('DOMContentLoaded', () => {
-        const table = document.getElementById('mainTable');
+        const table = document.getElementById('exportTable');
         const scroll = document.querySelector('.table-scroll');
         if (table) {
             table.classList.add('freeze-header');
-            const btn = document.getElementById('freezeHeaderBtn');
+            const btn = document.querySelector('.freeze-btn');
             if (btn) btn.classList.add('active');
             if (scroll) updateScrollClass(scroll, table);
         }
     });
 
-    // ===== DARK MODE TOGGLE =====
-    (function() {
-        const DM_KEY = 'tm-export-dark';
-        const root = document.documentElement;
-        function applyDark(on) {
-            if (on) { root.setAttribute('data-dark', ''); document.getElementById('dmBtn').textContent = '☀️'; }
-            else     { root.removeAttribute('data-dark');  document.getElementById('dmBtn').textContent = '🌙'; }
-            try { localStorage.setItem(DM_KEY, on ? '1' : '0'); } catch(e) {}
-        }
-        // Default: SVETLÝ režim. Dark mode sa zapne LEN ak ho user explicitne aktivoval.
-        // (prefers-color-scheme sa zámerne neberie do úvahy — zachovávame predvídateľný export.)
-        let saved = null;
-        try { saved = localStorage.getItem(DM_KEY); } catch(e) {}
-        if (saved === '1') applyDark(true);
-
-        window.tmToggleDark = () => applyDark(!root.hasAttribute('data-dark'));
-    })();
     <\/script>
 </body>
 </html>`;
@@ -5126,7 +5148,7 @@ ${styles ? `        <footer class="document-footer">
             const _safeHtmlName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
             link.download = `${_safeHtmlName}_${now.toISOString().slice(0, 10)}.html`;
             link.click();
-            URL.revokeObjectURL(link.href);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             this.setUnsavedChanges(false);
             toast(`HTML vytvorený (${theme})`);
         },
@@ -5155,6 +5177,7 @@ ${styles ? `        <footer class="document-footer">
             link.href = URL.createObjectURL(blob);
             link.download = 'TableMaster_Export.json';
             link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             this.setUnsavedChanges(false);
             toast('JSON vytvorený');
         }
@@ -5683,6 +5706,8 @@ ${styles ? `        <footer class="document-footer">
     window.closeColumnModal = closeColumnModal;
     window.closeHeaderEditModal = closeHeaderEditModal;
     window.closePreviewModal = closePreviewModal;
+    window.confirmModalConfirm = confirmModalConfirm;
+    window.confirmModalCancel = confirmModalCancel;
     window.resetApp = resetApp;
     window.installPWA = installPWA;
     window.dismissInstallBanner = dismissInstallBanner;
@@ -5836,7 +5861,8 @@ ${styles ? `        <footer class="document-footer">
                 while (peek() && (peek().v === '*' || peek().v === '/')) {
                     const op = consume().v;
                     const right = parseUnary();
-                    left = op === '*' ? Number(left) * Number(right) : Number(left) / Number(right);
+                    left = op === '*' ? Number(left) * Number(right) :
+                           (Number(right) === 0 ? '#DIV/0!' : Number(left) / Number(right));
                 }
                 return left;
             }
@@ -5975,8 +6001,14 @@ ${styles ? `        <footer class="document-footer">
         // Počítadlá na tlačidlách
         const undoN = document.getElementById('undoCount');
         const redoN = document.getElementById('redoCount');
-        if (undoN) { const n = cur; undoN.textContent = n; undoN.classList.toggle('visible', n > 0); }
-        if (redoN) { const n = total - 1 - cur; redoN.textContent = n; redoN.classList.toggle('visible', n > 0); }
+        const canUndo = cur > 0;
+        const canRedo = cur < total - 1;
+        if (undoN) { undoN.textContent = cur; undoN.classList.toggle('visible', canUndo); }
+        if (redoN) { const n = total - 1 - cur; redoN.textContent = n; redoN.classList.toggle('visible', canRedo); }
+        const btnUndo = document.getElementById('btnUndo');
+        const btnRedo = document.getElementById('btnRedo');
+        if (btnUndo) btnUndo.disabled = !canUndo;
+        if (btnRedo) btnRedo.disabled = !canRedo;
 
         // History dots bar (max 20 bodiek)
         const dots  = document.getElementById('historyDots');
@@ -6118,7 +6150,7 @@ self.onmessage = function(e) {
             link.href = URL.createObjectURL(blob);
             link.download = `TableMaster_Export_${new Date().toISOString().slice(0, 10)}.xlsx`;
             link.click();
-            URL.revokeObjectURL(link.href);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             toast('Excel vytvorený (Worker)', 'success');
         } catch(err) {
             console.warn('[Worker] Excel failed, fallback:', err.message);
@@ -6257,7 +6289,7 @@ self.onmessage = function(e) {
             const _safeDocxName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
             link.download = `${_safeDocxName}_${now.toISOString().slice(0,10)}.docx`;
             link.click();
-            URL.revokeObjectURL(link.href);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             toast('Word dokument vytvorený');
         }).catch(err => {
             toast('Chyba DOCX: ' + err.message, 'error');

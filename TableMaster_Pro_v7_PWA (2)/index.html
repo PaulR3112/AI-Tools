@@ -1619,7 +1619,9 @@
                         document.getElementById('restoreSession').classList.add('active');
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('Session load failed:', e);
+            }
         },
 
         restoreSession() {
@@ -1639,6 +1641,7 @@
         clearSession() {
             localStorage.removeItem(AUTOSAVE_KEY);
             document.getElementById('restoreSession').classList.remove('active');
+            toast('Relácia zahodená');
         },
 
         showEditor() {
@@ -1707,6 +1710,10 @@
             Papa.parse(content, {
                 skipEmptyLines: true,
                 complete: (res) => {
+                    if (res.errors.length && !res.data.length) {
+                        toast('CSV parse chyba: ' + res.errors[0].message, 'error');
+                        return;
+                    }
                     if (!res.data.length) {
                         toast('CSV súbor je prázdny', 'error');
                         return;
@@ -1718,6 +1725,9 @@
                     delete this.tableData.headerBg;
                     this.renderTable();
                     this.saveHistory();
+                },
+                error: (err) => {
+                    toast('CSV parse chyba: ' + err.message, 'error');
                 }
             });
         },
@@ -6133,7 +6143,7 @@ self.onmessage = function(e) {
             link.href = URL.createObjectURL(blob);
             link.download = `TableMaster_Export_${new Date().toISOString().slice(0, 10)}.xlsx`;
             link.click();
-            URL.revokeObjectURL(link.href);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             toast('Excel vytvorený (Worker)', 'success');
         } catch(err) {
             console.warn('[Worker] Excel failed, fallback:', err.message);
@@ -6272,7 +6282,7 @@ self.onmessage = function(e) {
             const _safeDocxName = (docTitle || 'TableMaster_Export').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
             link.download = `${_safeDocxName}_${now.toISOString().slice(0,10)}.docx`;
             link.click();
-            URL.revokeObjectURL(link.href);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
             toast('Word dokument vytvorený');
         }).catch(err => {
             toast('Chyba DOCX: ' + err.message, 'error');

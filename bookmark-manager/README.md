@@ -11,14 +11,15 @@ Otvor `index.html` priamo v prehliadači (dvojklikom, alebo `file://` cestou). �
 - **Priečinky a tagy** — vnorené priečinky (drag & drop), viacnásobné tagy s autocomplete, farebné štítky, pripnuté záložky.
 - **Inteligentné vyhľadávanie** — fulltext cez title/URL/tagy/poznámku, diakriticky necitlivé, zvýrazňovanie zhôd, `Ctrl+K` / `/` na focus.
 - **Duplicity** — pri ukladaní sa kontroluje normalizovaná URL a ponúkne sa možnosť otvoriť existujúcu záložku.
-- **Kontrola mŕtvych odkazov** — manuálne tlačidlo, ktoré otestuje dostupnosť všetkých záložiek.
-- **Auto-fetch title/favicon** a **automatické návrhy tagov** podľa domény a kľúčových slov z názvu.
+- **Kontrola odkazov** — manuálne tlačidlo, ktoré otestuje dostupnosť všetkých záložiek. Rozlišuje „nedostupný" (reálne zlyhanie) od „nepodarilo sa overiť" (intranet/lokálna sieť/`file://`, kde to prehliadač blokuje bez ohľadu na skutočnú dostupnosť).
+- **Auto-fetch title/favicon**, s inteligentným fallbackom na názov odvodený z URL cesty/domény, keď sťahovanie titulku zlyhá (CORS) — a **automatické návrhy tagov** podľa domény a kľúčových slov z názvu.
+- **Najnavštevovanejšie** — sidebar sekcia so záložkami triedenými podľa počtu kliknutí na ich názov.
+- **Bookmarklet** (Import/Export → „Rýchle uloženie z inej stránky") — tlačidlo na pretiahnutie do lišty záložiek prehliadača, ktoré z ľubovoľnej stránky rovno predvyplní URL a názov v tomto nástroji. Pre pohodlnejšie jedno-klikové ukladanie s klávesovou skratkou a pravým klikom „Uložiť odkaz" existuje aj samostatné browser rozšírenie — pozri [`../bookmark-manager-extension`](../bookmark-manager-extension).
 - **Import/Export** — záloha do JSON, import JSON zálohy (zlúčiť/nahradiť), import HTML exportu záložiek z prehliadača.
 - **Kôš** — zmazané záložky sa dajú obnoviť; staršie ako 30 dní (alebo nad 100 záznamov) sa automaticky vyčistia.
-- **Expirácia** — dátum vypršania, badge/upozornenie, voliteľný automatický presun do koša.
 - **Tmavý režim**, **kartové/kompaktné zobrazenie**, drag & drop radenie a presúvanie medzi priečinkami.
 
 ## Poznámky
 
-- Auto-fetch titulku aj kontrola mŕtvych odkazov závisia od CORS politiky cieľových stránok — mnohé stránky ich zablokujú, vtedy treba titulok doplniť ručne (fallback na doménu).
+- Auto-fetch titulku aj kontrola odkazov závisia od CORS politiky cieľových stránok — mnohé stránky ich zablokujú, vtedy appka použije fallback (názov z URL, prípadne status „nepodarilo sa overiť" namiesto „nedostupný" pre intranet/lokálne adresy).
 - Dáta sú viazané na konkrétny prehliadač/zariadenie (localStorage) — pre prenos alebo zálohu použi Export/Import JSON.

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>Bookmark Manager – Nastavenia</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:30px auto;padding:0 20px;color:#1b1d27;}
+  h1{font-size:18px;}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;}
+  input[type=text]{width:100%;padding:9px 10px;border:1px solid #e2e4ea;border-radius:6px;font-size:13px;box-sizing:border-box;}
+  button{margin-top:10px;padding:9px 16px;border:none;border-radius:6px;background:#4f46e5;color:#fff;font-weight:600;cursor:pointer;font-size:13px;}
+  button:hover{filter:brightness(1.08);}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:6px;line-height:1.5;}
+  .ok{color:#16a34a;font-weight:600;font-size:13px;margin-top:8px;}
+  ol{font-size:13px;color:#374151;line-height:1.7;padding-left:20px;}
+  code{background:#f3f4f8;padding:1px 5px;border-radius:4px;font-size:12px;}
+</style>
+</head>
+<body>
+  <h1>🔖 Bookmark Manager – Nastavenia rozšírenia</h1>
+
+  <label for="url">Cesta (file:// URL) k tvojmu <code>bookmark-manager/index.html</code></label>
+  <input type="text" id="url" placeholder="file:///C:/Users/meno/AI-Tools/bookmark-manager/index.html">
+  <div class="hint">
+    V prehliadači otvor svoj súbor <code>index.html</code> normálne cez Súbor → Otvoriť, skopíruj presnú adresu z panela s adresou a vlož ju sem.
+  </div>
+  <button id="save">Uložiť</button>
+  <div class="ok" id="savedMsg" style="display:none;">Uložené ✓</div>
+
+  <hr style="margin:26px 0;border:none;border-top:1px solid #e2e4ea;">
+
+  <h1 style="font-size:15px;">Dôležité: povoľ prístup k súborom</h1>
+  <ol>
+    <li>Otvor <code>chrome://extensions</code> (alebo <code>edge://extensions</code>).</li>
+    <li>Nájdi „Bookmark Manager – Uložiť stránku" a klikni na „Podrobnosti".</li>
+    <li>Zapni prepínač „Povoliť prístup k adresám URL súborov" / „Allow access to file URLs".</li>
+  </ol>
+  <div class="hint">Bez tohto kroku rozšírenie nedokáže otvoriť/prepnúť na lokálny <code>file://</code> súbor.</div>
+
+  <script src="options.js"></script>
+</body>
+</html>

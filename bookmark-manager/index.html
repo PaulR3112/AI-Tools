@@ -161,6 +161,10 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 .filter-pill{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;}
 .filter-pill button{background:none;border:none;color:inherit;padding:0;display:flex;}
 
+.bulk-bar{display:flex;align-items:center;gap:8px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;flex-wrap:wrap;}
+.bulk-bar span:first-child{font-weight:600;color:var(--accent);font-size:13px;}
+.bulk-bar .spacer{flex:1;}
+
 .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700;margin:6px 0 10px;display:flex;align-items:center;gap:8px;}
 .section-title .line{flex:1;height:1px;background:var(--border);}
 
@@ -173,6 +177,8 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
   display:flex;flex-direction:column;gap:8px;overflow:hidden;
 }
 .card.dead{opacity:.65;}
+.card.selected, .row.selected{outline:2px solid var(--accent);outline-offset:-2px;}
+.select-checkbox{flex:none;margin-top:3px;accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
 .card .colorbar{position:absolute;left:0;top:0;bottom:0;width:4px;}
 .card[draggable="true"]{cursor:grab;}
 .card.drag-over{outline:2px dashed var(--accent);outline-offset:-2px;}
@@ -337,6 +343,14 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
       <div class="spacer"></div>
       <div class="active-filters" id="activeFilters"></div>
     </div>
+    <div class="bulk-bar hidden" id="bulkActionsBar">
+      <span id="bulkCount">0 vybraných</span>
+      <button class="btn small" id="bulkTagBtn">🏷 Pridať tag</button>
+      <button class="btn small" id="bulkMoveBtn">📁 Presunúť</button>
+      <button class="btn small danger" id="bulkDeleteBtn">🗑 Zmazať</button>
+      <span class="spacer"></span>
+      <button class="btn small" id="bulkClearBtn">✕ Zrušiť výber</button>
+    </div>
     <div id="mainArea"></div>
   </main>
 </div>
@@ -450,6 +464,22 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
   </div>
 </div>
 
+<!-- Bulk move modal -->
+<div class="overlay hidden" id="bulkMoveOverlay">
+  <div class="modal">
+    <h3>Presunúť vybrané záložky</h3>
+    <div class="field">
+      <label>Priečinok</label>
+      <select id="bulkMoveFolder"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="bulkMoveCancelBtn">Zrušiť</button>
+      <div class="spacer"></div>
+      <button class="btn primary" id="bulkMoveConfirmBtn">Presunúť</button>
+    </div>
+  </div>
+</div>
+
 <!-- Merge/replace choice modal -->
 <div class="overlay hidden" id="mergeChoiceOverlay">
   <div class="modal">
@@ -528,7 +558,8 @@ let ui = {
   filterFolderId: null,
   activeTag: null,
   searchQuery: "",
-  expandedFolders: new Set()
+  expandedFolders: new Set(),
+  selectedIds: new Set()
 };
 let editingBookmarkId = null;
 let pendingDuplicateSave = null; // {payload, existing}
@@ -1278,6 +1309,85 @@ function handleIncomingBookmarkletAdd(){
   if (!title) onUrlBlur();
 }
 
+/* ============================== BULK ACTIONS ============================== */
+function pruneSelection(){
+  const validIds = new Set(appState.bookmarks.map(b=>b.id));
+  for (const id of [...ui.selectedIds]){
+    if (!validIds.has(id)) ui.selectedIds.delete(id);
+  }
+}
+function toggleSelect(id, checked){
+  if (checked) ui.selectedIds.add(id); else ui.selectedIds.delete(id);
+  renderSelectionBar();
+}
+function renderSelectionBar(){
+  const bar = document.getElementById("bulkActionsBar");
+  const count = ui.selectedIds.size;
+  bar.classList.toggle("hidden", count === 0);
+  document.getElementById("bulkCount").textContent = `${count} vybraných`;
+}
+function clearSelection(){
+  ui.selectedIds.clear();
+  renderMain();
+}
+function bulkAddTag(){
+  if (!ui.selectedIds.size) return;
+  const input = prompt("Tag(y) na pridanie k vybraným záložkám (oddeľ čiarkou):");
+  if (!input) return;
+  const tags = input.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean);
+  if (!tags.length) return;
+  let count = 0;
+  appState.bookmarks.forEach(b=>{
+    if (ui.selectedIds.has(b.id)){
+      const set = new Set(b.tags||[]);
+      tags.forEach(t=>set.add(t));
+      b.tags = [...set];
+      b.updatedAt = Date.now();
+      count++;
+    }
+  });
+  saveState(); render();
+  toast(`Tagy pridané k ${count} záložkám.`);
+}
+function openBulkMoveModal(){
+  if (!ui.selectedIds.size) return;
+  populateFolderSelect(null, "bulkMoveFolder");
+  showOverlay("bulkMoveOverlay");
+}
+function confirmBulkMove(){
+  const folderId = document.getElementById("bulkMoveFolder").value || null;
+  let count = 0;
+  appState.bookmarks.forEach(b=>{
+    if (ui.selectedIds.has(b.id)){
+      b.folderId = folderId;
+      b.updatedAt = Date.now();
+      count++;
+    }
+  });
+  hideOverlay("bulkMoveOverlay");
+  ui.selectedIds.clear();
+  saveState(); render();
+  toast(`${count} záložiek presunutých.`);
+}
+function bulkDelete(){
+  if (!ui.selectedIds.size) return;
+  const count = ui.selectedIds.size;
+  confirmAction("Zmazať vybrané záložky?", `${count} záložiek bude presunutých do koša.`, ()=>{
+    const ids = [...ui.selectedIds];
+    ids.forEach(id=>{
+      const idx = appState.bookmarks.findIndex(b=>b.id===id);
+      if (idx >= 0){
+        const [bm] = appState.bookmarks.splice(idx,1);
+        appState.deletedBookmarks.unshift(Object.assign({}, bm, {deletedAt: Date.now()}));
+      }
+    });
+    pruneTrash();
+    ui.selectedIds.clear();
+    saveState(); render();
+    toast(`${count} záložiek presunutých do koša.`);
+  });
+}
+
 /* ============================== MODALS: helpers ============================== */
 function showOverlay(id){ document.getElementById(id).classList.remove("hidden"); }
 function hideOverlay(id){ document.getElementById(id).classList.add("hidden"); }
@@ -1293,8 +1403,8 @@ function confirmAction(title, text, onConfirm){
 
 /* ============================== BOOKMARK MODAL ============================== */
 let currentTags = [];
-function populateFolderSelect(selectedId){
-  const sel = document.getElementById("fFolder");
+function populateFolderSelect(selectedId, targetId){
+  const sel = document.getElementById(targetId || "fFolder");
   sel.innerHTML = '<option value="">— žiadny priečinok —</option>';
   function walk(parentId, depth){
     getChildFolders(parentId).forEach(f=>{
@@ -1469,10 +1579,12 @@ async function saveQuickAdd(){
 /* ============================== RENDER ============================== */
 function render(){
   pruneTrash();
+  pruneSelection();
   renderSidebarCounts();
   renderFolderTree();
   renderTagList();
   renderMain();
+  renderSelectionBar();
 }
 function renderSidebarCounts(){
   document.getElementById("countAll").textContent = appState.bookmarks.length;
@@ -1605,11 +1717,12 @@ function bookmarkTagsHtml(b){
 
 function renderCard(b, isTrash){
   const el = document.createElement("div");
-  el.className = "card" + (b.isDead ? " dead" : "");
-  const meta = `${formatDate(b.createdAt)}${b.visitCount ? ` · 👁 ${b.visitCount}` : ""}`;
+  el.className = "card" + (b.isDead ? " dead" : "") + (ui.selectedIds.has(b.id) ? " selected" : "");
+  const meta = `${formatDate(b.createdAt)} · 👁 ${b.visitCount||0}`;
   el.innerHTML = `
     ${bookmarkColorBar(b)}
     <div class="card-top">
+      ${!isTrash ? `<input type="checkbox" class="select-checkbox" title="Vybrať" ${ui.selectedIds.has(b.id)?"checked":""}>` : ""}
       <img class="favicon" src="${escapeHtml(b.favicon||faviconUrl(b.url))}" onerror="this.style.visibility='hidden'">
       <div class="card-title-wrap">
         <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${highlightText(b.title, ui.searchQuery)}</a>
@@ -1630,6 +1743,13 @@ function renderCard(b, isTrash){
     </div>` : ""}
   `;
   el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
+  const checkbox = el.querySelector(".select-checkbox");
+  if (checkbox){
+    checkbox.addEventListener("change", ()=>{
+      toggleSelect(b.id, checkbox.checked);
+      el.classList.toggle("selected", checkbox.checked);
+    });
+  }
   const actions = el.querySelector(".card-actions-row");
   if (isTrash){
     actions.innerHTML = `<button class="icon-btn" title="Obnoviť">↩️</button><button class="icon-btn" title="Vymazať natrvalo">🗑️</button>`;
@@ -1655,9 +1775,10 @@ function renderCard(b, isTrash){
 }
 function renderRow(b, isTrash){
   const el = document.createElement("div");
-  el.className = "row" + (b.isDead ? " dead" : "");
+  el.className = "row" + (b.isDead ? " dead" : "") + (ui.selectedIds.has(b.id) ? " selected" : "");
   el.innerHTML = `
     ${bookmarkColorBar(b)}
+    ${!isTrash ? `<input type="checkbox" class="select-checkbox" title="Vybrať" ${ui.selectedIds.has(b.id)?"checked":""}>` : ""}
     <img class="favicon" src="${escapeHtml(b.favicon||faviconUrl(b.url))}" onerror="this.style.visibility='hidden'">
     <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0;">${highlightText(b.title, ui.searchQuery)}</a>
     <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
@@ -1666,10 +1787,18 @@ function renderRow(b, isTrash){
       <span>💬</span>
       <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
     </div>` : ""}
+    <span class="meta">👁 ${b.visitCount||0}</span>
     <div class="card-badges">${bookmarkBadges(b, isTrash)}</div>
     <div class="card-actions"></div>
   `;
   el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
+  const checkbox = el.querySelector(".select-checkbox");
+  if (checkbox){
+    checkbox.addEventListener("change", ()=>{
+      toggleSelect(b.id, checkbox.checked);
+      el.classList.toggle("selected", checkbox.checked);
+    });
+  }
   const actions = el.querySelector(".card-actions");
   if (isTrash){
     actions.innerHTML = `<button class="icon-btn" title="Obnoviť">↩️</button><button class="icon-btn" title="Vymazať natrvalo">🗑️</button>`;
@@ -1898,6 +2027,13 @@ function wireEvents(){
     const name = prompt("Názov nového priečinka:");
     if (name && name.trim()) addFolder(name.trim(), null);
   };
+
+  document.getElementById("bulkTagBtn").onclick = bulkAddTag;
+  document.getElementById("bulkMoveBtn").onclick = openBulkMoveModal;
+  document.getElementById("bulkDeleteBtn").onclick = bulkDelete;
+  document.getElementById("bulkClearBtn").onclick = clearSelection;
+  document.getElementById("bulkMoveCancelBtn").onclick = ()=>hideOverlay("bulkMoveOverlay");
+  document.getElementById("bulkMoveConfirmBtn").onclick = confirmBulkMove;
 
   document.getElementById("confirmCancelBtn").onclick = ()=>{ pendingConfirm=null; hideOverlay("confirmOverlay"); };
   document.getElementById("confirmOkBtn").onclick = ()=>{

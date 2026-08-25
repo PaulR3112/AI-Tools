@@ -152,9 +152,6 @@ header.topbar{
 .tag-chip:hover{border-color:var(--accent);color:var(--text);}
 .tag-chip.active{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast);}
 
-.sidebar-toggle-row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13px;}
-.sidebar-toggle-row input{accent-color:var(--accent);}
-
 main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 .content-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
 .content-title{font-size:20px;font-weight:700;}
@@ -186,19 +183,26 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 .card-title:hover{text-decoration:underline;}
 .card-url{font-size:11.5px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
 .card-actions{display:flex;gap:2px;flex:none;}
+.card-actions-row{display:flex;gap:2px;}
 .card-badges{display:flex;gap:6px;flex-wrap:wrap;}
 .badge{font-size:10.5px;padding:2px 7px;border-radius:999px;font-weight:600;display:inline-flex;align-items:center;gap:3px;}
 .badge.dead{background:var(--danger-soft);color:var(--danger);}
-.badge.expiring{background:var(--warning-soft);color:var(--warning);}
+.badge.unverifiable{background:var(--warning-soft);color:var(--warning);}
 .badge.unread{background:var(--accent-soft);color:var(--accent);}
 .card-tags{display:flex;gap:5px;flex-wrap:wrap;}
 .card-tags .tag-chip{cursor:pointer;font-size:11px;padding:2px 8px;}
-.card-note{font-size:12.5px;color:var(--text-muted);white-space:pre-wrap;border-top:1px dashed var(--border);padding-top:6px;margin-top:2px;}
-.card-note.collapsed{max-height:36px;overflow:hidden;position:relative;}
-.card-note-toggle{font-size:11px;color:var(--accent);background:none;border:none;padding:0;margin-top:2px;}
-.card-footer{display:flex;align-items:center;gap:8px;margin-top:2px;}
+.card-footer{display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap;}
 .card-footer .spacer{flex:1;}
-.card-footer .meta{font-size:10.5px;color:var(--text-muted);}
+.card-footer .meta{font-size:10.5px;color:var(--text-muted);white-space:nowrap;}
+.comment-wrap{position:relative;display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);max-width:100%;}
+.comment-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.comment-tooltip{
+  display:none;position:absolute;bottom:100%;left:0;margin-bottom:6px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;box-shadow:var(--shadow-lg);font-size:12px;color:var(--text);
+  white-space:pre-wrap;width:max-content;max-width:280px;z-index:30;
+}
+.comment-wrap:hover .comment-tooltip{display:block;}
 
 .row{
   display:flex;align-items:center;gap:10px;background:var(--bg-elevated);
@@ -313,7 +317,7 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
     <div class="nav-item" data-view="all"><span>📚</span><span>Všetky</span><span class="count" id="countAll">0</span></div>
     <div class="nav-item" data-view="pinned"><span>📌</span><span>Pripnuté</span><span class="count" id="countPinned">0</span></div>
     <div class="nav-item" data-view="unread"><span>🔵</span><span>Neprečítané</span><span class="count" id="countUnread">0</span></div>
-    <div class="nav-item" data-view="expiring"><span>⏰</span><span>Čoskoro vyprší</span><span class="count" id="countExpiring">0</span></div>
+    <div class="nav-item" data-view="mostVisited"><span>🔥</span><span>Najnavštevovanejšie</span><span class="count" id="countMostVisited">0</span></div>
     <div class="nav-item" data-view="trash"><span>🗑️</span><span>Kôš</span><span class="count" id="countTrash">0</span></div>
 
     <h4>Priečinky</h4>
@@ -322,9 +326,6 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 
     <h4>Tagy</h4>
     <div class="tag-list" id="tagList"></div>
-
-    <h4>Nastavenia</h4>
-    <label class="sidebar-toggle-row"><input type="checkbox" id="autoTrashExpired"> Auto presun vypršaných do koša</label>
   </aside>
 
   <main class="content" id="content">
@@ -360,15 +361,9 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
       <div class="autocomplete-list" id="tagAutocomplete"></div>
       <div class="tag-suggestions" id="tagSuggestions"></div>
     </div>
-    <div class="field-row">
-      <div class="field">
-        <label>Priečinok</label>
-        <select id="fFolder"></select>
-      </div>
-      <div class="field">
-        <label>Expirácia</label>
-        <input type="date" id="fExpires">
-      </div>
+    <div class="field">
+      <label>Priečinok</label>
+      <select id="fFolder"></select>
     </div>
     <div class="field">
       <label>Farebný štítok</label>
@@ -518,9 +513,9 @@ const STOPWORDS = new Set([
 
 /* ============================== STATE ============================== */
 let appState = { bookmarks: [], folders: [], deletedBookmarks: [] };
-let settings = { theme: "light", view: "card", autoTrashExpired: false };
+let settings = { theme: "light", view: "card" };
 let ui = {
-  filterType: "all", // all | folder | pinned | unread | expiring | trash
+  filterType: "all", // all | folder | pinned | unread | mostVisited | trash
   filterFolderId: null,
   activeTag: null,
   searchQuery: "",
@@ -579,6 +574,21 @@ function ensureProtocol(url){
   if (!s) return s;
   if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = "https://" + s;
   return s;
+}
+function isPrivateOrIntranetUrl(url){
+  try{
+    const u = new URL(ensureProtocol(url));
+    if (u.protocol === "file:") return true;
+    const host = u.hostname.toLowerCase();
+    if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+    if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (/^169\.254\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (!host.includes(".")) return true;
+    if (/\.(local|internal|intranet|corp|lan|home)$/.test(host)) return true;
+    return false;
+  }catch(e){ return false; }
 }
 function formatDate(ts){
   if (!ts) return "";
@@ -654,15 +664,6 @@ function pruneTrash(){
     .filter(b => b.deletedAt >= cutoff)
     .sort((a,b)=>b.deletedAt - a.deletedAt)
     .slice(0, TRASH_MAX);
-}
-
-function checkExpirations(){
-  const now = Date.now();
-  if (!settings.autoTrashExpired) return;
-  const toMove = appState.bookmarks.filter(b => b.expiresAt && b.expiresAt < now);
-  if (!toMove.length) return;
-  toMove.forEach(b => moveBookmarkToTrash(b.id, true));
-  if (toMove.length) toast(`${toMove.length} vypršaných záložiek presunutých do koša.`);
 }
 
 /* ============================== SEARCH ============================== */
@@ -758,9 +759,8 @@ function baseFilteredBookmarks(){
     list = list.filter(b => ids.includes(b.folderId));
   } else if (ui.filterType === "unread"){
     list = list.filter(b => b.status === "unread");
-  } else if (ui.filterType === "expiring"){
-    const now = Date.now();
-    list = list.filter(b => b.expiresAt && b.expiresAt >= now && b.expiresAt <= now + 7*24*60*60*1000 || (b.expiresAt && b.expiresAt < now));
+  } else if (ui.filterType === "mostVisited"){
+    list = list.filter(b => (b.visitCount||0) > 0);
   }
   if (ui.activeTag){
     list = list.filter(b => (b.tags||[]).includes(ui.activeTag));
@@ -784,7 +784,7 @@ function getVisibleMain(){
   if (ui.searchQuery) list = searchBookmarks(ui.searchQuery, list);
 
   let pinned = [];
-  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "expiring"){
+  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "mostVisited"){
     pinned = appState.bookmarks.filter(b=>b.pinned);
     if (ui.activeTag) pinned = pinned.filter(b=>(b.tags||[]).includes(ui.activeTag));
     if (ui.searchQuery) pinned = searchBookmarks(ui.searchQuery, pinned);
@@ -817,6 +817,23 @@ function suggestTags(url, title){
   const s = new Set([...suggestTagsForDomain(url), ...suggestTagsFromTitle(title)]);
   return [...s].slice(0,5);
 }
+function suggestTitleFromUrl(url){
+  try{
+    const u = new URL(ensureProtocol(url));
+    const domain = u.hostname.replace(/^www\./, "");
+    const segments = u.pathname.split("/").filter(Boolean);
+    if (segments.length){
+      let last = decodeURIComponent(segments[segments.length-1]);
+      last = last.replace(/\.[a-zA-Z0-9]{2,5}$/, "");
+      last = last.replace(/[-_+]+/g, " ").trim();
+      if (last) return last.replace(/\b\w/g, c=>c.toUpperCase());
+    }
+    const label = domain.split(".")[0];
+    return label ? label.replace(/\b\w/g, c=>c.toUpperCase()) : domain;
+  }catch(e){
+    return url;
+  }
+}
 
 /* ============================== AUTO-FETCH TITLE/FAVICON ============================== */
 function faviconUrl(url){
@@ -845,7 +862,7 @@ function createBookmarkObject(data){
   return {
     id: data.id || uuid(),
     url: data.url,
-    title: data.title || getDomain(data.url) || data.url,
+    title: data.title || suggestTitleFromUrl(data.url) || data.url,
     favicon: data.favicon || faviconUrl(data.url),
     tags: data.tags || [],
     folderId: data.folderId || null,
@@ -855,9 +872,10 @@ function createBookmarkObject(data){
     status: data.status || "unread",
     createdAt: data.createdAt || now,
     updatedAt: now,
-    expiresAt: data.expiresAt || null,
     isDead: false,
+    isUnverifiable: false,
     lastChecked: null,
+    visitCount: data.visitCount || 0,
     order: data.order != null ? data.order : now
   };
 }
@@ -868,7 +886,7 @@ function addOrUpdateBookmark(payload){
       appState.bookmarks[idx] = Object.assign({}, appState.bookmarks[idx], {
         url: payload.url, title: payload.title, tags: payload.tags, folderId: payload.folderId,
         color: payload.color, pinned: payload.pinned, note: payload.note, status: payload.status,
-        expiresAt: payload.expiresAt, favicon: payload.favicon || appState.bookmarks[idx].favicon,
+        favicon: payload.favicon || appState.bookmarks[idx].favicon,
         updatedAt: Date.now()
       });
       saveState(); render();
@@ -921,6 +939,11 @@ function togglePinned(id){
   if (!b) return;
   b.pinned = !b.pinned;
   b.updatedAt = Date.now();
+  saveState(); render();
+}
+function trackVisit(bookmark){
+  bookmark.visitCount = (bookmark.visitCount||0) + 1;
+  bookmark.updatedAt = Date.now();
   saveState(); render();
 }
 
@@ -1037,8 +1060,18 @@ async function checkOneLink(bookmark){
     await fetch(bookmark.url, {mode:"no-cors", signal: controller.signal, cache:"no-store"});
     clearTimeout(t);
     bookmark.isDead = false;
+    bookmark.isUnverifiable = false;
   }catch(e){
-    bookmark.isDead = true;
+    // Prehliadač blokuje JS fetch z tejto stránky do intranetu/lokálnej siete (Private Network
+    // Access, samopodpísané certifikáty a pod.) aj keď je cieľ v skutočnosti dostupný — takéto
+    // odkazy preto neoznačujeme ako "nedostupné", len ako "nepodarilo sa overiť".
+    if (isPrivateOrIntranetUrl(bookmark.url)){
+      bookmark.isDead = false;
+      bookmark.isUnverifiable = true;
+    } else {
+      bookmark.isDead = true;
+      bookmark.isUnverifiable = false;
+    }
   }
   bookmark.lastChecked = Date.now();
 }
@@ -1070,7 +1103,10 @@ async function checkAllLinks(){
   render();
   closeBtn.disabled = false;
   const deadCount = list.filter(b=>b.isDead).length;
-  toast(`Kontrola dokončená. Nájdených ${deadCount} nedostupných odkazov.`);
+  const unverifiableCount = list.filter(b=>b.isUnverifiable).length;
+  let msg = `Kontrola dokončená. Nájdených ${deadCount} nedostupných odkazov.`;
+  if (unverifiableCount) msg += ` ${unverifiableCount} sa nepodarilo overiť (intranet/lokálna sieť).`;
+  toast(msg);
 }
 
 /* ============================== IMPORT / EXPORT ============================== */
@@ -1284,7 +1320,6 @@ function openBookmarkModal(bookmark){
   document.getElementById("fNote").value = bookmark ? bookmark.note : "";
   document.getElementById("fPinned").checked = bookmark ? !!bookmark.pinned : false;
   document.getElementById("fRead").checked = bookmark ? bookmark.status === "read" : false;
-  document.getElementById("fExpires").value = bookmark && bookmark.expiresAt ? new Date(bookmark.expiresAt).toISOString().slice(0,10) : "";
   currentTags = bookmark ? (bookmark.tags||[]).slice() : [];
   renderTagChips();
   populateFolderSelect(bookmark ? bookmark.folderId : ui.filterFolderId);
@@ -1306,7 +1341,7 @@ async function onUrlBlur(){
   urlInput.value = url;
   const titleInput = document.getElementById("fTitle");
   if (!titleInput.value.trim()){
-    const placeholder = getDomain(url);
+    const placeholder = suggestTitleFromUrl(url);
     titleInput.value = placeholder;
     titleInput.select();
     const fetched = await fetchTitleForUrl(url);
@@ -1321,19 +1356,17 @@ function collectBookmarkPayload(){
   const url = ensureProtocol(document.getElementById("fUrl").value.trim());
   const title = document.getElementById("fTitle").value.trim();
   const folderId = document.getElementById("fFolder").value || null;
-  const expiresVal = document.getElementById("fExpires").value;
   const color = document.getElementById("colorSwatches").dataset.selected || null;
   return {
     id: editingBookmarkId,
     url,
-    title: title || getDomain(url) || url,
+    title: title || suggestTitleFromUrl(url) || url,
     tags: currentTags.slice(),
     folderId,
     color: color || null,
     pinned: document.getElementById("fPinned").checked,
     note: document.getElementById("fNote").value,
     status: document.getElementById("fRead").checked ? "read" : "unread",
-    expiresAt: expiresVal ? new Date(expiresVal+"T00:00:00").getTime() : null,
     favicon: faviconUrl(url)
   };
 }
@@ -1372,16 +1405,16 @@ async function saveQuickAdd(){
   url = ensureProtocol(url);
   const dup = findDuplicate(url, null);
   if (dup){
-    pendingDuplicateSave = {url, title:"", tags:[], folderId:null, color:null, pinned:false, note:"", status:"unread", expiresAt:null, favicon: faviconUrl(url), id:null};
+    pendingDuplicateSave = {url, title:"", tags:[], folderId:null, color:null, pinned:false, note:"", status:"unread", favicon: faviconUrl(url), id:null};
     hideOverlay("quickAddOverlay");
     showDuplicateModal(dup);
     return;
   }
   hideOverlay("quickAddOverlay");
-  let title = getDomain(url);
+  let title = suggestTitleFromUrl(url);
   const fetched = await fetchTitleForUrl(url);
   if (fetched) title = fetched;
-  addOrUpdateBookmark({url, title, tags: suggestTagsForDomain(url), folderId:null, color:null, pinned:false, note:"", status:"unread", expiresAt:null, favicon: faviconUrl(url)});
+  addOrUpdateBookmark({url, title, tags: suggestTagsForDomain(url), folderId:null, color:null, pinned:false, note:"", status:"unread", favicon: faviconUrl(url)});
   toast("Záložka rýchlo pridaná.");
 }
 
@@ -1392,14 +1425,12 @@ function render(){
   renderFolderTree();
   renderTagList();
   renderMain();
-  document.getElementById("autoTrashExpired").checked = settings.autoTrashExpired;
 }
 function renderSidebarCounts(){
   document.getElementById("countAll").textContent = appState.bookmarks.length;
   document.getElementById("countPinned").textContent = appState.bookmarks.filter(b=>b.pinned).length;
   document.getElementById("countUnread").textContent = appState.bookmarks.filter(b=>b.status==="unread").length;
-  const now = Date.now();
-  document.getElementById("countExpiring").textContent = appState.bookmarks.filter(b=>b.expiresAt && b.expiresAt <= now + 7*24*60*60*1000).length;
+  document.getElementById("countMostVisited").textContent = appState.bookmarks.filter(b=>(b.visitCount||0)>0).length;
   document.getElementById("countTrash").textContent = appState.deletedBookmarks.length;
   document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
     el.classList.toggle("active", ui.filterType === el.dataset.view);
@@ -1484,7 +1515,7 @@ function activeFilterLabel(){
     const f = getFolderById(ui.filterFolderId);
     return f ? f.name : "Priečinok";
   }
-  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", expiring:"Čoskoro vyprší / vypršané", trash:"Kôš"}[ui.filterType] || "Záložky";
+  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", trash:"Kôš"}[ui.filterType] || "Záložky";
 }
 function renderActiveFilters(){
   const wrap = document.getElementById("activeFilters");
@@ -1517,11 +1548,7 @@ function bookmarkBadges(b, isTrash){
   let out = "";
   if (!isTrash && b.status === "unread") out += `<span class="badge unread">● nové</span>`;
   if (b.isDead) out += `<span class="badge dead">✕ nedostupný</span>`;
-  if (b.expiresAt){
-    const now = Date.now();
-    if (b.expiresAt < now) out += `<span class="badge expiring">⏰ vypršalo</span>`;
-    else if (b.expiresAt <= now + 7*24*60*60*1000) out += `<span class="badge expiring">⏰ vyprší ${formatDate(b.expiresAt)}</span>`;
-  }
+  else if (b.isUnverifiable) out += `<span class="badge unverifiable" title="Prehliadač zablokoval overenie (intranet/lokálna sieť) — stránka nemusí byť naozaj nedostupná.">⚠️ nepodarilo sa overiť</span>`;
   return out;
 }
 function bookmarkTagsHtml(b){
@@ -1531,6 +1558,7 @@ function bookmarkTagsHtml(b){
 function renderCard(b, isTrash){
   const el = document.createElement("div");
   el.className = "card" + (b.isDead ? " dead" : "");
+  const meta = `${formatDate(b.createdAt)}${b.visitCount ? ` · 👁 ${b.visitCount}` : ""}`;
   el.innerHTML = `
     ${bookmarkColorBar(b)}
     <div class="card-top">
@@ -1539,17 +1567,22 @@ function renderCard(b, isTrash){
         <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${highlightText(b.title, ui.searchQuery)}</a>
         <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
       </div>
-      <div class="card-actions"></div>
     </div>
+    <div class="card-actions-row"></div>
     <div class="card-badges">${bookmarkBadges(b, isTrash)}</div>
-    <div class="card-tags">${bookmarkTagsHtml(b)}</div>
-    ${b.note ? `<div class="card-note collapsed">${highlightText(b.note, ui.searchQuery)}</div><button class="card-note-toggle">Zobraziť viac</button>` : ""}
     <div class="card-footer">
-      <span class="meta">${formatDate(b.createdAt)}</span>
+      <div class="card-tags">${bookmarkTagsHtml(b)}</div>
       <span class="spacer"></span>
+      <span class="meta">${meta}</span>
     </div>
+    ${b.note ? `<div class="comment-wrap">
+      <span>💬</span>
+      <span class="comment-preview">${highlightText(b.note, ui.searchQuery)}</span>
+      <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
+    </div>` : ""}
   `;
-  const actions = el.querySelector(".card-actions");
+  el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
+  const actions = el.querySelector(".card-actions-row");
   if (isTrash){
     actions.innerHTML = `<button class="icon-btn" title="Obnoviť">↩️</button><button class="icon-btn" title="Vymazať natrvalo">🗑️</button>`;
     const [restoreBtn, delBtn] = actions.querySelectorAll("button");
@@ -1568,14 +1601,6 @@ function renderCard(b, isTrash){
     el.querySelectorAll(".card-tags .tag-chip").forEach(chip=>{
       chip.onclick = ()=>{ ui.activeTag = chip.dataset.tag; renderTagList(); renderMain(); };
     });
-    const noteToggle = el.querySelector(".card-note-toggle");
-    if (noteToggle){
-      noteToggle.onclick = ()=>{
-        const note = el.querySelector(".card-note");
-        note.classList.toggle("collapsed");
-        noteToggle.textContent = note.classList.contains("collapsed") ? "Zobraziť viac" : "Skryť";
-      };
-    }
     attachBookmarkDrag(el, b);
   }
   return el;
@@ -1589,9 +1614,14 @@ function renderRow(b, isTrash){
     <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0;">${highlightText(b.title, ui.searchQuery)}</a>
     <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
     <div class="row-tags">${bookmarkTagsHtml(b)}</div>
+    ${b.note ? `<div class="comment-wrap" style="max-width:20px;">
+      <span>💬</span>
+      <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
+    </div>` : ""}
     <div class="card-badges">${bookmarkBadges(b, isTrash)}</div>
     <div class="card-actions"></div>
   `;
+  el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
   const actions = el.querySelector(".card-actions");
   if (isTrash){
     actions.innerHTML = `<button class="icon-btn" title="Obnoviť">↩️</button><button class="icon-btn" title="Vymazať natrvalo">🗑️</button>`;
@@ -1670,7 +1700,12 @@ function renderMain(){
     }
     const grid = document.createElement("div");
     grid.className = view === "card" ? "bookmark-grid" : "bookmark-list";
-    const sorted = ui.searchQuery ? main : main.slice().sort((a,b)=>(a.order||0)-(b.order||0));
+    let sorted;
+    if (ui.filterType === "mostVisited" && !ui.searchQuery){
+      sorted = main.slice().sort((a,b)=>(b.visitCount||0)-(a.visitCount||0));
+    } else {
+      sorted = ui.searchQuery ? main : main.slice().sort((a,b)=>(a.order||0)-(b.order||0));
+    }
     sorted.forEach(b=>{
       grid.appendChild(view === "card" ? renderCard(b,isTrashView) : renderRow(b,isTrashView));
     });
@@ -1815,13 +1850,6 @@ function wireEvents(){
     if (name && name.trim()) addFolder(name.trim(), null);
   };
 
-  document.getElementById("autoTrashExpired").addEventListener("change", e=>{
-    settings.autoTrashExpired = e.target.checked;
-    saveState();
-    checkExpirations();
-    render();
-  });
-
   document.getElementById("confirmCancelBtn").onclick = ()=>{ pendingConfirm=null; hideOverlay("confirmOverlay"); };
   document.getElementById("confirmOkBtn").onclick = ()=>{
     const fn = pendingConfirm;
@@ -1876,7 +1904,6 @@ function applyTheme(){
 function init(){
   loadState();
   pruneTrash();
-  checkExpirations();
   applyTheme();
   updateViewButtons();
   wireEvents();

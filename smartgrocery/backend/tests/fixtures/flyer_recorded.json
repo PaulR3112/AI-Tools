@@ -1,0 +1,151 @@
+{
+  "pages": [
+    {
+      "flyer_valid_from": "2026-09-23",
+      "flyer_valid_to": "2026-09-29",
+      "offers": [
+        {
+          "raw_name": "Madeta Tvaroh polotučný 250 g",
+          "brand": "Madeta",
+          "price": 29.9,
+          "regular_price": 39.9,
+          "quantity": 250,
+          "unit": "g",
+          "pack_count": null,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.05, 0.1, 0.4, 0.25],
+          "confidence": 0.95
+        },
+        {
+          "raw_name": "Pilos Tvaroh měkký 250 g",
+          "brand": "Pilos",
+          "price": 24.9,
+          "regular_price": 32.9,
+          "quantity": 250,
+          "unit": "g",
+          "pack_count": null,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": true, "loyalty_program": "Lidl Plus", "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.5, 0.1, 0.4, 0.25],
+          "confidence": 0.9
+        },
+        {
+          "raw_name": "Mléko polotučné 1,5% 1 l",
+          "brand": null,
+          "price": 19.9,
+          "regular_price": null,
+          "quantity": 1,
+          "unit": "l",
+          "pack_count": null,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.05, 0.4, 0.4, 0.25],
+          "confidence": 0.97
+        },
+        {
+          "raw_name": "Jogurt bílý 4 × 150 g",
+          "brand": null,
+          "price": 39.9,
+          "regular_price": null,
+          "quantity": 150,
+          "unit": "g",
+          "pack_count": 4,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.5, 0.4, 0.4, 0.25],
+          "confidence": 0.93
+        },
+        {
+          "raw_name": "Nečitateľná ponuka",
+          "brand": null,
+          "price": null,
+          "regular_price": null,
+          "quantity": null,
+          "unit": null,
+          "pack_count": null,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.05, 0.7, 0.4, 0.25],
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "flyer_valid_from": "2026-09-23",
+      "flyer_valid_to": "2026-09-29",
+      "offers": [
+        {
+          "raw_name": "Kuřecí prsní řízky",
+          "brand": null,
+          "price": 159.9,
+          "regular_price": 199.9,
+          "quantity": null,
+          "unit": null,
+          "pack_count": null,
+          "price_type": "per_kg",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.05, 0.1, 0.4, 0.25],
+          "confidence": 0.9
+        },
+        {
+          "raw_name": "Pivo Plzeň 12° 0,5 l",
+          "brand": "Pilsner Urquell",
+          "price": 29.9,
+          "regular_price": null,
+          "quantity": 0.5,
+          "unit": "l",
+          "pack_count": null,
+          "price_type": "multibuy",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": 2, "multibuy_get": 1, "app_only": false, "coupon": false},
+          "valid_from": "2026-09-26",
+          "valid_to": "2026-09-29",
+          "bbox": [0.5, 0.1, 0.4, 0.25],
+          "confidence": 0.88
+        },
+        {
+          "raw_name": "Máslo 250 g",
+          "brand": null,
+          "price": 59.9,
+          "regular_price": 49.9,
+          "quantity": 250,
+          "unit": "g",
+          "pack_count": null,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": null,
+          "valid_to": null,
+          "bbox": [0.05, 0.4, 0.4, 0.25],
+          "confidence": 0.85
+        },
+        {
+          "raw_name": "Tvaroh tučný 250 g",
+          "brand": null,
+          "price": 27.9,
+          "regular_price": null,
+          "quantity": 250,
+          "unit": "g",
+          "pack_count": null,
+          "price_type": "standard",
+          "conditions": {"loyalty_card": false, "loyalty_program": null, "min_qty": null, "multibuy_buy": null, "multibuy_get": null, "app_only": false, "coupon": false},
+          "valid_from": "2026-09-23",
+          "valid_to": "2026-10-05",
+          "bbox": [0.5, 0.4, 0.4, 0.25],
+          "confidence": 0.9
+        }
+      ]
+    }
+  ]
+}

@@ -164,6 +164,10 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 .bulk-bar{display:flex;align-items:center;gap:8px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;flex-wrap:wrap;}
 .bulk-bar span:first-child{font-weight:600;color:var(--accent);font-size:13px;}
 .bulk-bar .spacer{flex:1;}
+.backup-banner{display:flex;align-items:center;gap:8px;background:var(--warning-soft);border:1px solid var(--warning);color:var(--text);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;flex-wrap:wrap;font-size:13px;}
+#backupBannerText{flex:1 1 320px;}
+.sidebar-toggle-row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13px;cursor:pointer;}
+.sidebar-toggle-row input{accent-color:var(--accent);}
 
 .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700;margin:6px 0 10px;display:flex;align-items:center;gap:8px;}
 .section-title .line{flex:1;height:1px;background:var(--border);}
@@ -217,7 +221,10 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 .row .colorbar{position:absolute;left:0;top:0;bottom:0;width:3px;}
 .row.dead{opacity:.6;}
 .row.drag-over{outline:2px dashed var(--accent);outline-offset:-2px;}
-.row .favicon{width:16px;height:16px;}
+.row .favicon{width:16px;height:16px;margin-top:0;}
+.favicon-letter{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;line-height:1;user-select:none;}
+.row .favicon-letter{font-size:10px;}
+.duplicate-box .favicon-letter{width:20px;height:20px;}
 .row .card-title{font-size:13px;}
 .row .card-url{max-width:220px;}
 .row-tags{display:flex;gap:4px;flex-wrap:wrap;max-width:220px;}
@@ -324,6 +331,7 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
     <div class="nav-item" data-view="pinned"><span>📌</span><span>Pripnuté</span><span class="count" id="countPinned">0</span></div>
     <div class="nav-item" data-view="unread"><span>🔵</span><span>Neprečítané</span><span class="count" id="countUnread">0</span></div>
     <div class="nav-item" data-view="mostVisited"><span>🔥</span><span>Najnavštevovanejšie</span><span class="count" id="countMostVisited">0</span></div>
+    <div class="nav-item" data-view="recent"><span>🕒</span><span>Naposledy navštívené</span><span class="count" id="countRecent">0</span></div>
     <div class="nav-item" data-view="trash"><span>🗑️</span><span>Kôš</span><span class="count" id="countTrash">0</span></div>
 
     <h4>Priečinky</h4>
@@ -332,6 +340,9 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 
     <h4>Tagy</h4>
     <div class="tag-list" id="tagList"></div>
+
+    <h4>Nastavenia</h4>
+    <label class="sidebar-toggle-row" title="Ikony stránok sa nebudú sťahovať zo služby Google — namiesto nich sa zobrazí farebné písmeno. Intranetové a lokálne adresy sa na Google neposielajú nikdy."><input type="checkbox" id="offlineFavicons"> Bez externých požiadaviek (ikony)</label>
   </aside>
 
   <main class="content" id="content">
@@ -342,6 +353,11 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
       </div>
       <div class="spacer"></div>
       <div class="active-filters" id="activeFilters"></div>
+    </div>
+    <div class="backup-banner hidden" id="backupBanner">
+      <span id="backupBannerText"></span>
+      <button class="btn small primary" id="backupNowBtn">⇩ Zálohovať teraz</button>
+      <button class="btn small" id="backupLaterBtn">Pripomenúť zajtra</button>
     </div>
     <div class="bulk-bar hidden" id="bulkActionsBar">
       <span id="bulkCount">0 vybraných</span>
@@ -436,8 +452,11 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
   <div class="modal wide">
     <h3>Import / Export</h3>
     <div class="section-title"><span>Export</span><span class="line"></span></div>
-    <p class="content-sub">Stiahni celý stav (záložky, priečinky) ako záložný JSON súbor.</p>
-    <button class="btn primary" id="exportJsonBtn">⇩ Exportovať JSON</button>
+    <p class="content-sub">JSON je úplná záloha (záložky, priečinky, kôš, počty návštev). HTML je formát, ktorý vie importovať každý prehliadač (priečinky, tagy, poznámky).</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn primary" id="exportJsonBtn">⇩ Exportovať JSON (záloha)</button>
+      <button class="btn" id="exportHtmlBtn">⇩ Exportovať HTML (pre prehliadač)</button>
+    </div>
 
     <div class="section-title" style="margin-top:20px;"><span>Import JSON zálohy</span><span class="line"></span></div>
     <div class="import-drop" id="jsonDrop">Klikni alebo pretiahni .json súbor sem</div>
@@ -507,6 +526,22 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
   </div>
 </div>
 
+<!-- Text input modal (replaces window.prompt) -->
+<div class="overlay hidden" id="textPromptOverlay">
+  <div class="modal">
+    <h3 id="textPromptTitle"></h3>
+    <div class="field">
+      <label id="textPromptLabel" for="textPromptInput"></label>
+      <input type="text" id="textPromptInput" autocomplete="off">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="textPromptCancelBtn">Zrušiť</button>
+      <div class="spacer"></div>
+      <button class="btn primary" id="textPromptOkBtn">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm modal -->
 <div class="overlay hidden" id="confirmOverlay">
   <div class="modal">
@@ -552,9 +587,9 @@ const STOPWORDS = new Set([
 
 /* ============================== STATE ============================== */
 let appState = { bookmarks: [], folders: [], deletedBookmarks: [] };
-let settings = { theme: "light", view: "card" };
+let settings = { theme: "light", view: "card", offlineFavicons: false, lastExportAt: null, backupSnoozeUntil: 0 };
 let ui = {
-  filterType: "all", // all | folder | pinned | unread | mostVisited | trash
+  filterType: "all", // all | folder | pinned | unread | mostVisited | recent | trash
   filterFolderId: null,
   activeTag: null,
   searchQuery: "",
@@ -596,18 +631,22 @@ function normalizeUrl(url){
   if (!url) return "";
   let s = String(url).trim();
   s = s.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
-  s = s.replace(/\/+$/,"");
+  const hIdx = s.indexOf("#");
+  const hash = hIdx >= 0 ? s.slice(hIdx) : "";
+  if (hIdx >= 0) s = s.slice(0, hIdx);
   const qIdx = s.indexOf("?");
+  // Trailing slashes are stripped from the path itself, so ".../Web/?utm_source=x" and
+  // ".../Web" compare equal once the tracking parameter is removed.
+  const base = (qIdx >= 0 ? s.slice(0, qIdx) : s).replace(/\/+$/,"");
+  let query = "";
   if (qIdx >= 0){
-    const base = s.slice(0, qIdx);
-    const query = s.slice(qIdx+1);
-    const params = query.split("&").filter(p=>{
+    const params = s.slice(qIdx+1).split("&").filter(p=>{
       const key = p.split("=")[0].toLowerCase();
       return key && !key.startsWith("utm_") && key !== "ref" && key !== "fbclid" && key !== "gclid";
     });
-    s = params.length ? base + "?" + params.sort().join("&") : base;
+    if (params.length) query = "?" + params.sort().join("&");
   }
-  return s.toLowerCase();
+  return (base + query + (hash === "#" ? "" : hash)).toLowerCase();
 }
 function ensureProtocol(url){
   let s = (url||"").trim();
@@ -625,15 +664,46 @@ function isPrivateOrIntranetUrl(url){
     if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
     if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
     if (/^169\.254\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (/^\[?(fc|fd|fe80)[0-9a-f:]*\]?$/i.test(host) || host === "[::1]") return true;
     if (!host.includes(".")) return true;
-    if (/\.(local|internal|intranet|corp|lan|home)$/.test(host)) return true;
-    return false;
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false; // other IPv4 = public
+    // Company networks often use their own, non-public top-level domain (e.g. "*.vwg",
+    // "*.corp"). Anything that isn't a known public TLD is treated as intranet, so it is never
+    // sent to an outside service and a failed link check reads "unverifiable", not "dead".
+    return !isPublicTld(host.slice(host.lastIndexOf(".") + 1));
   }catch(e){ return false; }
+}
+const PUBLIC_GENERIC_TLDS = new Set((
+  "com net org edu gov mil int info biz name pro aero coop museum mobi asia tel travel jobs cat post " +
+  "app dev page web site online website store shop blog cloud tech digital media news live link " +
+  "xyz top icu vip club fun one art design studio space network systems solutions services company " +
+  "agency email global world today life games zone tools academy center city group team works " +
+  "social chat video music photo photos pics film tv radio book books wiki help support guide " +
+  "software code google amazon apple microsoft bank insurance finance money law legal health care " +
+  "science education school university college events marketing consulting business market " +
+  "auto cars car energy green eco travel hotel restaurant food cafe wine beer fashion style " +
+  "work jobs careers expert ltd inc llc gmbh plus land house haus berlin wien paris london nyc " +
+  "eu io ai co me cc tv"
+).split(" "));
+function isPublicTld(tld){
+  tld = String(tld || "").toLowerCase();
+  if (/^[a-z]{2}$/.test(tld)) return true;       // all country-code TLDs (.sk, .de, .cz, …)
+  if (/^xn--[a-z0-9-]+$/.test(tld)) return true;  // internationalized TLDs
+  return PUBLIC_GENERIC_TLDS.has(tld);
 }
 function formatDate(ts){
   if (!ts) return "";
   const d = new Date(ts);
   return d.toLocaleDateString("sk-SK", {day:"2-digit",month:"2-digit",year:"numeric"});
+}
+function formatRelative(ts){
+  if (!ts) return "";
+  const startOfDay = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); };
+  const days = Math.round((startOfDay(Date.now()) - startOfDay(ts)) / 86400000);
+  if (days <= 0) return "dnes";
+  if (days === 1) return "včera";
+  if (days < 30) return `pred ${days} d`;
+  return formatDate(ts);
 }
 function formatDateTime(ts){
   if (!ts) return "";
@@ -734,20 +804,35 @@ function searchBookmarks(query, bookmarksArray){
   results.sort((a,b)=> b.score - a.score);
   return results.map(r=>r.b);
 }
+// Matches on the diacritic-free text (so "kos" highlights "Kôš") but wraps the original
+// characters, and escapes per character so a token can never match inside an HTML entity.
 function highlightText(text, query){
-  const tokens = tokenize(query);
-  const safe = escapeHtml(text || "");
-  if (!tokens.length) return safe;
-  let result = safe;
-  const uniq = [...new Set(tokens)].sort((a,b)=>b.length-a.length);
-  for (const tok of uniq){
-    if (!tok) continue;
-    const escTok = tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    try{
-      result = result.replace(new RegExp("("+escTok+")", "gi"), "<mark>$1</mark>");
-    }catch(e){ /* ignore bad token */ }
+  const str = String(text == null ? "" : text);
+  const tokens = [...new Set(tokenize(query))].filter(Boolean);
+  if (!tokens.length || !str) return escapeHtml(str);
+  const chars = Array.from(str);
+  let norm = "";
+  const map = [];
+  chars.forEach((ch, i)=>{
+    const n = normalizeText(ch);
+    for (let k = 0; k < n.length; k++){ norm += n[k]; map.push(i); }
+  });
+  const marked = new Array(chars.length).fill(false);
+  for (const tok of tokens){
+    let from = 0, idx;
+    while ((idx = norm.indexOf(tok, from)) !== -1){
+      for (let k = idx; k < idx + tok.length; k++) marked[map[k]] = true;
+      from = idx + tok.length;
+    }
   }
-  return result;
+  let out = "", open = false;
+  chars.forEach((ch, i)=>{
+    if (marked[i] && !open){ out += "<mark>"; open = true; }
+    if (!marked[i] && open){ out += "</mark>"; open = false; }
+    out += escapeHtml(ch);
+  });
+  if (open) out += "</mark>";
+  return out;
 }
 
 /* ============================== DUPLICATE DETECTION ============================== */
@@ -801,6 +886,8 @@ function baseFilteredBookmarks(){
     list = list.filter(b => b.status === "unread");
   } else if (ui.filterType === "mostVisited"){
     list = list.filter(b => (b.visitCount||0) > 0);
+  } else if (ui.filterType === "recent"){
+    list = list.filter(b => b.lastVisitedAt);
   }
   if (ui.activeTag){
     list = list.filter(b => (b.tags||[]).includes(ui.activeTag));
@@ -824,7 +911,7 @@ function getVisibleMain(){
   if (ui.searchQuery) list = searchBookmarks(ui.searchQuery, list);
 
   let pinned = [];
-  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "mostVisited"){
+  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "mostVisited" || ui.filterType === "recent"){
     pinned = appState.bookmarks.filter(b=>b.pinned);
     if (ui.activeTag) pinned = pinned.filter(b=>(b.tags||[]).includes(ui.activeTag));
     if (ui.searchQuery) pinned = searchBookmarks(ui.searchQuery, pinned);
@@ -876,9 +963,46 @@ function suggestTitleFromUrl(url){
 }
 
 /* ============================== AUTO-FETCH TITLE/FAVICON ============================== */
+function isEmbeddedFavicon(src){
+  return typeof src === "string" && /^data:image\//i.test(src);
+}
+// Returns a remote favicon URL only when it's OK to reveal the domain to Google's favicon
+// service: never for intranet/private/file URLs, and never when the user turned remote icons off.
 function faviconUrl(url){
+  if (settings.offlineFavicons || isPrivateOrIntranetUrl(url)) return "";
   const domain = getDomain(url);
   return domain ? `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}` : "";
+}
+function faviconLetter(b){
+  const isFile = /^file:/i.test(b.url || "");
+  const source = (!isFile && getDomain(b.url)) || b.title || "?";
+  return (Array.from(source.trim())[0] || "?").toUpperCase();
+}
+function faviconColor(b){
+  const key = getDomain(b.url) || b.title || "";
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return `hsl(${hash % 360}, 55%, 48%)`;
+}
+function letterFaviconHtml(b){
+  return `<span class="favicon favicon-letter" style="background:${faviconColor(b)}">${escapeHtml(faviconLetter(b))}</span>`;
+}
+function faviconHtml(b){
+  const src = isEmbeddedFavicon(b.favicon) ? b.favicon : faviconUrl(b.url);
+  if (!src) return letterFaviconHtml(b);
+  return `<img class="favicon" src="${escapeHtml(src)}" alt="" data-letter="${escapeHtml(faviconLetter(b))}" data-bg="${faviconColor(b)}">`;
+}
+// A remote icon that fails to load falls back to the letter avatar instead of an empty box.
+function wireFaviconFallback(root){
+  root.querySelectorAll("img.favicon").forEach(img=>{
+    img.onerror = ()=>{
+      const span = document.createElement("span");
+      span.className = "favicon favicon-letter";
+      span.style.background = img.dataset.bg || "var(--bg-hover)";
+      span.textContent = img.dataset.letter || "?";
+      img.replaceWith(span);
+    };
+  });
 }
 async function fetchTitleForUrl(url){
   try{
@@ -903,7 +1027,9 @@ function createBookmarkObject(data){
     id: data.id || uuid(),
     url: data.url,
     title: data.title || suggestTitleFromUrl(data.url) || data.url,
-    favicon: data.favicon || faviconUrl(data.url),
+    // Only locally embedded icons (data: URIs from a browser import) are stored; remote favicons
+    // are resolved at render time so the privacy setting applies to existing bookmarks too.
+    favicon: isEmbeddedFavicon(data.favicon) ? data.favicon : "",
     tags: data.tags || [],
     folderId: data.folderId || null,
     color: data.color || null,
@@ -916,6 +1042,7 @@ function createBookmarkObject(data){
     isUnverifiable: false,
     lastChecked: null,
     visitCount: data.visitCount || 0,
+    lastVisitedAt: data.lastVisitedAt || null,
     order: data.order != null ? data.order : now
   };
 }
@@ -926,7 +1053,8 @@ function addOrUpdateBookmark(payload){
       appState.bookmarks[idx] = Object.assign({}, appState.bookmarks[idx], {
         url: payload.url, title: payload.title, tags: payload.tags, folderId: payload.folderId,
         color: payload.color, pinned: payload.pinned, note: payload.note, status: payload.status,
-        favicon: payload.favicon || appState.bookmarks[idx].favicon,
+        favicon: isEmbeddedFavicon(payload.favicon) ? payload.favicon
+          : (isEmbeddedFavicon(appState.bookmarks[idx].favicon) ? appState.bookmarks[idx].favicon : ""),
         updatedAt: Date.now()
       });
       saveState(); render();
@@ -983,6 +1111,7 @@ function togglePinned(id){
 }
 function trackVisit(bookmark){
   bookmark.visitCount = (bookmark.visitCount||0) + 1;
+  bookmark.lastVisitedAt = Date.now();
   bookmark.updatedAt = Date.now();
   saveState(); render();
 }
@@ -1159,7 +1288,52 @@ function exportJson(){
   };
   const stamp = new Date().toISOString().replace(/[:.]/g,"-");
   download(`bookmarks-export-${stamp}.json`, JSON.stringify(data,null,2), "application/json");
+  settings.lastExportAt = Date.now();
+  settings.backupSnoozeUntil = 0;
+  saveState(); renderBackupBanner();
   toast("Export dokončený.");
+}
+// Netscape bookmark file — the format every browser can import (and our own HTML import reads).
+function buildBrowserBookmarksHtml(){
+  const attr = s => escapeHtml(String(s == null ? "" : s));
+  const secs = ts => Math.floor((ts || Date.now()) / 1000);
+  const bookmarksIn = folderId => appState.bookmarks
+    .filter(b => (b.folderId || null) === folderId)
+    .sort((a,b)=>(a.order||0)-(b.order||0));
+  const lines = [];
+  function writeBookmark(b, indent){
+    const icon = isEmbeddedFavicon(b.favicon) ? ` ICON="${attr(b.favicon)}"` : "";
+    const tags = (b.tags||[]).length ? ` TAGS="${attr(b.tags.join(","))}"` : "";
+    lines.push(`${indent}<DT><A HREF="${attr(b.url)}" ADD_DATE="${secs(b.createdAt)}"${b.lastVisitedAt ? ` LAST_VISIT="${secs(b.lastVisitedAt)}"` : ""}${icon}${tags}>${attr(b.title)}</A>`);
+    if (b.note) lines.push(`${indent}<DD>${attr(b.note)}`);
+  }
+  function writeFolder(folderId, indent){
+    getChildFolders(folderId).forEach(f=>{
+      lines.push(`${indent}<DT><H3>${attr(f.name)}</H3>`);
+      lines.push(`${indent}<DL><p>`);
+      writeFolder(f.id, indent + "    ");
+      lines.push(`${indent}</DL><p>`);
+    });
+    bookmarksIn(folderId).forEach(b=>writeBookmark(b, indent));
+  }
+  writeFolder(null, "    ");
+  return [
+    "<!DOCTYPE NETSCAPE-Bookmark-file-1>",
+    "<!-- This is an automatically generated file. It will be read and overwritten. DO NOT EDIT! -->",
+    '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">',
+    "<TITLE>Bookmarks</TITLE>",
+    "<H1>Bookmarks</H1>",
+    "<DL><p>",
+    ...lines,
+    "</DL><p>",
+    ""
+  ].join("\n");
+}
+function exportBrowserHtml(){
+  if (!appState.bookmarks.length){ toast("Žiadne záložky na export."); return; }
+  const stamp = new Date().toISOString().slice(0,10);
+  download(`bookmarks-${stamp}.html`, buildBrowserBookmarksHtml(), "text/html");
+  toast("Exportované vo formáte prehliadača.");
 }
 function validateImportShape(obj){
   return obj && Array.isArray(obj.bookmarks) && Array.isArray(obj.folders);
@@ -1172,7 +1346,12 @@ async function handleJsonFile(file){
       toast("Neplatný formát JSON súboru.", "error");
       return;
     }
-    pendingMergeData = {folders: obj.folders, bookmarks: obj.bookmarks, mode: "json"};
+    pendingMergeData = {
+      folders: obj.folders,
+      bookmarks: obj.bookmarks,
+      deletedBookmarks: Array.isArray(obj.deletedBookmarks) ? obj.deletedBookmarks : [],
+      mode: "json"
+    };
     document.getElementById("mergeChoiceText").textContent =
       `Súbor obsahuje ${obj.bookmarks.length} záložiek a ${obj.folders.length} priečinkov. Ako ich chceš spracovať?`;
     document.getElementById("importExportOverlay").classList.add("hidden");
@@ -1181,10 +1360,18 @@ async function handleJsonFile(file){
     toast("Nepodarilo sa spracovať JSON súbor.", "error");
   }
 }
+function restoreDeletedFromImport(list){
+  return (list||[])
+    .filter(b=>b && b.url)
+    .map(b=>Object.assign(createBookmarkObject(Object.assign({}, b, {id: b.id||uuid()})), {deletedAt: b.deletedAt || Date.now()}));
+}
 function applyReplace(){
   if (!pendingMergeData) return;
   appState.folders = pendingMergeData.folders.map(f=>({id:f.id||uuid(), name:f.name, parentId:f.parentId||null, order:f.order||0}));
   appState.bookmarks = pendingMergeData.bookmarks.map(b=>createBookmarkObject(Object.assign({}, b, {id: b.id||uuid()})));
+  appState.deletedBookmarks = restoreDeletedFromImport(pendingMergeData.deletedBookmarks);
+  pruneTrash();
+  ui.selectedIds.clear();
   pendingMergeData = null;
   document.getElementById("mergeChoiceOverlay").classList.add("hidden");
   saveState(); render();
@@ -1192,22 +1379,36 @@ function applyReplace(){
 }
 function applyMerge(){
   if (!pendingMergeData) return;
+  // Map imported folder ids onto existing folders with the same name under the same (already
+  // mapped) parent, creating the missing ones. Parents are resolved before their children so a
+  // nested path like "Práca/Projekty" is matched level by level instead of being duplicated.
   const folderIdMap = new Map();
-  const existingFolderNames = new Map(appState.folders.map(f=>[f.parentId+"|"+f.name.toLowerCase(), f.id]));
-  for (const f of pendingMergeData.folders){
-    const key = (f.parentId||"root")+"|"+(f.name||"").toLowerCase();
-    if (existingFolderNames.has(key)){
-      folderIdMap.set(f.id, existingFolderNames.get(key));
-    } else {
-      const newId = uuid();
-      folderIdMap.set(f.id, newId);
-      appState.folders.push({id:newId, name:f.name, parentId:f.parentId||null, order: f.order||0});
+  const nameKey = (parentId, name) => (parentId || "root") + "|" + String(name||"").trim().toLowerCase();
+  const existingByKey = new Map(appState.folders.map(f=>[nameKey(f.parentId, f.name), f.id]));
+  const importedIds = new Set(pendingMergeData.folders.map(f=>f.id));
+  let pending = pendingMergeData.folders.slice();
+  while (pending.length){
+    const next = [];
+    for (const f of pending){
+      const hasImportedParent = f.parentId && importedIds.has(f.parentId);
+      if (hasImportedParent && !folderIdMap.has(f.parentId)){ next.push(f); continue; }
+      const parentId = hasImportedParent ? folderIdMap.get(f.parentId) : null;
+      const key = nameKey(parentId, f.name);
+      if (existingByKey.has(key)){
+        folderIdMap.set(f.id, existingByKey.get(key));
+      } else {
+        const newId = uuid();
+        appState.folders.push({id:newId, name:f.name || "Priečinok", parentId, order: f.order||0});
+        existingByKey.set(key, newId);
+        folderIdMap.set(f.id, newId);
+      }
     }
+    if (next.length === pending.length){
+      // Parent cycle or dangling reference in the import: attach the rest at the root.
+      next.forEach(f=>{ f.parentId = null; });
+    }
+    pending = next;
   }
-  // remap parentIds for newly added folders that reference other imported folders
-  appState.folders.forEach(f=>{
-    if (folderIdMap.has(f.parentId)) f.parentId = folderIdMap.get(f.parentId);
-  });
   let added = 0, skipped = 0;
   for (const b of pendingMergeData.bookmarks){
     if (findDuplicate(b.url, null)){ skipped++; continue; }
@@ -1215,6 +1416,12 @@ function applyMerge(){
     appState.bookmarks.push(createBookmarkObject(Object.assign({}, b, {id: uuid(), folderId: mappedFolder})));
     added++;
   }
+  const trashIds = new Set(appState.deletedBookmarks.map(b=>b.id));
+  const trashUrls = new Set(appState.deletedBookmarks.map(b=>normalizeUrl(b.url)));
+  const incomingTrash = restoreDeletedFromImport(pendingMergeData.deletedBookmarks)
+    .filter(b=>!trashIds.has(b.id) && !trashUrls.has(normalizeUrl(b.url)) && !findDuplicate(b.url, null));
+  appState.deletedBookmarks.push(...incomingTrash);
+  pruneTrash();
   pendingMergeData = null;
   document.getElementById("mergeChoiceOverlay").classList.add("hidden");
   saveState(); render();
@@ -1240,15 +1447,21 @@ async function handleHtmlFile(file){
         } else if (a){
           const href = a.getAttribute("href");
           if (href){
+            // TAGS (Firefox) and the <DD> description are written by our own HTML export too,
+            // so an export → import round trip keeps tags and notes.
+            const tags = (a.getAttribute("tags") || "").split(",").map(t=>t.trim().toLowerCase()).filter(Boolean);
+            const dd = dt.nextElementSibling && dt.nextElementSibling.tagName === "DD" ? dt.nextElementSibling : null;
+            const addDate = parseInt(a.getAttribute("add_date"), 10);
             bookmarks.push({
               id: uuid(),
               url: href,
               title: a.textContent.trim() || href,
               favicon: a.getAttribute("icon") || null,
               folderId: parentFolderId,
-              tags: [],
-              note: "",
-              status: "unread"
+              tags: [...new Set(tags)],
+              note: dd ? dd.textContent.trim() : "",
+              status: "unread",
+              createdAt: addDate > 0 ? addDate * 1000 : undefined
             });
           }
         }
@@ -1330,9 +1543,9 @@ function clearSelection(){
   ui.selectedIds.clear();
   renderMain();
 }
-function bulkAddTag(){
+async function bulkAddTag(){
   if (!ui.selectedIds.size) return;
-  const input = prompt("Tag(y) na pridanie k vybraným záložkám (oddeľ čiarkou):");
+  const input = await askText("Pridať tag", `Tag(y) pre ${ui.selectedIds.size} vybraných záložiek (oddeľ čiarkou)`, "");
   if (!input) return;
   const tags = input.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean);
   if (!tags.length) return;
@@ -1394,6 +1607,39 @@ function hideOverlay(id){ document.getElementById(id).classList.add("hidden"); }
 function hideAllOverlays(){
   document.querySelectorAll(".overlay").forEach(o=>o.classList.add("hidden"));
 }
+let pendingTextPrompt = null;
+// In-app replacement for window.prompt(): resolves with the entered text, or null if cancelled.
+function askText(title, label, initial){
+  if (pendingTextPrompt) pendingTextPrompt(null);
+  document.getElementById("textPromptTitle").textContent = title;
+  document.getElementById("textPromptLabel").textContent = label;
+  const input = document.getElementById("textPromptInput");
+  input.value = initial || "";
+  showOverlay("textPromptOverlay");
+  setTimeout(()=>{ input.focus(); input.select(); }, 20);
+  return new Promise(resolve=>{ pendingTextPrompt = resolve; });
+}
+function closeTextPrompt(value){
+  hideOverlay("textPromptOverlay");
+  const resolve = pendingTextPrompt;
+  pendingTextPrompt = null;
+  if (resolve) resolve(value);
+}
+
+const BACKUP_REMINDER_DAYS = 7;
+function renderBackupBanner(){
+  const banner = document.getElementById("backupBanner");
+  const now = Date.now();
+  const stale = !settings.lastExportAt || now - settings.lastExportAt > BACKUP_REMINDER_DAYS*24*60*60*1000;
+  const show = appState.bookmarks.length > 0 && stale && now >= (settings.backupSnoozeUntil || 0);
+  banner.classList.toggle("hidden", !show);
+  if (!show) return;
+  const days = settings.lastExportAt ? Math.floor((now - settings.lastExportAt) / 86400000) : null;
+  document.getElementById("backupBannerText").textContent = days === null
+    ? "⚠️ Záložky ešte nemáš zálohované. Sú uložené len v tomto prehliadači — vyčistenie dát prehliadača ich zmaže."
+    : `⚠️ Posledná záloha bola pred ${days} dňami. Odporúčam exportovať JSON zálohu.`;
+}
+
 function confirmAction(title, text, onConfirm){
   pendingConfirm = onConfirm;
   document.getElementById("confirmTitle").textContent = title;
@@ -1525,7 +1771,7 @@ function collectBookmarkPayload(){
     pinned: document.getElementById("fPinned").checked,
     note: document.getElementById("fNote").value,
     status: document.getElementById("fRead").checked ? "read" : "unread",
-    favicon: faviconUrl(url)
+    favicon: ""
   };
 }
 function saveBookmarkFromModal(){
@@ -1543,8 +1789,9 @@ function saveBookmarkFromModal(){
 }
 function showDuplicateModal(existing){
   const box = document.getElementById("duplicateBox");
-  box.innerHTML = `<img src="${escapeHtml(existing.favicon||faviconUrl(existing.url))}" onerror="this.style.visibility='hidden'">
+  box.innerHTML = `${faviconHtml(existing)}
     <div><div style="font-weight:600;">${escapeHtml(existing.title)}</div><div class="content-sub">${escapeHtml(existing.url)}</div></div>`;
+  wireFaviconFallback(box);
   document.getElementById("dupOpenBtn").onclick = ()=>{
     window.open(existing.url, "_blank", "noopener");
   };
@@ -1563,7 +1810,7 @@ async function saveQuickAdd(){
   url = ensureProtocol(url);
   const dup = findDuplicate(url, null);
   if (dup){
-    pendingDuplicateSave = {url, title:"", tags:[], folderId:null, color:null, pinned:false, note:"", status:"unread", favicon: faviconUrl(url), id:null};
+    pendingDuplicateSave = {url, title:"", tags:[], folderId:null, color:null, pinned:false, note:"", status:"unread", favicon: "", id:null};
     hideOverlay("quickAddOverlay");
     showDuplicateModal(dup);
     return;
@@ -1572,7 +1819,7 @@ async function saveQuickAdd(){
   let title = suggestTitleFromUrl(url);
   const fetched = await fetchTitleForUrl(url);
   if (fetched) title = fetched;
-  addOrUpdateBookmark({url, title, tags: suggestTagsForDomain(url), folderId:null, color:null, pinned:false, note:"", status:"unread", favicon: faviconUrl(url)});
+  addOrUpdateBookmark({url, title, tags: suggestTagsForDomain(url), folderId:null, color:null, pinned:false, note:"", status:"unread", favicon: ""});
   toast("Záložka rýchlo pridaná.");
 }
 
@@ -1585,12 +1832,15 @@ function render(){
   renderTagList();
   renderMain();
   renderSelectionBar();
+  renderBackupBanner();
+  document.getElementById("offlineFavicons").checked = !!settings.offlineFavicons;
 }
 function renderSidebarCounts(){
   document.getElementById("countAll").textContent = appState.bookmarks.length;
   document.getElementById("countPinned").textContent = appState.bookmarks.filter(b=>b.pinned).length;
   document.getElementById("countUnread").textContent = appState.bookmarks.filter(b=>b.status==="unread").length;
   document.getElementById("countMostVisited").textContent = appState.bookmarks.filter(b=>(b.visitCount||0)>0).length;
+  document.getElementById("countRecent").textContent = appState.bookmarks.filter(b=>b.lastVisitedAt).length;
   document.getElementById("countTrash").textContent = appState.deletedBookmarks.length;
   document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
     el.classList.toggle("active", ui.filterType === el.dataset.view);
@@ -1626,14 +1876,14 @@ function renderFolderTree(){
         if (ui.expandedFolders.has(f.id)) ui.expandedFolders.delete(f.id); else ui.expandedFolders.add(f.id);
         renderFolderTree();
       };
-      row.querySelector('[data-act="add"]').onclick = (e)=>{
+      row.querySelector('[data-act="add"]').onclick = async (e)=>{
         e.stopPropagation();
-        const name = prompt("Názov nového podpriečinka:");
+        const name = await askText("Nový podpriečinok", `Názov podpriečinka v „${f.name}“`, "");
         if (name && name.trim()){ ui.expandedFolders.add(f.id); addFolder(name.trim(), f.id); }
       };
-      row.querySelector('[data-act="rename"]').onclick = (e)=>{
+      row.querySelector('[data-act="rename"]').onclick = async (e)=>{
         e.stopPropagation();
-        const name = prompt("Nový názov priečinka:", f.name);
+        const name = await askText("Premenovať priečinok", "Nový názov", f.name);
         if (name && name.trim()) renameFolder(f.id, name.trim());
       };
       row.querySelector('[data-act="delete"]').onclick = (e)=>{
@@ -1675,7 +1925,7 @@ function activeFilterLabel(){
     const f = getFolderById(ui.filterFolderId);
     return f ? f.name : "Priečinok";
   }
-  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", trash:"Kôš"}[ui.filterType] || "Záložky";
+  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", recent:"Naposledy navštívené", trash:"Kôš"}[ui.filterType] || "Záložky";
 }
 function renderActiveFilters(){
   const wrap = document.getElementById("activeFilters");
@@ -1712,18 +1962,18 @@ function bookmarkBadges(b, isTrash){
   return out;
 }
 function bookmarkTagsHtml(b){
-  return (b.tags||[]).map(t=>`<span class="tag-chip" data-tag="${escapeHtml(t)}">${escapeHtml(highlightText(t, ui.searchQuery))}</span>`).join("");
+  return (b.tags||[]).map(t=>`<span class="tag-chip" data-tag="${escapeHtml(t)}">${highlightText(t, ui.searchQuery)}</span>`).join("");
 }
 
 function renderCard(b, isTrash){
   const el = document.createElement("div");
   el.className = "card" + (b.isDead ? " dead" : "") + (ui.selectedIds.has(b.id) ? " selected" : "");
-  const meta = `${formatDate(b.createdAt)} · 👁 ${b.visitCount||0}`;
+  const meta = `${formatDate(b.createdAt)} · 👁 ${b.visitCount||0}${b.lastVisitedAt ? ` · 🕒 ${formatRelative(b.lastVisitedAt)}` : ""}`;
   el.innerHTML = `
     ${bookmarkColorBar(b)}
     <div class="card-top">
       ${!isTrash ? `<input type="checkbox" class="select-checkbox" title="Vybrať" ${ui.selectedIds.has(b.id)?"checked":""}>` : ""}
-      <img class="favicon" src="${escapeHtml(b.favicon||faviconUrl(b.url))}" onerror="this.style.visibility='hidden'">
+      ${faviconHtml(b)}
       <div class="card-title-wrap">
         <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${highlightText(b.title, ui.searchQuery)}</a>
         <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
@@ -1734,7 +1984,7 @@ function renderCard(b, isTrash){
     <div class="card-footer">
       <div class="card-tags">${bookmarkTagsHtml(b)}</div>
       <span class="spacer"></span>
-      <span class="meta">${meta}</span>
+      <span class="meta" title="Pridané ${formatDate(b.createdAt)} · otvorené ${b.visitCount||0}× · naposledy ${b.lastVisitedAt ? formatDateTime(b.lastVisitedAt) : 'nikdy'}">${meta}</span>
     </div>
     ${b.note ? `<div class="comment-wrap">
       <span>💬</span>
@@ -1743,6 +1993,7 @@ function renderCard(b, isTrash){
     </div>` : ""}
   `;
   el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
+  wireFaviconFallback(el);
   const checkbox = el.querySelector(".select-checkbox");
   if (checkbox){
     checkbox.addEventListener("change", ()=>{
@@ -1779,7 +2030,7 @@ function renderRow(b, isTrash){
   el.innerHTML = `
     ${bookmarkColorBar(b)}
     ${!isTrash ? `<input type="checkbox" class="select-checkbox" title="Vybrať" ${ui.selectedIds.has(b.id)?"checked":""}>` : ""}
-    <img class="favicon" src="${escapeHtml(b.favicon||faviconUrl(b.url))}" onerror="this.style.visibility='hidden'">
+    ${faviconHtml(b)}
     <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0;">${highlightText(b.title, ui.searchQuery)}</a>
     <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
     <div class="row-tags">${bookmarkTagsHtml(b)}</div>
@@ -1787,11 +2038,12 @@ function renderRow(b, isTrash){
       <span>💬</span>
       <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
     </div>` : ""}
-    <span class="meta">👁 ${b.visitCount||0}</span>
+    <span class="meta" title="Otvorené ${b.visitCount||0}× · naposledy ${b.lastVisitedAt ? formatDateTime(b.lastVisitedAt) : 'nikdy'}">👁 ${b.visitCount||0}${b.lastVisitedAt ? ` · 🕒 ${formatRelative(b.lastVisitedAt)}` : ""}</span>
     <div class="card-badges">${bookmarkBadges(b, isTrash)}</div>
     <div class="card-actions"></div>
   `;
   el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
+  wireFaviconFallback(el);
   const checkbox = el.querySelector(".select-checkbox");
   if (checkbox){
     checkbox.addEventListener("change", ()=>{
@@ -1880,6 +2132,8 @@ function renderMain(){
     let sorted;
     if (ui.filterType === "mostVisited" && !ui.searchQuery){
       sorted = main.slice().sort((a,b)=>(b.visitCount||0)-(a.visitCount||0));
+    } else if (ui.filterType === "recent" && !ui.searchQuery){
+      sorted = main.slice().sort((a,b)=>(b.lastVisitedAt||0)-(a.lastVisitedAt||0));
     } else {
       sorted = ui.searchQuery ? main : main.slice().sort((a,b)=>(a.order||0)-(b.order||0));
     }
@@ -2022,9 +2276,26 @@ function wireEvents(){
     confirmAction("Nahradiť všetky dáta?", "Aktuálne záložky a priečinky budú nahradené importovanými dátami. Táto akcia sa nedá vrátiť späť.", applyReplace);
   };
   document.getElementById("mergeBtn").onclick = applyMerge;
+  document.getElementById("exportHtmlBtn").onclick = exportBrowserHtml;
 
-  document.getElementById("addRootFolder").onclick = ()=>{
-    const name = prompt("Názov nového priečinka:");
+  document.getElementById("offlineFavicons").addEventListener("change", e=>{
+    settings.offlineFavicons = e.target.checked;
+    saveState(); render();
+  });
+  document.getElementById("backupNowBtn").onclick = exportJson;
+  document.getElementById("backupLaterBtn").onclick = ()=>{
+    settings.backupSnoozeUntil = Date.now() + 24*60*60*1000;
+    saveState(); renderBackupBanner();
+  };
+
+  document.getElementById("textPromptCancelBtn").onclick = ()=>closeTextPrompt(null);
+  document.getElementById("textPromptOkBtn").onclick = ()=>closeTextPrompt(document.getElementById("textPromptInput").value);
+  document.getElementById("textPromptInput").addEventListener("keydown", e=>{
+    if (e.key === "Enter"){ e.preventDefault(); closeTextPrompt(e.target.value); }
+  });
+
+  document.getElementById("addRootFolder").onclick = async ()=>{
+    const name = await askText("Nový priečinok", "Názov priečinka", "");
     if (name && name.trim()) addFolder(name.trim(), null);
   };
 
@@ -2047,6 +2318,7 @@ function wireEvents(){
     ov.addEventListener("mousedown", e=>{
       if (e.target === ov){
         if (ov.id === "bookmarkModalOverlay") closeBookmarkModal();
+        else if (ov.id === "textPromptOverlay") closeTextPrompt(null);
         else if (ov.id !== "progressOverlay") ov.classList.add("hidden");
       }
     });
@@ -2070,6 +2342,7 @@ function wireEvents(){
       const openOverlay = [...document.querySelectorAll(".overlay")].find(o=>!o.classList.contains("hidden"));
       if (openOverlay){
         if (openOverlay.id === "bookmarkModalOverlay") closeBookmarkModal();
+        else if (openOverlay.id === "textPromptOverlay") closeTextPrompt(null);
         else if (openOverlay.id !== "progressOverlay") openOverlay.classList.add("hidden");
       }
     }

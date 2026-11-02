@@ -13,10 +13,12 @@ Otvor `index.html` priamo v prehliadači (dvojklikom, alebo `file://` cestou). �
 - **Duplicity** — pri ukladaní sa kontroluje normalizovaná URL a ponúkne sa možnosť otvoriť existujúcu záložku.
 - **Kontrola odkazov** — manuálne tlačidlo, ktoré otestuje dostupnosť všetkých záložiek. Rozlišuje „nedostupný" (reálne zlyhanie) od „nepodarilo sa overiť" (intranet/lokálna sieť/`file://`, kde to prehliadač blokuje bez ohľadu na skutočnú dostupnosť).
 - **Auto-fetch title/favicon**, s inteligentným fallbackom na názov odvodený z URL cesty/domény, keď sťahovanie titulku zlyhá (CORS) — a **automatické návrhy tagov** podľa domény a kľúčových slov z názvu.
-- **Najnavštevovanejšie** — sidebar sekcia so záložkami triedenými podľa počtu kliknutí na ich názov; počet kliknutí (👁) sa zobrazuje priamo na každej karte/riadku.
+- **Najnavštevovanejšie** a **Naposledy navštívené** — sidebar sekcie triedené podľa počtu kliknutí, resp. času poslednej návštevy; obe informácie (👁 počet, 🕒 kedy) sú priamo na každej karte/riadku.
 - **Hromadné akcie** — checkbox na výber viacerých záložiek naraz, lišta s možnosťou hromadne pridať tag, presunúť do priečinka alebo zmazať.
 - **Bookmarklet** (Import/Export → „Rýchle uloženie z inej stránky") — tlačidlo na pretiahnutie do lišty záložiek prehliadača, ktoré z ľubovoľnej stránky rovno predvyplní URL a názov v tomto nástroji. Pre pohodlnejšie jedno-klikové ukladanie s klávesovou skratkou a pravým klikom „Uložiť odkaz" existuje aj samostatné browser rozšírenie — pozri [`../bookmark-manager-extension`](../bookmark-manager-extension).
-- **Import/Export** — záloha do JSON, import JSON zálohy (zlúčiť/nahradiť), import HTML exportu záložiek z prehliadača.
+- **Import/Export** — úplná záloha do JSON (vrátane koša), import JSON (zlúčiť/nahradiť — pri zlučovaní sa priečinky s rovnakým názvom spoja, nevznikajú duplicity), export aj import HTML formátu prehliadača (priečinky, tagy, poznámky).
+- **Pripomienka zálohy** — banner, ak JSON záloha ešte nebola urobená alebo je staršia ako 7 dní.
+- **Súkromie ikon** — ikony stránok sa pre intranetové/lokálne adresy (vrátane firemných domén s neverejnou koncovkou, napr. `*.vwg`) nikdy neposielajú na Google; v nastaveniach sa dajú externé ikony vypnúť úplne (zobrazí sa farebné písmeno).
 - **Kôš** — zmazané záložky sa dajú obnoviť; staršie ako 30 dní (alebo nad 100 záznamov) sa automaticky vyčistia.
 - **Tmavý režim**, **kartové/kompaktné zobrazenie**, drag & drop radenie a presúvanie medzi priečinkami.
 

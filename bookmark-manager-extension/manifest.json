@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark Manager – Uložiť stránku",
+  "version": "1.0.0",
+  "description": "Jedným klikom, klávesovou skratkou (Ctrl+Shift+S) alebo pravým klikom na odkaz uloží stránku do tvojho lokálneho Bookmark Manager nástroja.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Uložiť stránku do Bookmark Manager",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "tabs", "contextMenus", "scripting", "activeTab", "notifications"],
+  "commands": {
+    "save-current-page": {
+      "suggested_key": { "default": "Ctrl+Shift+S", "mac": "Command+Shift+S" },
+      "description": "Uložiť aktuálnu stránku do Bookmark Manager"
+    }
+  },
+  "options_page": "options.html"
+}

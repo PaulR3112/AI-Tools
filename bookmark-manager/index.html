@@ -206,6 +206,17 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
 .badge{font-size:10.5px;padding:2px 7px;border-radius:999px;font-weight:600;display:inline-flex;align-items:center;gap:3px;}
 .badge.dead{background:var(--danger-soft);color:var(--danger);}
 .badge.unverifiable{background:var(--warning-soft);color:var(--warning);}
+.badge.ok{background:rgba(22,163,74,.13);color:var(--success);}
+.check-summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.check-summary .badge{font-size:12.5px;padding:4px 10px;}
+.check-list{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);}
+.check-list:empty{display:none;}
+.check-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12.5px;}
+.check-item:last-child{border-bottom:none;}
+.check-item .check-main{flex:1;min-width:0;}
+.check-item a{font-weight:600;color:var(--text);text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.check-item a:hover{text-decoration:underline;}
+.check-item .check-url{color:var(--text-muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
 .badge.unread{background:var(--accent-soft);color:var(--accent);}
 .card-tags{display:flex;gap:5px;flex-wrap:wrap;}
 .card-tags .tag-chip{cursor:pointer;font-size:11px;padding:2px 8px;}
@@ -340,6 +351,7 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
     <div class="nav-item" data-view="unread"><span>🔵</span><span>Neprečítané</span><span class="count" id="countUnread">0</span></div>
     <div class="nav-item" data-view="mostVisited"><span>🔥</span><span>Najnavštevovanejšie</span><span class="count" id="countMostVisited">0</span></div>
     <div class="nav-item" data-view="recent"><span>🕒</span><span>Naposledy navštívené</span><span class="count" id="countRecent">0</span></div>
+    <div class="nav-item" data-view="problems"><span>⚠️</span><span>Problémové odkazy</span><span class="count" id="countProblems">0</span></div>
     <div class="nav-item" data-view="trash"><span>🗑️</span><span>Kôš</span><span class="count" id="countTrash">0</span></div>
 
     <h4 class="sidebar-section-head">Priečinky <button class="link-btn" id="folderSelectToggle" title="Vybrať viac priečinkov naraz">Vybrať</button></h4>
@@ -534,8 +546,14 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
   <div class="modal">
     <h3 id="progressTitle">Kontrolujem odkazy…</h3>
     <div class="content-sub" id="progressText">0 / 0</div>
-    <div class="progress-line"><div id="progressBar" style="width:0%;"></div></div>
+    <div class="progress-line" id="progressLine"><div id="progressBar" style="width:0%;"></div></div>
+    <div class="check-results hidden" id="checkResults">
+      <div class="check-summary" id="checkSummary"></div>
+      <div class="check-list" id="checkList"></div>
+      <p class="content-sub" id="checkNote"></p>
+    </div>
     <div class="modal-actions">
+      <button class="btn primary hidden" id="showProblemsBtn">Zobraziť problémové odkazy</button>
       <div class="spacer"></div>
       <button class="btn" id="progressCloseBtn" disabled>Zavrieť</button>
     </div>
@@ -907,6 +925,8 @@ function baseFilteredBookmarks(){
     list = list.filter(b => (b.visitCount||0) > 0);
   } else if (ui.filterType === "recent"){
     list = list.filter(b => b.lastVisitedAt);
+  } else if (ui.filterType === "problems"){
+    list = list.filter(b => b.isDead || b.isUnverifiable);
   }
   if (ui.activeTag){
     list = list.filter(b => (b.tags||[]).includes(ui.activeTag));
@@ -930,7 +950,7 @@ function getVisibleMain(){
   if (ui.searchQuery) list = searchBookmarks(ui.searchQuery, list);
 
   let pinned = [];
-  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "mostVisited" || ui.filterType === "recent"){
+  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "mostVisited" || ui.filterType === "recent" || ui.filterType === "problems"){
     pinned = appState.bookmarks.filter(b=>b.pinned);
     if (ui.activeTag) pinned = pinned.filter(b=>(b.tags||[]).includes(ui.activeTag));
     if (ui.searchQuery) pinned = searchBookmarks(ui.searchQuery, pinned);
@@ -1270,6 +1290,12 @@ async function checkAllLinks(){
   const text = document.getElementById("progressText");
   const closeBtn = document.getElementById("progressCloseBtn");
   closeBtn.disabled = true;
+  document.getElementById("progressTitle").textContent = "Kontrolujem odkazy…";
+  document.getElementById("progressLine").classList.remove("hidden");
+  document.getElementById("checkResults").classList.add("hidden");
+  document.getElementById("showProblemsBtn").classList.add("hidden");
+  bar.style.width = "0%";
+  text.textContent = `0 / ${list.length}`;
   overlay.classList.remove("hidden");
   let done = 0;
   const CONCURRENCY = 5;
@@ -1289,11 +1315,31 @@ async function checkAllLinks(){
   saveStateImmediate();
   render();
   closeBtn.disabled = false;
-  const deadCount = list.filter(b=>b.isDead).length;
-  const unverifiableCount = list.filter(b=>b.isUnverifiable).length;
-  let msg = `Kontrola dokončená. Nájdených ${deadCount} nedostupných odkazov.`;
-  if (unverifiableCount) msg += ` ${unverifiableCount} sa nepodarilo overiť (intranet/lokálna sieť).`;
-  toast(msg);
+  showCheckResults(list);
+}
+function showCheckResults(list){
+  const dead = list.filter(b=>b.isDead);
+  const unverifiable = list.filter(b=>b.isUnverifiable);
+  const ok = list.length - dead.length - unverifiable.length;
+  document.getElementById("progressTitle").textContent = "Výsledok kontroly";
+  document.getElementById("progressText").textContent = `Skontrolovaných záložiek: ${list.length}`;
+  document.getElementById("progressLine").classList.add("hidden");
+  document.getElementById("checkSummary").innerHTML =
+    `<span class="badge ok">✓ ${ok} dostupných</span>` +
+    `<span class="badge dead">✕ ${dead.length} nedostupných</span>` +
+    `<span class="badge unverifiable">⚠️ ${unverifiable.length} nepodarilo sa overiť</span>`;
+  const row = (b, icon, label) => `<div class="check-item"><span>${icon}</span><div class="check-main">
+      <a href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${escapeHtml(b.title)}</a>
+      <span class="check-url">${escapeHtml(b.url)}</span></div><span class="content-sub">${label}</span></div>`;
+  document.getElementById("checkList").innerHTML =
+    dead.map(b=>row(b, "✕", "nedostupný")).join("") + unverifiable.map(b=>row(b, "⚠️", "neoverené")).join("");
+  const notes = [];
+  if (dead.length) notes.push("„Nedostupný“ = nepodarilo sa nadviazať spojenie (neexistujúca doména, odmietnuté spojenie, neplatný certifikát alebo žiadna odpoveď do 6 s).");
+  if (unverifiable.length) notes.push("„Nepodarilo sa overiť“ = intranet / lokálna sieť / súbor — prehliadač overenie z tejto stránky zablokoval, odkaz môže fungovať.");
+  notes.push("Chyby typu 404 sa takto zistiť nedajú (prehliadač stav stránky neprezradí). Odkazy bez značky ešte neboli kontrolované.");
+  document.getElementById("checkNote").textContent = notes.join(" ");
+  document.getElementById("checkResults").classList.remove("hidden");
+  document.getElementById("showProblemsBtn").classList.toggle("hidden", dead.length + unverifiable.length === 0);
 }
 
 /* ============================== IMPORT / EXPORT ============================== */
@@ -1961,6 +2007,7 @@ function renderSidebarCounts(){
   document.getElementById("countUnread").textContent = appState.bookmarks.filter(b=>b.status==="unread").length;
   document.getElementById("countMostVisited").textContent = appState.bookmarks.filter(b=>(b.visitCount||0)>0).length;
   document.getElementById("countRecent").textContent = appState.bookmarks.filter(b=>b.lastVisitedAt).length;
+  document.getElementById("countProblems").textContent = appState.bookmarks.filter(b=>b.isDead||b.isUnverifiable).length;
   document.getElementById("countTrash").textContent = appState.deletedBookmarks.length;
   document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
     el.classList.toggle("active", ui.filterType === el.dataset.view);
@@ -2058,7 +2105,7 @@ function activeFilterLabel(){
     const f = getFolderById(ui.filterFolderId);
     return f ? f.name : "Priečinok";
   }
-  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", recent:"Naposledy navštívené", trash:"Kôš"}[ui.filterType] || "Záložky";
+  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", recent:"Naposledy navštívené", problems:"Problémové odkazy", trash:"Kôš"}[ui.filterType] || "Záložky";
 }
 function renderActiveFilters(){
   const wrap = document.getElementById("activeFilters");
@@ -2090,8 +2137,10 @@ function bookmarkColorBar(b){
 function bookmarkBadges(b, isTrash){
   let out = "";
   if (!isTrash && b.status === "unread") out += `<span class="badge unread">● nové</span>`;
-  if (b.isDead) out += `<span class="badge dead">✕ nedostupný</span>`;
-  else if (b.isUnverifiable) out += `<span class="badge unverifiable" title="Prehliadač zablokoval overenie (intranet/lokálna sieť) — stránka nemusí byť naozaj nedostupná.">⚠️ nepodarilo sa overiť</span>`;
+  const when = b.lastChecked ? ` Posledná kontrola: ${formatDateTime(b.lastChecked)}.` : "";
+  if (b.isDead) out += `<span class="badge dead" title="Nepodarilo sa nadviazať spojenie (neexistujúca doména, odmietnuté spojenie, neplatný certifikát alebo žiadna odpoveď do 6 s).${when}">✕ nedostupný</span>`;
+  else if (b.isUnverifiable) out += `<span class="badge unverifiable" title="Prehliadač zablokoval overenie (intranet/lokálna sieť) — stránka nemusí byť naozaj nedostupná.${when}">⚠️ nepodarilo sa overiť</span>`;
+  else if (b.lastChecked) out += `<span class="badge ok" title="Spojenie sa podarilo nadviazať. Stav HTTP (napr. 404) prehliadač pri takejto kontrole neprezradí.${when}">✓ dostupný</span>`;
   return out;
 }
 function bookmarkTagsHtml(b){
@@ -2270,6 +2319,8 @@ function renderMain(){
       sorted = main.slice().sort((a,b)=>(b.visitCount||0)-(a.visitCount||0));
     } else if (ui.filterType === "recent" && !ui.searchQuery){
       sorted = main.slice().sort((a,b)=>(b.lastVisitedAt||0)-(a.lastVisitedAt||0));
+    } else if (ui.filterType === "problems" && !ui.searchQuery){
+      sorted = main.slice().sort((a,b)=>(b.isDead?1:0)-(a.isDead?1:0) || (a.order||0)-(b.order||0));
     } else {
       sorted = ui.searchQuery ? main : main.slice().sort((a,b)=>(a.order||0)-(b.order||0));
     }
@@ -2325,6 +2376,11 @@ function wireEvents(){
 
   document.getElementById("checkLinksBtn").onclick = checkAllLinks;
   document.getElementById("progressCloseBtn").onclick = ()=>hideOverlay("progressOverlay");
+  document.getElementById("showProblemsBtn").onclick = ()=>{
+    hideOverlay("progressOverlay");
+    ui.filterType = "problems"; ui.filterFolderId = null;
+    renderSidebarCounts(); renderFolderTree(); renderMain();
+  };
 
   document.getElementById("addBookmarkBtn").onclick = ()=>openBookmarkModal(null);
   document.getElementById("cancelBookmarkBtn").onclick = closeBookmarkModal;
@@ -2462,7 +2518,7 @@ function wireEvents(){
       if (e.target === ov){
         if (ov.id === "bookmarkModalOverlay") closeBookmarkModal();
         else if (ov.id === "textPromptOverlay") closeTextPrompt(null);
-        else if (ov.id !== "progressOverlay") ov.classList.add("hidden");
+        else if (ov.id !== "progressOverlay" || !document.getElementById("progressCloseBtn").disabled) ov.classList.add("hidden");
       }
     });
   });
@@ -2486,7 +2542,7 @@ function wireEvents(){
       if (openOverlay){
         if (openOverlay.id === "bookmarkModalOverlay") closeBookmarkModal();
         else if (openOverlay.id === "textPromptOverlay") closeTextPrompt(null);
-        else if (openOverlay.id !== "progressOverlay") openOverlay.classList.add("hidden");
+        else if (openOverlay.id !== "progressOverlay" || !document.getElementById("progressCloseBtn").disabled) openOverlay.classList.add("hidden");
       }
     }
   });

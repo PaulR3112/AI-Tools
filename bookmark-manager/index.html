@@ -6,356 +6,626 @@
 <title>Bookmark Manager</title>
 <style>
 :root{
-  --bg:#f3f4f8;
+  --bg:#f5f6f8;
   --bg-elevated:#ffffff;
-  --bg-hover:#eef0f6;
-  --text:#1b1d27;
-  --text-muted:#6b7280;
-  --border:#e2e4ea;
+  --bg-hover:#eff1f5;
+  --bg-subtle:#f8f9fb;
+  --text:#14171f;
+  --text-2:#475066;
+  --text-muted:#7b8294;
+  --border:#e5e7ed;
+  --border-strong:#d2d6df;
   --accent:#4f46e5;
-  --accent-soft:#eef0fe;
+  --accent-hover:#4338ca;
+  --accent-soft:#eef0ff;
   --accent-contrast:#ffffff;
   --danger:#dc2626;
-  --danger-soft:#fde8e8;
-  --success:#16a34a;
-  --warning:#d97706;
-  --warning-soft:#fef3d9;
-  --shadow:0 1px 3px rgba(20,20,30,.08), 0 1px 2px rgba(20,20,30,.06);
-  --shadow-lg:0 10px 30px rgba(20,20,30,.18);
-  --radius:10px;
-  --radius-sm:6px;
+  --danger-soft:#fdecec;
+  --success:#15803d;
+  --success-soft:#e7f6ec;
+  --warning:#b45309;
+  --warning-soft:#fef3dc;
+  --mark:#fde68a;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow:0 1px 3px rgba(16,24,40,.07), 0 1px 2px rgba(16,24,40,.04);
+  --shadow-md:0 4px 14px rgba(16,24,40,.08), 0 2px 4px rgba(16,24,40,.04);
+  --shadow-lg:0 14px 36px rgba(16,24,40,.2);
+  --radius:12px;
+  --radius-sm:8px;
+  --header-h:56px;
   color-scheme:light;
 }
 [data-theme="dark"]{
-  --bg:#12131a;
-  --bg-elevated:#1b1d27;
-  --bg-hover:#242631;
-  --text:#e7e9f0;
-  --text-muted:#9498a8;
-  --border:#2b2e3a;
-  --accent:#818cf8;
-  --accent-soft:#242645;
-  --accent-contrast:#12131a;
+  --bg:#14161b;
+  --bg-elevated:#1c1f26;
+  --bg-hover:#272b34;
+  --bg-subtle:#181b21;
+  --text:#e9ebf1;
+  --text-2:#b6bbc9;
+  --text-muted:#868d9e;
+  --border:#2a2e38;
+  --border-strong:#3a3f4c;
+  --accent:#8f96ff;
+  --accent-hover:#a5abff;
+  --accent-soft:#24274b;
+  --accent-contrast:#0f1015;
   --danger:#f87171;
-  --danger-soft:#3a1f22;
+  --danger-soft:#3a2023;
   --success:#4ade80;
+  --success-soft:#16301f;
   --warning:#fbbf24;
-  --warning-soft:#3a2f14;
+  --warning-soft:#37290f;
+  --mark:rgba(251,191,36,.32);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
   --shadow:0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
-  --shadow-lg:0 10px 30px rgba(0,0,0,.5);
+  --shadow-md:0 4px 14px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.3);
+  --shadow-lg:0 14px 36px rgba(0,0,0,.55);
   color-scheme:dark;
 }
 *{box-sizing:border-box;}
 html,body{height:100%;}
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI Variable","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
   background:var(--bg);
   color:var(--text);
   font-size:14px;
-  line-height:1.4;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
 }
 button, input, textarea, select{font-family:inherit;font-size:inherit;color:inherit;}
 button{cursor:pointer;}
 a{color:var(--accent);}
-mark{background:var(--warning-soft);color:inherit;border-radius:3px;padding:0 2px;}
-::-webkit-scrollbar{width:10px;height:10px;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px;}
+::-webkit-scrollbar{width:12px;height:12px;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;border:3px solid transparent;background-clip:content-box;}
+button:focus-visible, a:focus-visible, .nav-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
-.app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr;height:100vh;}
+/* Icons (inline SVG sprite) */
+.ic{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;}
+.ic.fill{fill:currentColor;}
+
+.app{display:grid;grid-template-columns:264px minmax(0,1fr);grid-template-rows:var(--header-h) minmax(0,1fr);height:100vh;}
+
+/* Top bar */
 header.topbar{
   grid-column:1/3;
-  display:flex;align-items:center;gap:12px;
-  padding:10px 16px;
+  display:flex;align-items:center;gap:14px;
+  padding:0 16px;
   background:var(--bg-elevated);
   border-bottom:1px solid var(--border);
   z-index:20;
 }
-.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;white-space:nowrap;}
-.brand .logo{font-size:20px;}
-.search-wrap{flex:1;position:relative;max-width:520px;}
+#menuToggle{display:none;}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15.5px;letter-spacing:-.01em;white-space:nowrap;width:234px;flex:none;}
+.brand .logo{width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--accent-contrast);display:flex;align-items:center;justify-content:center;}
+.brand .logo .ic{width:17px;height:17px;}
+.search-wrap{flex:1;position:relative;max-width:580px;min-width:0;}
 .search-wrap input{
-  width:100%;padding:9px 34px 9px 34px;border-radius:999px;border:1px solid var(--border);
-  background:var(--bg);color:var(--text);outline:none;
+  width:100%;height:36px;padding:0 76px 0 36px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);outline:none;transition:border-color .15s, box-shadow .15s, background .15s;
 }
-.search-wrap input:focus{border-color:var(--accent);}
-.search-wrap .icon-left{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;}
-.search-wrap .icon-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);padding:4px;border-radius:50%;display:none;}
-.search-wrap .icon-clear.show{display:block;}
-.search-wrap .icon-clear:hover{background:var(--bg-hover);}
-.topbar-actions{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.search-wrap input::placeholder{color:var(--text-muted);}
+.search-wrap input:hover{border-color:var(--border-strong);}
+.search-wrap input:focus{border-color:var(--accent);background:var(--bg-elevated);box-shadow:0 0 0 3px var(--accent-soft);}
+.search-wrap .icon-left{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;display:flex;}
+.search-wrap .icon-clear{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:none;}
+.search-wrap .icon-clear.show{display:inline-flex;}
+.search-hint{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;}
+.search-wrap input:focus ~ .search-hint, .search-wrap .icon-clear.show ~ .search-hint{display:none;}
+.topbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}
+
 .icon-btn{
-  display:inline-flex;align-items:center;justify-content:center;
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
   width:34px;height:34px;border-radius:var(--radius-sm);
-  border:1px solid transparent;background:transparent;color:var(--text);
+  border:1px solid transparent;background:transparent;color:var(--text-2);
+  transition:background .12s, color .12s;
 }
-.icon-btn:hover{background:var(--bg-hover);}
+.icon-btn:hover{background:var(--bg-hover);color:var(--text);}
 .icon-btn.active{background:var(--accent-soft);color:var(--accent);}
+.icon-btn.sm{width:28px;height:28px;border-radius:7px;}
+.icon-btn.sm .ic{width:15px;height:15px;}
+.icon-btn.on{color:var(--accent);}
+.icon-btn.danger:hover{background:var(--danger-soft);color:var(--danger);}
+
+.segmented{display:inline-flex;padding:2px;gap:2px;background:var(--bg-hover);border-radius:var(--radius-sm);}
+.seg-btn{width:32px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text-muted);border-radius:6px;transition:background .12s, color .12s;}
+.seg-btn:hover{color:var(--text);}
+.seg-btn.active{background:var(--bg-elevated);color:var(--accent);box-shadow:var(--shadow-sm);}
+
 .btn{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);
-  background:var(--bg-elevated);color:var(--text);font-weight:600;white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:34px;padding:0 14px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+  background:var(--bg-elevated);color:var(--text);font-weight:500;white-space:nowrap;
+  box-shadow:var(--shadow-sm);transition:background .12s, border-color .12s, filter .12s;
 }
 .btn:hover{background:var(--bg-hover);}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast);}
-.btn.primary:hover{filter:brightness(1.08);}
-.btn.danger{color:var(--danger);border-color:var(--danger);background:transparent;}
-.btn.danger:hover{background:var(--danger-soft);}
-.btn.small{padding:5px 10px;font-size:12px;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast);font-weight:600;box-shadow:none;}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn.danger{color:var(--danger);}
+.btn.danger:hover{background:var(--danger-soft);border-color:var(--danger);}
+.btn.small{height:30px;padding:0 11px;font-size:13px;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 
+/* "More" dropdown */
+.menu-wrap{position:relative;}
+.menu{
+  position:absolute;right:0;top:calc(100% + 8px);min-width:256px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:11px;
+  box-shadow:var(--shadow-lg);padding:6px;z-index:60;
+}
+.menu-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:none;background:none;
+  border-radius:7px;text-align:left;color:var(--text);font-size:13.5px;
+}
+.menu-item:hover{background:var(--bg-hover);}
+.menu-item .ic{color:var(--text-muted);}
+label.menu-item{cursor:pointer;}
+label.menu-item input{accent-color:var(--accent);width:15px;height:15px;margin:0 1px;}
+.menu-sep{height:1px;background:var(--border);margin:6px 4px;}
+
+/* Sidebar */
 .sidebar{
   border-right:1px solid var(--border);
   background:var(--bg-elevated);
-  overflow-y:auto;
-  padding:14px 10px 40px;
+  display:flex;flex-direction:column;min-height:0;
 }
+.sidebar-scroll{flex:1;overflow-y:auto;padding:14px 10px 20px;}
+.sidebar-foot{border-top:1px solid var(--border);padding:8px 10px;}
 .sidebar h4{
-  font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);
-  margin:18px 8px 6px;font-weight:700;
+  font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);
+  margin:22px 10px 6px;font-weight:600;
 }
-.sidebar h4:first-child{margin-top:4px;}
+.sidebar h4:first-child{margin-top:2px;}
 .sidebar-section-head{display:flex;align-items:center;justify-content:space-between;}
-.link-btn{background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;text-transform:none;letter-spacing:0;padding:2px 4px;border-radius:4px;cursor:pointer;}
+.link-btn{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;padding:2px 6px;border-radius:5px;cursor:pointer;}
 .link-btn:hover{background:var(--accent-soft);}
-.folder-bulk-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 4px 6px;padding:6px 8px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--radius-sm);}
+.last-check{
+  display:flex;flex-direction:column;gap:5px;width:calc(100% - 4px);margin:8px 2px 0;padding:8px 10px;text-align:left;
+  background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-muted);font-size:12px;line-height:1.4;cursor:pointer;
+}
+.last-check:hover{border-color:var(--border-strong);color:var(--text-2);}
+.lc-title{display:flex;align-items:center;gap:6px;}
+.lc-stats{display:flex;gap:12px;}
+.lc{display:inline-flex;align-items:center;gap:4px;font-weight:600;font-variant-numeric:tabular-nums;}
+.lc .ic{width:13px;height:13px;}
+.lc.ok{color:var(--success);}
+.lc.dead{color:var(--danger);}
+.lc.warn{color:var(--warning);}
+.folder-bulk-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 2px 6px;padding:6px 8px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--radius-sm);}
 .folder-bulk-bar span{font-size:12px;font-weight:600;color:var(--accent);flex:1;}
-.folder-row .folder-check{flex:none;margin:0 2px 0 4px;accent-color:var(--accent);width:14px;height:14px;cursor:pointer;}
+.folder-row .folder-check{flex:none;margin:0 2px 0 6px;accent-color:var(--accent);width:14px;height:14px;cursor:pointer;}
 .folder-row.checked{background:var(--accent-soft);}
 .folder-tree.selecting .folder-actions{display:none !important;}
 .nav-item{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 8px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text);
-  user-select:none;
+  display:flex;align-items:center;gap:10px;
+  padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-2);font-weight:500;
+  user-select:none;transition:background .12s, color .12s;
 }
-.nav-item:hover{background:var(--bg-hover);}
+.nav-item .ic{color:var(--text-muted);}
+.nav-item:hover{background:var(--bg-hover);color:var(--text);}
 .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600;}
-.nav-item .count{margin-left:auto;font-size:11px;color:var(--text-muted);background:var(--bg);padding:1px 7px;border-radius:999px;}
+.nav-item.active .ic{color:var(--accent);}
+.nav-item .count{margin-left:auto;font-size:12px;font-weight:400;color:var(--text-muted);font-variant-numeric:tabular-nums;}
 .nav-item.active .count{color:var(--accent);}
+.nav-item .count.warn{color:var(--warning);font-weight:600;}
 
 .folder-tree{margin-top:2px;}
-.folder-row{display:flex;align-items:center;gap:4px;border-radius:var(--radius-sm);position:relative;}
-.folder-row:hover{background:var(--bg-hover);}
+.folder-row{display:flex;align-items:center;gap:2px;border-radius:var(--radius-sm);position:relative;color:var(--text-2);}
+.folder-row:hover{background:var(--bg-hover);color:var(--text);}
 .folder-row.active{background:var(--accent-soft);}
 .folder-row.active > .folder-label{color:var(--accent);font-weight:600;}
+.folder-row.active .folder-label .ic{color:var(--accent);}
 .folder-row.drop-target{outline:2px dashed var(--accent);outline-offset:-2px;}
-.folder-toggle{width:18px;height:18px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--text-muted);background:none;border:none;border-radius:4px;}
-.folder-toggle:hover{background:var(--bg);}
+.folder-toggle{width:20px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--text-muted);background:none;border:none;border-radius:4px;padding:0;}
+.folder-toggle .ic{width:14px;height:14px;}
+.folder-toggle:hover{background:var(--bg);color:var(--text);}
 .folder-toggle.leaf{visibility:hidden;}
-.folder-label{flex:1;padding:6px 2px;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
-.folder-count{font-size:11px;color:var(--text-muted);}
-.folder-actions{display:none;gap:2px;flex:none;padding-right:2px;}
+.folder-label{flex:1;min-width:0;padding:6px 2px;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.folder-label .ic{margin-right:8px;margin-top:-2px;color:var(--text-muted);}
+.folder-count{font-size:12px;color:var(--text-muted);padding-right:8px;font-variant-numeric:tabular-nums;}
+.folder-actions{display:none;gap:1px;flex:none;padding-right:3px;}
 .folder-row:hover .folder-actions{display:flex;}
-.folder-actions button{width:20px;height:20px;border:none;background:none;color:var(--text-muted);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.folder-row:hover .folder-count{display:none;}
+.folder-actions button{width:22px;height:22px;border:none;background:none;color:var(--text-muted);border-radius:5px;display:flex;align-items:center;justify-content:center;padding:0;}
+.folder-actions button .ic{width:14px;height:14px;}
 .folder-actions button:hover{background:var(--bg);color:var(--text);}
-.folder-children{margin-left:16px;}
-.add-folder-row{display:flex;align-items:center;gap:6px;padding:6px 8px;color:var(--text-muted);border-radius:var(--radius-sm);}
+.folder-actions button[data-act="delete"]:hover{color:var(--danger);}
+.folder-children{margin-left:14px;}
+.add-folder-row{display:flex;align-items:center;gap:8px;padding:6px 10px;color:var(--text-muted);border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px;}
+.add-folder-row .ic{width:15px;height:15px;}
 .add-folder-row:hover{background:var(--bg-hover);color:var(--text);}
 
-.tag-list{display:flex;flex-wrap:wrap;gap:6px;padding:2px 8px;}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;padding:2px 10px;}
 .tag-chip{
-  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;
-  background:var(--bg);border:1px solid var(--border);font-size:12px;color:var(--text-muted);cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;padding:0 10px;height:24px;border-radius:999px;
+  background:var(--bg-subtle);border:1px solid var(--border);font-size:12px;color:var(--text-2);cursor:pointer;
+  transition:border-color .12s, background .12s, color .12s;
 }
-.tag-chip:hover{border-color:var(--accent);color:var(--text);}
+.tag-chip .n{color:var(--text-muted);font-size:11px;font-variant-numeric:tabular-nums;}
+.tag-chip:hover{border-color:var(--border-strong);color:var(--text);}
 .tag-chip.active{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast);}
+.tag-chip.active .n{color:inherit;opacity:.75;}
+.tag-more{margin-top:2px;margin-left:-2px;}
 
-main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
-.content-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-.content-title{font-size:20px;font-weight:700;}
-.content-sub{color:var(--text-muted);font-size:12.5px;}
+/* Content */
+main.content{overflow-y:auto;padding:26px 32px 64px;position:relative;min-width:0;}
+.content-header{display:flex;align-items:flex-end;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.content-title{font-size:22px;font-weight:700;letter-spacing:-.015em;line-height:1.2;}
+.content-sub{color:var(--text-muted);font-size:13px;margin-top:2px;}
 .content-header .spacer{flex:1;}
 .active-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.filter-pill{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;}
-.filter-pill button{background:none;border:none;color:inherit;padding:0;display:flex;}
+.filter-pill{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);padding:0 6px 0 10px;height:26px;border-radius:999px;font-size:12.5px;font-weight:600;}
+.filter-pill button{background:none;border:none;color:inherit;padding:2px;display:flex;border-radius:50%;}
+.filter-pill button:hover{background:rgba(127,127,127,.2);}
+.filter-pill .ic{width:13px;height:13px;}
 
-.bulk-bar{display:flex;align-items:center;gap:8px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;flex-wrap:wrap;}
-.bulk-bar span:first-child{font-weight:600;color:var(--accent);font-size:13px;}
+.bulk-bar{
+  position:sticky;top:12px;z-index:15;
+  display:flex;align-items:center;gap:8px;background:var(--bg-elevated);border:1px solid var(--accent);
+  border-radius:11px;padding:8px 10px 8px 14px;margin-bottom:18px;flex-wrap:wrap;box-shadow:var(--shadow-md);
+}
+.bulk-count{font-weight:600;color:var(--accent);font-size:13.5px;margin-right:4px;}
 .bulk-bar .spacer{flex:1;}
-.backup-banner{display:flex;align-items:center;gap:8px;background:var(--warning-soft);border:1px solid var(--warning);color:var(--text);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;flex-wrap:wrap;font-size:13px;}
-#backupBannerText{flex:1 1 320px;}
-.sidebar-toggle-row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13px;cursor:pointer;}
-.sidebar-toggle-row input{accent-color:var(--accent);}
+.backup-banner{
+  display:flex;align-items:center;gap:10px;background:var(--bg-elevated);border:1px solid var(--border);border-left:3px solid var(--warning);
+  color:var(--text-2);border-radius:11px;padding:10px 10px 10px 14px;margin-bottom:18px;flex-wrap:wrap;font-size:13.5px;box-shadow:var(--shadow-sm);
+}
+.backup-banner .banner-ic{color:var(--warning);display:flex;}
+#backupBannerText{flex:1 1 280px;}
 
-.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700;margin:6px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin:4px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-title .n{font-weight:500;letter-spacing:0;background:var(--bg-hover);border-radius:999px;padding:0 7px;font-size:11px;line-height:18px;}
 .section-title .line{flex:1;height:1px;background:var(--border);}
+.pin-toggle{display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;padding:3px 6px;margin-left:-6px;border-radius:6px;}
+.pin-toggle:hover{color:var(--text);background:var(--bg-hover);}
+.pin-toggle .ic{width:14px;height:14px;}
 
-.bookmark-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:26px;}
-.bookmark-list{display:flex;flex-direction:column;gap:6px;margin-bottom:26px;}
+.bookmark-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:30px;}
+.pin-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:28px;}
 
+/* Bookmark card */
 .card{
   background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);
-  padding:12px 12px 10px 14px;position:relative;box-shadow:var(--shadow);
-  display:flex;flex-direction:column;gap:8px;overflow:hidden;
+  padding:14px 14px 10px 16px;position:relative;
+  display:flex;flex-direction:column;gap:10px;min-width:0;
+  transition:border-color .15s, box-shadow .15s, background .15s;
 }
-.card.dead{opacity:.65;}
-.card.selected, .row.selected{outline:2px solid var(--accent);outline-offset:-2px;}
-.select-checkbox{flex:none;margin-top:3px;accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
-.card .colorbar{position:absolute;left:0;top:0;bottom:0;width:4px;}
-.card[draggable="true"]{cursor:grab;}
-.card.drag-over{outline:2px dashed var(--accent);outline-offset:-2px;}
-.card-top{display:flex;align-items:flex-start;gap:8px;}
-.favicon{width:18px;height:18px;border-radius:4px;flex:none;margin-top:2px;background:var(--bg-hover);object-fit:cover;}
-.card-title-wrap{flex:1;min-width:0;}
-.card-title{font-weight:600;font-size:14px;text-decoration:none;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.card-title:hover{text-decoration:underline;}
-.card-url{font-size:11.5px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
-.card-actions{display:flex;gap:2px;flex:none;}
-.card-actions-row{display:flex;gap:2px;}
-.card-badges{display:flex;gap:6px;flex-wrap:wrap;}
-.badge{font-size:10.5px;padding:2px 7px;border-radius:999px;font-weight:600;display:inline-flex;align-items:center;gap:3px;}
+.card:hover{border-color:var(--border-strong);box-shadow:var(--shadow-md);}
+.card.selected, .row.selected{background:var(--accent-soft);}
+.card.selected{border-color:var(--accent);}
+.card .colorbar{position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;}
+.card[draggable="true"], .row[draggable="true"]{cursor:grab;}
+.card.drag-over, .row.drag-over{outline:2px dashed var(--accent);outline-offset:-2px;}
+.card-top{display:flex;align-items:flex-start;gap:12px;min-width:0;}
+
+.lead{position:relative;flex:none;width:36px;height:36px;border-radius:10px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;}
+.favicon{width:20px;height:20px;border-radius:5px;flex:none;object-fit:cover;transition:opacity .12s;}
+.favicon-letter{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;line-height:1;user-select:none;}
+.duplicate-box .favicon-letter{width:20px;height:20px;}
+.select-checkbox{
+  appearance:none;-webkit-appearance:none;flex:none;width:18px;height:18px;margin:0;
+  border:1.5px solid var(--border-strong);border-radius:5px;background:var(--bg-elevated);cursor:pointer;
+  transition:background .12s, border-color .12s, opacity .12s;
+}
+.select-checkbox:hover{border-color:var(--accent);}
+.select-checkbox:checked{
+  background-color:var(--accent);border-color:var(--accent);background-size:12px;background-position:center;background-repeat:no-repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+[data-theme="dark"] .select-checkbox:checked{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314161b' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+.lead .select-checkbox{position:absolute;left:50%;top:50%;margin:-9px 0 0 -9px;opacity:0;z-index:1;}
+.card:hover .lead .select-checkbox, .row:hover .lead .select-checkbox,
+.card.selected .lead .select-checkbox, .row.selected .lead .select-checkbox,
+#mainArea.selecting .lead .select-checkbox, .lead .select-checkbox:focus-visible{opacity:1;}
+.card:hover .lead .favicon, .row:hover .lead .favicon,
+.card.selected .lead .favicon, .row.selected .lead .favicon,
+#mainArea.selecting .lead .favicon{opacity:0;}
+
+.card-title-wrap{flex:1;min-width:0;padding-top:1px;}
+.title-line{display:flex;align-items:center;gap:7px;min-width:0;}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;}
+.card-title{
+  font-weight:600;font-size:14.5px;line-height:1.3;text-decoration:none;color:var(--text);
+  display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.card-title:hover{color:var(--accent);}
+.card:not(.pin-tile) .card-title{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.card:not(.pin-tile) .title-line .unread-dot{align-self:flex-start;margin-top:6px;}
+.card-sub{display:flex;align-items:center;gap:8px;min-width:0;margin-top:3px;font-size:12.5px;color:var(--text-muted);}
+.card-url{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:0 1 auto;}
+.card.dead .card-title, .row.dead .card-title{color:var(--text-2);}
+.card.dead .lead, .row.dead .lead{opacity:.7;}
+
+.card-actions{display:flex;gap:1px;flex:none;opacity:0;transition:opacity .12s;}
+.card > .card-actions{position:absolute;top:9px;right:9px;background:var(--bg-elevated);border-radius:9px;padding:2px;box-shadow:0 0 0 1px var(--border), var(--shadow-sm);}
+.card:hover .card-actions, .row:hover .card-actions,
+.card.in-trash .card-actions, .row.in-trash .card-actions, .card-actions:focus-within{opacity:1;}
+
+.badge{font-size:11px;padding:1px 8px;border-radius:999px;font-weight:600;display:inline-flex;align-items:center;gap:4px;line-height:1.6;white-space:nowrap;flex:none;}
+.badge .ic{width:12px;height:12px;}
 .badge.dead{background:var(--danger-soft);color:var(--danger);}
 .badge.unverifiable{background:var(--warning-soft);color:var(--warning);}
-.badge.unread{background:var(--accent-soft);color:var(--accent);}
+.badge.ok{background:var(--success-soft);color:var(--success);}
+.card-sub .badge.ok, .c-main .badge.ok{padding:0;width:18px;height:18px;justify-content:center;}
+.card-sub .badge.ok .ic{width:13px;height:13px;}
+.check-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;}
+.check-summary .badge{font-size:12.5px;padding:3px 11px;}
+.check-summary .badge .ic{width:14px;height:14px;}
+.check-list{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);}
+.check-list:empty{display:none;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:12.5px;}
+.check-item:last-child{border-bottom:none;}
+.check-item > .ic{margin-top:2px;}
+.check-item > .ic.dead{color:var(--danger);}
+.check-item > .ic.unverifiable{color:var(--warning);}
+.check-item .check-main{flex:1;min-width:0;}
+.check-item a{font-weight:600;color:var(--text);text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.check-item a:hover{text-decoration:underline;}
+.check-item .check-url{color:var(--text-muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
+
 .card-tags{display:flex;gap:5px;flex-wrap:wrap;}
-.card-tags .tag-chip{cursor:pointer;font-size:11px;padding:2px 8px;}
-.card-footer{display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap;}
-.card-footer .spacer{flex:1;}
-.card-footer .meta{font-size:10.5px;color:var(--text-muted);white-space:nowrap;}
-.comment-wrap{position:relative;display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);max-width:100%;}
+.card-tags .tag-chip{font-size:11.5px;height:21px;padding:0 8px;border-radius:6px;background:var(--bg-hover);border-color:transparent;}
+.card-tags .tag-chip:hover{border-color:var(--border-strong);}
+.card-footer{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:9px;border-top:1px solid var(--border);}
+.meta{display:inline-flex;align-items:center;gap:12px;font-size:12px;color:var(--text-muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.meta-i{display:inline-flex;align-items:center;gap:4px;}
+.meta .ic{width:13px;height:13px;}
+.comment-wrap{position:relative;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-muted);min-width:0;}
 .comment-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.comment-wrap .ic{width:14px;height:14px;}
 .comment-tooltip{
-  display:none;position:absolute;bottom:100%;left:0;margin-bottom:6px;
-  background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;
-  padding:8px 10px;box-shadow:var(--shadow-lg);font-size:12px;color:var(--text);
-  white-space:pre-wrap;width:max-content;max-width:280px;z-index:30;
+  display:none;position:absolute;bottom:100%;left:0;margin-bottom:8px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;
+  padding:9px 12px;box-shadow:var(--shadow-lg);font-size:12.5px;color:var(--text);
+  white-space:pre-wrap;width:max-content;max-width:300px;z-index:30;
 }
 .comment-wrap:hover .comment-tooltip{display:block;}
 
-.row{
-  display:flex;align-items:center;gap:10px;background:var(--bg-elevated);
-  border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;position:relative;
+/* Pinned tiles */
+.pin-tile{flex-direction:row;align-items:center;gap:10px;padding:8px 12px 8px 14px;border-radius:10px;}
+.pin-tile .colorbar{top:8px;bottom:8px;}
+.pin-tile .lead{width:32px;height:32px;border-radius:9px;}
+.pin-tile .favicon{width:18px;height:18px;}
+.pin-tile .card-title{font-size:13.5px;}
+.pin-tile .card-sub{font-size:12px;margin-top:1px;}
+.pin-tile .card-title-wrap{padding-top:0;}
+.pin-tile > .card-actions{top:50%;right:6px;transform:translateY(-50%);}
+.pin-tile .icon-btn.sm{width:26px;height:26px;}
+
+/* List (table) view */
+.bookmark-list{
+  --cols:36px minmax(0,3fr) minmax(0,2fr) 76px 112px 116px;
+  display:flex;flex-direction:column;margin-bottom:30px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);
 }
-.row .colorbar{position:absolute;left:0;top:0;bottom:0;width:3px;}
-.row.dead{opacity:.6;}
-.row.drag-over{outline:2px dashed var(--accent);outline-offset:-2px;}
-.row .favicon{width:16px;height:16px;margin-top:0;}
-.favicon-letter{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;line-height:1;user-select:none;}
-.row .favicon-letter{font-size:10px;}
-.duplicate-box .favicon-letter{width:20px;height:20px;}
-.row .card-title{font-size:13px;}
-.row .card-url{max-width:220px;}
-.row-tags{display:flex;gap:4px;flex-wrap:wrap;max-width:220px;}
-.row .card-actions{margin-left:auto;}
+.list-head, .row{display:grid;grid-template-columns:var(--cols);align-items:center;column-gap:14px;padding:0 14px;}
+.list-head{
+  height:38px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:600;
+  border-bottom:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius) var(--radius) 0 0;
+}
+.row{position:relative;padding-top:9px;padding-bottom:9px;border-bottom:1px solid var(--border);transition:background .1s;min-width:0;}
+.row:last-child{border-bottom:none;border-radius:0 0 var(--radius) var(--radius);}
+.row:hover{background:var(--bg-subtle);}
+.row.selected:hover{background:var(--accent-soft);}
+.row .colorbar{position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;}
+.row .lead{width:32px;height:32px;border-radius:9px;}
+.row .card-title{font-size:14px;}
+.row .card-sub{margin-top:1px;}
+.row .c-main{min-width:0;}
+.row .c-tags{flex-wrap:wrap;max-height:23px;overflow:hidden;}
+.c-visits, .c-last{gap:5px;}
+.row .card-actions{justify-content:flex-end;}
+.list-head .c-visits, .list-head .c-last{display:block;}
 
 .empty-state{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:70px 20px;color:var(--text-muted);text-align:center;gap:10px;
+  padding:80px 20px;color:var(--text-muted);text-align:center;gap:6px;
 }
-.empty-state .emoji{font-size:38px;}
+.empty-ic{width:58px;height:58px;border-radius:17px;background:var(--bg-hover);color:var(--text-muted);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.empty-ic .ic{width:26px;height:26px;stroke-width:1.75;}
+.empty-title{font-size:16px;font-weight:600;color:var(--text);}
+.empty-sub{font-size:13.5px;max-width:380px;}
+.empty-actions{display:flex;gap:8px;margin-top:16px;}
 
 /* Modal */
 .overlay{
-  position:fixed;inset:0;background:rgba(10,10,15,.45);display:flex;align-items:center;justify-content:center;
+  position:fixed;inset:0;background:rgba(12,14,20,.5);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;
   z-index:100;padding:20px;
 }
 .overlay.hidden{display:none;}
 .modal{
-  background:var(--bg-elevated);border-radius:var(--radius);box-shadow:var(--shadow-lg);
-  width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:20px 22px 22px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);
+  width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:22px 24px 22px;
 }
 .modal.wide{max-width:620px;}
-.modal h3{margin:0 0 14px;font-size:17px;}
-.field{margin-bottom:13px;}
-.field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:5px;}
+.modal h3{margin:0 0 16px;font-size:17px;font-weight:650;letter-spacing:-.01em;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:6px;}
 .field input[type=text], .field input[type=url], .field input[type=date], .field textarea, .field select{
-  width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;
+  width:100%;padding:8px 11px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:var(--bg-elevated);color:var(--text);outline:none;
+  transition:border-color .15s, box-shadow .15s;
 }
-.field input:focus, .field textarea:focus, .field select:focus{border-color:var(--accent);}
-.field textarea{resize:vertical;min-height:60px;}
+.field input:focus, .field textarea:focus, .field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.field textarea{resize:vertical;min-height:64px;}
 .field-row{display:flex;gap:10px;}
 .field-row .field{flex:1;}
 .chip-input{
-  display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);
+  display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elevated);
+  transition:border-color .15s, box-shadow .15s;
 }
+.chip-input:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
 .chip-input input{border:none;background:none;outline:none;flex:1;min-width:80px;padding:2px;}
-.chip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent);padding:2px 4px 2px 9px;border-radius:999px;font-size:12px;}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent);padding:2px 4px 2px 9px;border-radius:999px;font-size:12px;font-weight:500;}
 .chip button{background:none;border:none;color:inherit;padding:2px;display:flex;border-radius:50%;}
-.chip button:hover{background:rgba(0,0,0,.1);}
+.chip button .ic{width:12px;height:12px;}
+.chip button:hover{background:rgba(127,127,127,.25);}
 .tag-suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.tag-suggestions .sugg{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px dashed var(--border);background:none;color:var(--text-muted);}
+.tag-suggestions .sugg{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px dashed var(--border-strong);background:none;color:var(--text-muted);}
 .tag-suggestions .sugg:hover{border-color:var(--accent);color:var(--accent);}
-.autocomplete-list{border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:4px;background:var(--bg-elevated);box-shadow:var(--shadow);position:relative;z-index:5;max-height:140px;overflow-y:auto;display:none;}
+.autocomplete-list{border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:4px;background:var(--bg-elevated);box-shadow:var(--shadow-md);position:relative;z-index:5;max-height:140px;overflow-y:auto;display:none;}
 .autocomplete-list.show{display:block;}
-.autocomplete-list div{padding:6px 10px;font-size:12.5px;cursor:pointer;}
+.autocomplete-list div{padding:7px 11px;font-size:12.5px;cursor:pointer;}
 .autocomplete-list div:hover, .autocomplete-list div.hi{background:var(--bg-hover);}
 .color-swatches{display:flex;gap:8px;flex-wrap:wrap;}
-.swatch{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.swatch{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:inset 0 0 0 2px var(--bg-elevated);}
 .swatch.selected{border-color:var(--text);}
-.swatch.none{background:var(--bg);border:1px dashed var(--border);color:var(--text-muted);}
+.swatch.none{background:var(--bg-hover);border:1px dashed var(--border-strong);color:var(--text-muted);box-shadow:none;}
+.swatch.none.selected{border-color:var(--text);border-style:solid;}
+.swatch.none .ic{width:12px;height:12px;}
 .checkbox-row{display:flex;align-items:center;gap:8px;}
 .checkbox-row input{accent-color:var(--accent);width:16px;height:16px;}
-.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
 .modal-actions .spacer{flex:1;}
 
-.duplicate-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin:12px 0;display:flex;gap:10px;align-items:center;}
-.duplicate-box img{width:20px;height:20px;border-radius:4px;}
+.duplicate-box{background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin:12px 0;display:flex;gap:12px;align-items:center;}
+.duplicate-box img{width:20px;height:20px;border-radius:5px;}
 
 .toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:200;}
-.toast{background:var(--text);color:var(--bg);padding:10px 16px;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);font-size:13px;max-width:320px;animation:toastin .18s ease;}
-[data-theme="dark"] .toast{background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);}
-.toast.error{background:var(--danger);color:#fff;}
+.toast{background:var(--text);color:var(--bg-elevated);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow-lg);font-size:13.5px;max-width:340px;animation:toastin .18s ease;}
+[data-theme="dark"] .toast{background:var(--bg-hover);color:var(--text);border:1px solid var(--border-strong);}
+.toast.error{background:var(--danger);color:#fff;border:none;}
 @keyframes toastin{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-.progress-line{height:6px;background:var(--bg);border-radius:999px;overflow:hidden;margin-top:8px;}
+.progress-line{height:6px;background:var(--bg-hover);border-radius:999px;overflow:hidden;margin-top:10px;}
 .progress-line > div{height:100%;background:var(--accent);transition:width .2s;}
 
-.import-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:22px;text-align:center;color:var(--text-muted);margin-bottom:10px;cursor:pointer;}
-.import-drop:hover{border-color:var(--accent);color:var(--accent);}
+.import-drop{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:20px;text-align:center;color:var(--text-muted);margin-bottom:10px;cursor:pointer;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.import-drop:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
 
-.kbd{font-family:monospace;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:11px;}
+.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--bg-hover);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:11px;color:var(--text-muted);}
 
+@media (hover:none){
+  .card-actions{opacity:1;}
+  .card > .card-actions{position:static;box-shadow:none;padding:0;justify-content:flex-end;background:none;}
+  .pin-tile > .card-actions{transform:none;}
+}
 @media (max-width:820px){
-  .app{grid-template-columns:1fr;}
-  .sidebar{position:fixed;top:56px;left:0;bottom:0;width:250px;transform:translateX(-100%);transition:transform .2s;z-index:50;box-shadow:var(--shadow-lg);}
-  .sidebar.open{transform:translateX(0);}
+  .app{grid-template-columns:minmax(0,1fr);}
+  header.topbar{gap:8px;padding:0 10px;}
+  #menuToggle{display:inline-flex;}
+  .brand{width:auto;}
   .brand span.full{display:none;}
+  .search-hint{display:none;}
+  .topbar-actions{gap:6px;}
+  #addBookmarkBtn{padding:0 10px;}
+  #addBookmarkBtn .lbl{display:none;}
+  .sidebar{position:fixed;top:var(--header-h);left:0;bottom:0;width:272px;transform:translateX(-100%);transition:transform .2s, box-shadow .2s;z-index:50;}
+  .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg);}
+  main.content{padding:18px 16px 56px;}
+  .bookmark-grid{grid-template-columns:minmax(0,1fr);}
+  .bookmark-list{--cols:36px minmax(0,1fr) 56px auto;}
+  .c-tags, .c-last{display:none !important;}
+}
+@media (max-width:640px){
+  .segmented, .brand{display:none;}
 }
 .hidden{display:none !important;}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 4.9-9 4.9-9-4.9z"/><path d="m3 12.1 9 4.9 9-4.9"/><path d="m3 17.1 9 4.9 9-4.9"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+    <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+    <symbol id="i-search-x" viewBox="0 0 24 24"><path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+  </defs>
+</svg>
 <div class="app">
   <header class="topbar">
-    <button class="icon-btn" id="menuToggle" title="Menu" aria-label="Menu">☰</button>
-    <div class="brand"><span class="logo">🔖</span><span class="full">Bookmarks</span></div>
+    <button class="icon-btn" id="menuToggle" title="Menu" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    <div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bookmark"/></svg></span><span class="full">Bookmarks</span></div>
     <div class="search-wrap">
-      <span class="icon-left">🔍</span>
-      <input type="text" id="searchInput" placeholder="Hľadať (Ctrl+K)…" autocomplete="off">
-      <button class="icon-clear" id="searchClear" title="Vymazať">✕</button>
+      <span class="icon-left"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg></span>
+      <input type="text" id="searchInput" placeholder="Hľadať záložky…" aria-label="Hľadať záložky" autocomplete="off">
+      <button class="icon-btn sm icon-clear" id="searchClear" title="Vymazať" aria-label="Vymazať hľadanie"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+      <span class="search-hint kbd" id="searchHint">Ctrl K</span>
     </div>
     <div class="topbar-actions">
-      <button class="icon-btn" id="viewCardBtn" title="Kartové zobrazenie">▦</button>
-      <button class="icon-btn" id="viewCompactBtn" title="Kompaktné zobrazenie">☰</button>
-      <button class="icon-btn" id="themeToggle" title="Prepnúť tmavý režim">🌙</button>
-      <button class="btn" id="checkLinksBtn" title="Skontrolovať odkazy">🔗 Kontrola</button>
-      <button class="btn" id="importExportBtn">⇄ Import/Export</button>
-      <button class="btn primary" id="addBookmarkBtn">＋ Pridať</button>
+      <div class="segmented" role="group" aria-label="Zobrazenie">
+        <button class="seg-btn" id="viewCardBtn" title="Kartové zobrazenie" aria-label="Kartové zobrazenie"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-grid"/></svg></button>
+        <button class="seg-btn" id="viewCompactBtn" title="Zoznam" aria-label="Zoznam"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-list"/></svg></button>
+      </div>
+      <button class="icon-btn" id="themeToggle" title="Prepnúť tmavý režim" aria-label="Prepnúť tmavý režim"></button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="moreMenuBtn" title="Ďalšie akcie" aria-label="Ďalšie akcie" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-more"/></svg></button>
+        <div class="menu hidden" id="moreMenu" role="menu">
+          <button class="menu-item" id="checkLinksBtn" role="menuitem" title="Skontrolovať, či odkazy odpovedajú"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-link"/></svg><span>Skontrolovať odkazy</span></button>
+          <button class="menu-item" id="importExportBtn" role="menuitem"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-swap"/></svg><span>Import / Export</span></button>
+          <div class="menu-sep"></div>
+          <label class="menu-item" title="Ikony stránok sa nebudú sťahovať zo služby Google — namiesto nich sa zobrazí farebné písmeno. Intranetové a lokálne adresy sa na Google neposielajú nikdy."><input type="checkbox" id="offlineFavicons"><span>Bez externých požiadaviek (ikony)</span></label>
+        </div>
+      </div>
+      <button class="btn primary" id="addBookmarkBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg><span class="lbl">Pridať</span></button>
     </div>
   </header>
 
   <aside class="sidebar" id="sidebar">
-    <div class="nav-item" data-view="all"><span>📚</span><span>Všetky</span><span class="count" id="countAll">0</span></div>
-    <div class="nav-item" data-view="pinned"><span>📌</span><span>Pripnuté</span><span class="count" id="countPinned">0</span></div>
-    <div class="nav-item" data-view="unread"><span>🔵</span><span>Neprečítané</span><span class="count" id="countUnread">0</span></div>
-    <div class="nav-item" data-view="mostVisited"><span>🔥</span><span>Najnavštevovanejšie</span><span class="count" id="countMostVisited">0</span></div>
-    <div class="nav-item" data-view="recent"><span>🕒</span><span>Naposledy navštívené</span><span class="count" id="countRecent">0</span></div>
-    <div class="nav-item" data-view="trash"><span>🗑️</span><span>Kôš</span><span class="count" id="countTrash">0</span></div>
+    <div class="sidebar-scroll">
+      <h4>Zbierka</h4>
+      <div class="nav-item" data-view="all"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-layers"/></svg><span>Všetky</span><span class="count" id="countAll">0</span></div>
+      <div class="nav-item" data-view="pinned"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg><span>Pripnuté</span><span class="count" id="countPinned">0</span></div>
+      <div class="nav-item" data-view="unread"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-circle-dot"/></svg><span>Neprečítané</span><span class="count" id="countUnread">0</span></div>
 
-    <h4 class="sidebar-section-head">Priečinky <button class="link-btn" id="folderSelectToggle" title="Vybrať viac priečinkov naraz">Vybrať</button></h4>
-    <div class="folder-bulk-bar hidden" id="folderBulkBar">
-      <span id="folderBulkCount">0 vybraných</span>
-      <button class="btn small" id="folderSelectAllBtn">Všetky</button>
-      <button class="btn small danger" id="folderBulkDeleteBtn">🗑 Zmazať</button>
+      <h4>Prehľady</h4>
+      <div class="nav-item" data-view="mostVisited"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flame"/></svg><span>Najnavštevovanejšie</span><span class="count" id="countMostVisited">0</span></div>
+      <div class="nav-item" data-view="recent"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-clock"/></svg><span>Naposledy navštívené</span><span class="count" id="countRecent">0</span></div>
+      <div class="nav-item" data-view="problems"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alert"/></svg><span>Problémové odkazy</span><span class="count" id="countProblems">0</span></div>
+      <button class="last-check hidden" id="lastCheckLine" title="Zobraziť výsledok poslednej kontroly odkazov"></button>
+
+      <h4 class="sidebar-section-head">Priečinky <button class="link-btn" id="folderSelectToggle" title="Vybrať viac priečinkov naraz">Vybrať</button></h4>
+      <div class="folder-bulk-bar hidden" id="folderBulkBar">
+        <span id="folderBulkCount">0 vybraných</span>
+        <button class="btn small" id="folderSelectAllBtn">Všetky</button>
+        <button class="btn small danger" id="folderBulkDeleteBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-trash"/></svg>Zmazať</button>
+      </div>
+      <div class="folder-tree" id="folderTree"></div>
+      <div class="add-folder-row" id="addRootFolder"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg><span>Nový priečinok</span></div>
+
+      <h4>Tagy</h4>
+      <div class="tag-list" id="tagList"></div>
     </div>
-    <div class="folder-tree" id="folderTree"></div>
-    <div class="add-folder-row" id="addRootFolder">＋ Nový priečinok</div>
-
-    <h4>Tagy</h4>
-    <div class="tag-list" id="tagList"></div>
-
-    <h4>Nastavenia</h4>
-    <label class="sidebar-toggle-row" title="Ikony stránok sa nebudú sťahovať zo služby Google — namiesto nich sa zobrazí farebné písmeno. Intranetové a lokálne adresy sa na Google neposielajú nikdy."><input type="checkbox" id="offlineFavicons"> Bez externých požiadaviek (ikony)</label>
+    <div class="sidebar-foot">
+      <div class="nav-item" data-view="trash"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-trash"/></svg><span>Kôš</span><span class="count" id="countTrash">0</span></div>
+    </div>
   </aside>
 
   <main class="content" id="content">
@@ -368,20 +638,21 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
       <div class="active-filters" id="activeFilters"></div>
     </div>
     <div class="backup-banner hidden" id="backupBanner">
+      <span class="banner-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alert"/></svg></span>
       <span id="backupBannerText"></span>
-      <button class="btn small primary" id="backupNowBtn">⇩ Zálohovať teraz</button>
-      <button class="btn small" id="backupLaterBtn">Pripomenúť zajtra</button>
+      <button class="btn small primary" id="backupNowBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>Zálohovať teraz</button>
+      <button class="icon-btn sm" id="backupLaterBtn" title="Pripomenúť zajtra" aria-label="Pripomenúť zajtra"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
     <div class="bulk-bar hidden" id="bulkActionsBar">
-      <span id="bulkCount">0 vybraných</span>
-      <button class="btn small" id="bulkSelectAllBtn">☑ Vybrať všetko</button>
-      <button class="btn small" id="bulkTagBtn">🏷 Pridať tag</button>
-      <button class="btn small" id="bulkMoveBtn">📁 Presunúť</button>
-      <button class="btn small danger" id="bulkDeleteBtn">🗑 Zmazať</button>
-      <button class="btn small" id="bulkRestoreBtn">↩️ Obnoviť</button>
-      <button class="btn small danger" id="bulkPurgeBtn">🗑 Vymazať natrvalo</button>
+      <span class="bulk-count" id="bulkCount">0 vybraných</span>
+      <button class="btn small" id="bulkSelectAllBtn"></button>
+      <button class="btn small" id="bulkTagBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-tag"/></svg>Pridať tag</button>
+      <button class="btn small" id="bulkMoveBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-folder"/></svg>Presunúť</button>
+      <button class="btn small danger" id="bulkDeleteBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-trash"/></svg>Zmazať</button>
+      <button class="btn small" id="bulkRestoreBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-undo"/></svg>Obnoviť</button>
+      <button class="btn small danger" id="bulkPurgeBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-trash"/></svg>Vymazať natrvalo</button>
       <span class="spacer"></span>
-      <button class="btn small" id="bulkClearBtn">✕ Zrušiť výber</button>
+      <button class="btn small" id="bulkClearBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg>Zrušiť výber</button>
     </div>
     <div id="mainArea"></div>
   </main>
@@ -470,27 +741,27 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
     <div class="section-title"><span>Export</span><span class="line"></span></div>
     <p class="content-sub">JSON je úplná záloha (záložky, priečinky, kôš, počty návštev). HTML je formát, ktorý vie importovať každý prehliadač (priečinky, tagy, poznámky).</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn primary" id="exportJsonBtn">⇩ Exportovať JSON (záloha)</button>
-      <button class="btn" id="exportHtmlBtn">⇩ Exportovať HTML (pre prehliadač)</button>
+      <button class="btn primary" id="exportJsonBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>Exportovať JSON (záloha)</button>
+      <button class="btn" id="exportHtmlBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>Exportovať HTML (pre prehliadač)</button>
     </div>
 
     <div class="section-title" style="margin-top:20px;"><span>Import JSON zálohy</span><span class="line"></span></div>
-    <div class="import-drop" id="jsonDrop">Klikni alebo pretiahni .json súbor sem</div>
+    <div class="import-drop" id="jsonDrop"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-upload"/></svg><span>Klikni alebo pretiahni .json súbor sem</span></div>
     <input type="file" accept=".json,application/json" id="jsonFileInput" class="hidden">
 
     <div class="section-title" style="margin-top:20px;"><span>Import zo záložiek prehliadača</span><span class="line"></span></div>
     <p class="content-sub">Prehliadač exportuje záložky ako HTML súbor (Bookmarks → Export).</p>
-    <div class="import-drop" id="htmlDrop">Klikni alebo pretiahni exportovaný .html súbor sem</div>
+    <div class="import-drop" id="htmlDrop"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-upload"/></svg><span>Klikni alebo pretiahni exportovaný .html súbor sem</span></div>
     <input type="file" accept=".html,.htm,text/html" id="htmlFileInput" class="hidden">
 
     <div class="section-title" style="margin-top:20px;"><span>Rýchle uloženie z inej stránky</span><span class="line"></span></div>
     <p class="content-sub">Pretiahni tlačidlo nižšie do lišty záložiek prehliadača (raz). Potom, keď budeš na ľubovoľnej stránke, klikni naň a ten nástroj sa otvorí s predvyplnenou URL a názvom danej stránky.</p>
     <div style="margin:8px 0;">
-      <a id="bookmarkletLink" class="btn primary" style="text-decoration:none;" onclick="return false;" title="Pretiahni ma do lišty záložiek">📌 Uložiť stránku</a>
+      <a id="bookmarkletLink" class="btn primary" style="text-decoration:none;" onclick="return false;" title="Pretiahni ma do lišty záložiek"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg>Uložiť stránku</a>
     </div>
     <p class="content-sub">Ak sa drag &amp; drop nedarí, skopíruj kód nižšie a vlož ho ako URL adresu novej záložky v prehliadači:</p>
     <textarea id="bookmarkletCode" readonly style="width:100%;min-height:56px;font-family:monospace;font-size:11px;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);resize:vertical;"></textarea>
-    <button class="btn small" id="copyBookmarkletBtn" style="margin-top:6px;">📋 Kopírovať kód</button>
+    <button class="btn small" id="copyBookmarkletBtn" style="margin-top:6px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg>Kopírovať kód</button>
 
     <div class="modal-actions">
       <div class="spacer"></div>
@@ -534,8 +805,14 @@ main.content{overflow-y:auto;padding:18px 22px 60px;position:relative;}
   <div class="modal">
     <h3 id="progressTitle">Kontrolujem odkazy…</h3>
     <div class="content-sub" id="progressText">0 / 0</div>
-    <div class="progress-line"><div id="progressBar" style="width:0%;"></div></div>
+    <div class="progress-line" id="progressLine"><div id="progressBar" style="width:0%;"></div></div>
+    <div class="check-results hidden" id="checkResults">
+      <div class="check-summary" id="checkSummary"></div>
+      <div class="check-list" id="checkList"></div>
+      <p class="content-sub" id="checkNote"></p>
+    </div>
     <div class="modal-actions">
+      <button class="btn primary hidden" id="showProblemsBtn">Zobraziť problémové odkazy</button>
       <div class="spacer"></div>
       <button class="btn" id="progressCloseBtn" disabled>Zavrieť</button>
     </div>
@@ -603,11 +880,12 @@ const STOPWORDS = new Set([
 
 /* ============================== STATE ============================== */
 let appState = { bookmarks: [], folders: [], deletedBookmarks: [] };
-let settings = { theme: "light", view: "card", offlineFavicons: false, lastExportAt: null, backupSnoozeUntil: 0 };
+let settings = { theme: "light", view: "card", offlineFavicons: false, lastExportAt: null, backupSnoozeUntil: 0, pinnedCollapsed: false };
 let ui = {
   filterType: "all", // all | folder | pinned | unread | mostVisited | recent | trash
   filterFolderId: null,
   activeTag: null,
+  tagsExpanded: false,
   searchQuery: "",
   expandedFolders: new Set(),
   selectedIds: new Set(),       // bookmarks selected in the normal views
@@ -635,6 +913,10 @@ function debounce(fn, delay){
 function escapeHtml(str){
   if (str == null) return "";
   return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+// Inline SVG icons from the sprite at the top of <body>; they inherit the text colour.
+function icon(name, cls){
+  return `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 }
 function normalizeText(str){
   if (!str) return "";
@@ -907,6 +1189,8 @@ function baseFilteredBookmarks(){
     list = list.filter(b => (b.visitCount||0) > 0);
   } else if (ui.filterType === "recent"){
     list = list.filter(b => b.lastVisitedAt);
+  } else if (ui.filterType === "problems"){
+    list = list.filter(b => b.isDead || b.isUnverifiable);
   }
   if (ui.activeTag){
     list = list.filter(b => (b.tags||[]).includes(ui.activeTag));
@@ -929,8 +1213,12 @@ function getVisibleMain(){
   list = baseFilteredBookmarks();
   if (ui.searchQuery) list = searchBookmarks(ui.searchQuery, list);
 
+  // The pinned block is a "shortcut" shelf for the browsing views only. In the filtered/ranked
+  // views (unread, most visited, recent, problems) it would pull in every pinned bookmark
+  // regardless of the filter and break both the count and the ranking, so there each bookmark
+  // appears once, in its place in the list.
   let pinned = [];
-  if (ui.filterType === "all" || ui.filterType === "folder" || ui.filterType === "unread" || ui.filterType === "mostVisited" || ui.filterType === "recent"){
+  if (ui.filterType === "all" || ui.filterType === "folder"){
     pinned = appState.bookmarks.filter(b=>b.pinned);
     if (ui.activeTag) pinned = pinned.filter(b=>(b.tags||[]).includes(ui.activeTag));
     if (ui.searchQuery) pinned = searchBookmarks(ui.searchQuery, pinned);
@@ -1270,6 +1558,12 @@ async function checkAllLinks(){
   const text = document.getElementById("progressText");
   const closeBtn = document.getElementById("progressCloseBtn");
   closeBtn.disabled = true;
+  document.getElementById("progressTitle").textContent = "Kontrolujem odkazy…";
+  document.getElementById("progressLine").classList.remove("hidden");
+  document.getElementById("checkResults").classList.add("hidden");
+  document.getElementById("showProblemsBtn").classList.add("hidden");
+  bar.style.width = "0%";
+  text.textContent = `0 / ${list.length}`;
   overlay.classList.remove("hidden");
   let done = 0;
   const CONCURRENCY = 5;
@@ -1289,11 +1583,52 @@ async function checkAllLinks(){
   saveStateImmediate();
   render();
   closeBtn.disabled = false;
-  const deadCount = list.filter(b=>b.isDead).length;
-  const unverifiableCount = list.filter(b=>b.isUnverifiable).length;
-  let msg = `Kontrola dokončená. Nájdených ${deadCount} nedostupných odkazov.`;
-  if (unverifiableCount) msg += ` ${unverifiableCount} sa nepodarilo overiť (intranet/lokálna sieť).`;
-  toast(msg);
+  showCheckResults(list);
+}
+function renderLastCheckLine(){
+  const line = document.getElementById("lastCheckLine");
+  const checked = appState.bookmarks.filter(b=>b.lastChecked);
+  line.classList.toggle("hidden", !checked.length);
+  if (!checked.length) return;
+  const dead = checked.filter(b=>b.isDead).length;
+  const unv = checked.filter(b=>b.isUnverifiable).length;
+  const latest = Math.max(...checked.map(b=>b.lastChecked));
+  const time = new Date(latest).toLocaleTimeString("sk-SK",{hour:"2-digit",minute:"2-digit"});
+  line.innerHTML = `<span class="lc-title">${icon("link")}Posledná kontrola: ${formatRelative(latest)} ${time}</span>` +
+    `<span class="lc-stats"><span class="lc ok" title="Dostupné">${icon("check")}${checked.length - dead - unv}</span>` +
+    `<span class="lc dead" title="Nedostupné">${icon("x")}${dead}</span>` +
+    `<span class="lc warn" title="Nepodarilo sa overiť">${icon("alert")}${unv}</span></span>`;
+}
+function openLastCheckResults(){
+  const checked = appState.bookmarks.filter(b=>b.lastChecked);
+  if (!checked.length) return;
+  document.getElementById("progressCloseBtn").disabled = false;
+  showCheckResults(checked);
+  showOverlay("progressOverlay");
+}
+function showCheckResults(list){
+  const dead = list.filter(b=>b.isDead);
+  const unverifiable = list.filter(b=>b.isUnverifiable);
+  const ok = list.length - dead.length - unverifiable.length;
+  document.getElementById("progressTitle").textContent = "Výsledok kontroly";
+  document.getElementById("progressText").textContent = `Skontrolovaných záložiek: ${list.length}`;
+  document.getElementById("progressLine").classList.add("hidden");
+  document.getElementById("checkSummary").innerHTML =
+    `<span class="badge ok">${icon("check-circle")}${ok} dostupných</span>` +
+    `<span class="badge dead">${icon("x")}${dead.length} nedostupných</span>` +
+    `<span class="badge unverifiable">${icon("alert")}${unverifiable.length} nepodarilo sa overiť</span>`;
+  const row = (b, kind, label) => `<div class="check-item">${icon(kind === "dead" ? "x" : "alert", kind)}<div class="check-main">
+      <a href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${escapeHtml(b.title)}</a>
+      <span class="check-url">${escapeHtml(b.url)}</span></div><span class="content-sub">${label}</span></div>`;
+  document.getElementById("checkList").innerHTML =
+    dead.map(b=>row(b, "dead", "nedostupný")).join("") + unverifiable.map(b=>row(b, "unverifiable", "neoverené")).join("");
+  const notes = [];
+  if (dead.length) notes.push("„Nedostupný“ = nepodarilo sa nadviazať spojenie (neexistujúca doména, odmietnuté spojenie, neplatný certifikát alebo žiadna odpoveď do 6 s).");
+  if (unverifiable.length) notes.push("„Nepodarilo sa overiť“ = intranet / lokálna sieť / súbor — prehliadač overenie z tejto stránky zablokoval, odkaz môže fungovať.");
+  notes.push("Chyby typu 404 sa takto zistiť nedajú (prehliadač stav stránky neprezradí). Odkazy bez značky ešte neboli kontrolované.");
+  document.getElementById("checkNote").textContent = notes.join(" ");
+  document.getElementById("checkResults").classList.remove("hidden");
+  document.getElementById("showProblemsBtn").classList.toggle("hidden", dead.length + unverifiable.length === 0);
 }
 
 /* ============================== IMPORT / EXPORT ============================== */
@@ -1565,6 +1900,8 @@ function renderSelectionBar(){
   const sel = currentSelection();
   const count = sel.size;
   bar.classList.toggle("hidden", count === 0);
+  // While anything is ticked, every card shows its checkbox so more can be added with one click.
+  document.getElementById("mainArea").classList.toggle("selecting", count > 0);
   if (!count) return;
   const trash = isTrashView();
   document.getElementById("bulkCount").textContent = `${count} vybraných`;
@@ -1572,11 +1909,12 @@ function renderSelectionBar(){
   ["bulkRestoreBtn","bulkPurgeBtn"].forEach(id=>document.getElementById(id).classList.toggle("hidden", !trash));
   const visible = visibleItemIds();
   const allSelected = visible.length > 0 && visible.every(id=>sel.has(id));
-  document.getElementById("bulkSelectAllBtn").textContent = allSelected ? "☐ Zrušiť označenie všetkých" : `☑ Vybrať všetko (${visible.length})`;
+  document.getElementById("bulkSelectAllBtn").innerHTML = allSelected ? `${icon("x")}Zrušiť označenie všetkých` : `${icon("check")}Vybrať všetko (${visible.length})`;
 }
 function visibleItemIds(){
   const {main, pinned} = getVisibleMain();
-  return [...pinned, ...main].map(b=>b.id);
+  // A collapsed pinned strip is not on screen, so "select all" must not pick those up.
+  return [...(settings.pinnedCollapsed ? [] : pinned), ...main].map(b=>b.id);
 }
 function toggleSelectAllVisible(){
   const sel = currentSelection();
@@ -1756,8 +2094,8 @@ function renderBackupBanner(){
   if (!show) return;
   const days = settings.lastExportAt ? Math.floor((now - settings.lastExportAt) / 86400000) : null;
   document.getElementById("backupBannerText").textContent = days === null
-    ? "⚠️ Záložky ešte nemáš zálohované. Sú uložené len v tomto prehliadači — vyčistenie dát prehliadača ich zmaže."
-    : `⚠️ Posledná záloha bola pred ${days} dňami. Odporúčam exportovať JSON zálohu.`;
+    ? "Záložky ešte nemáš zálohované. Sú uložené len v tomto prehliadači — vyčistenie dát prehliadača ich zmaže."
+    : `Posledná záloha bola pred ${days} dňami. Odporúčam exportovať JSON zálohu.`;
 }
 
 function confirmAction(title, text, onConfirm){
@@ -1789,7 +2127,7 @@ function renderColorSwatches(selected){
   wrap.innerHTML = "";
   const none = document.createElement("div");
   none.className = "swatch none" + (!selected ? " selected" : "");
-  none.textContent = "✕";
+  none.innerHTML = icon("x");
   none.title = "Bez farby";
   none.onclick = ()=>{ wrap.dataset.selected=""; renderColorSwatches(""); };
   wrap.appendChild(none);
@@ -1809,7 +2147,7 @@ function renderTagChips(){
   currentTags.forEach(t=>{
     const chip = document.createElement("span");
     chip.className = "chip";
-    chip.innerHTML = `${escapeHtml(t)} <button type="button" aria-label="odstrániť">✕</button>`;
+    chip.innerHTML = `${escapeHtml(t)} <button type="button" aria-label="odstrániť">${icon("x")}</button>`;
     chip.querySelector("button").onclick = ()=>{
       currentTags = currentTags.filter(x=>x!==t);
       renderTagChips();
@@ -1961,6 +2299,10 @@ function renderSidebarCounts(){
   document.getElementById("countUnread").textContent = appState.bookmarks.filter(b=>b.status==="unread").length;
   document.getElementById("countMostVisited").textContent = appState.bookmarks.filter(b=>(b.visitCount||0)>0).length;
   document.getElementById("countRecent").textContent = appState.bookmarks.filter(b=>b.lastVisitedAt).length;
+  const problems = appState.bookmarks.filter(b=>b.isDead||b.isUnverifiable).length;
+  document.getElementById("countProblems").textContent = problems;
+  document.getElementById("countProblems").classList.toggle("warn", problems > 0);
+  renderLastCheckLine();
   document.getElementById("countTrash").textContent = appState.deletedBookmarks.length;
   document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
     el.classList.toggle("active", ui.filterType === el.dataset.view);
@@ -1982,13 +2324,13 @@ function renderFolderTree(){
       row.className = "folder-row" + (ui.filterType==="folder" && ui.filterFolderId===f.id ? " active" : "") + (ui.folderSelectMode && checked ? " checked" : "");
       row.innerHTML = `
         ${ui.folderSelectMode ? `<input type="checkbox" class="folder-check" title="Vybrať priečinok" ${checked ? "checked" : ""}>` : ""}
-        <button class="folder-toggle ${hasChildren?"":"leaf"}">${hasChildren ? (expanded ? "▾" : "▸") : ""}</button>
-        <span class="folder-label">📁 ${escapeHtml(f.name)}</span>
+        <button class="folder-toggle ${hasChildren?"":"leaf"}" ${hasChildren ? `aria-label="${expanded ? "Zbaliť" : "Rozbaliť"}"` : 'tabindex="-1" aria-hidden="true"'}>${hasChildren ? icon(expanded ? "chevron-down" : "chevron-right") : ""}</button>
+        <span class="folder-label">${icon("folder")}${escapeHtml(f.name)}</span>
         <span class="folder-count">${count}</span>
         <span class="folder-actions">
-          <button data-act="add" title="Pridať podpriečinok">＋</button>
-          <button data-act="rename" title="Premenovať">✎</button>
-          <button data-act="delete" title="Zmazať">🗑</button>
+          <button data-act="add" title="Pridať podpriečinok" aria-label="Pridať podpriečinok">${icon("plus")}</button>
+          <button data-act="rename" title="Premenovať" aria-label="Premenovať">${icon("edit")}</button>
+          <button data-act="delete" title="Zmazať" aria-label="Zmazať">${icon("trash")}</button>
         </span>`;
       const check = row.querySelector(".folder-check");
       if (check){
@@ -2034,31 +2376,48 @@ function renderFolderTree(){
   }
   container.appendChild(renderLevel(null, 0));
 }
+const TAGS_COLLAPSED_COUNT = 8;
 function renderTagList(){
   const wrap = document.getElementById("tagList");
   wrap.innerHTML = "";
-  const tags = getAllTags();
-  if (!tags.length){
-    wrap.innerHTML = '<div class="content-sub" style="padding:0 8px;">Žiadne tagy</div>';
+  const ranked = getAllTags().sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
+  if (!ranked.length){
+    wrap.innerHTML = '<div class="content-sub" style="padding:0 2px;">Žiadne tagy</div>';
     return;
   }
-  tags.forEach(([tag,count])=>{
+  // Only the most used tags are listed up front; the rest sits behind a toggle. The active tag is
+  // always shown so it can be switched off again.
+  let shown = ui.tagsExpanded ? ranked : ranked.slice(0, TAGS_COLLAPSED_COUNT);
+  if (ui.activeTag && !shown.some(t=>t[0] === ui.activeTag)){
+    const active = ranked.find(t=>t[0] === ui.activeTag);
+    if (active) shown = [...shown, active];
+  }
+  shown.forEach(([tag,count])=>{
     const chip = document.createElement("div");
     chip.className = "tag-chip" + (ui.activeTag===tag ? " active" : "");
-    chip.textContent = `${tag} · ${count}`;
+    chip.innerHTML = `<span>${escapeHtml(tag)}</span><span class="n">${count}</span>`;
     chip.onclick = ()=>{
       ui.activeTag = ui.activeTag === tag ? null : tag;
       renderTagList(); renderMain();
     };
     wrap.appendChild(chip);
   });
+  if (ranked.length > TAGS_COLLAPSED_COUNT){
+    const more = document.createElement("button");
+    more.type = "button";
+    more.id = "tagsToggle";
+    more.className = "link-btn tag-more";
+    more.textContent = ui.tagsExpanded ? "Zobraziť menej" : `+ ${ranked.length - TAGS_COLLAPSED_COUNT} ďalších`;
+    more.onclick = ()=>{ ui.tagsExpanded = !ui.tagsExpanded; renderTagList(); };
+    wrap.appendChild(more);
+  }
 }
 function activeFilterLabel(){
   if (ui.filterType === "folder" && ui.filterFolderId){
     const f = getFolderById(ui.filterFolderId);
     return f ? f.name : "Priečinok";
   }
-  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", recent:"Naposledy navštívené", trash:"Kôš"}[ui.filterType] || "Záložky";
+  return {all:"Všetky záložky", pinned:"Pripnuté", unread:"Neprečítané", mostVisited:"Najnavštevovanejšie", recent:"Naposledy navštívené", problems:"Problémové odkazy", trash:"Kôš"}[ui.filterType] || "Záložky";
 }
 function renderActiveFilters(){
   const wrap = document.getElementById("activeFilters");
@@ -2066,14 +2425,14 @@ function renderActiveFilters(){
   if (ui.activeTag){
     const pill = document.createElement("span");
     pill.className = "filter-pill";
-    pill.innerHTML = `🏷 ${escapeHtml(ui.activeTag)} <button>✕</button>`;
+    pill.innerHTML = `${icon("tag")}${escapeHtml(ui.activeTag)} <button title="Zrušiť filter" aria-label="Zrušiť filter">${icon("x")}</button>`;
     pill.querySelector("button").onclick = ()=>{ ui.activeTag=null; renderTagList(); renderMain(); };
     wrap.appendChild(pill);
   }
   if (ui.searchQuery){
     const pill = document.createElement("span");
     pill.className = "filter-pill";
-    pill.innerHTML = `🔍 “${escapeHtml(ui.searchQuery)}” <button>✕</button>`;
+    pill.innerHTML = `${icon("search")}“${escapeHtml(ui.searchQuery)}” <button title="Zrušiť hľadanie" aria-label="Zrušiť hľadanie">${icon("x")}</button>`;
     pill.querySelector("button").onclick = ()=>{
       ui.searchQuery = "";
       document.getElementById("searchInput").value = "";
@@ -2084,138 +2443,177 @@ function renderActiveFilters(){
   }
 }
 
+/* ---------- bookmark card / tile / row ---------- */
 function bookmarkColorBar(b){
   return b.color ? `<span class="colorbar" style="background:${b.color}"></span>` : "";
 }
-function bookmarkBadges(b, isTrash){
-  let out = "";
-  if (!isTrash && b.status === "unread") out += `<span class="badge unread">● nové</span>`;
-  if (b.isDead) out += `<span class="badge dead">✕ nedostupný</span>`;
-  else if (b.isUnverifiable) out += `<span class="badge unverifiable" title="Prehliadač zablokoval overenie (intranet/lokálna sieť) — stránka nemusí byť naozaj nedostupná.">⚠️ nepodarilo sa overiť</span>`;
-  return out;
+// Shows the domain only; the full address appears when the search term matches somewhere else in
+// the URL (path/query), so the highlight is never hidden, and always in the tooltip.
+function displayUrl(b){
+  const raw = String(b.url || "");
+  const domain = getDomain(raw);
+  const stripped = raw.replace(/^[a-z][a-z0-9+.-]*:\/\/(www\.)?/i, "").replace(/\/$/, "");
+  if (!domain) return stripped || raw;
+  const tokens = tokenize(ui.searchQuery);
+  if (tokens.length){
+    const nDomain = normalizeText(domain), nFull = normalizeText(stripped);
+    if (tokens.some(t=>!nDomain.includes(t) && nFull.includes(t))) return stripped;
+  }
+  return domain;
+}
+function unreadDot(b, isTrash){
+  return !isTrash && b.status === "unread" ? '<span class="unread-dot" title="Neprečítané"></span>' : "";
+}
+function bookmarkBadges(b){
+  const when = b.lastChecked ? ` Posledná kontrola: ${formatDateTime(b.lastChecked)}.` : "";
+  if (b.isDead) return `<span class="badge dead" title="Nepodarilo sa nadviazať spojenie (neexistujúca doména, odmietnuté spojenie, neplatný certifikát alebo žiadna odpoveď do 6 s).${when}">${icon("x")}nedostupný</span>`;
+  if (b.isUnverifiable) return `<span class="badge unverifiable" title="Nepodarilo sa overiť — prehliadač zablokoval overenie (intranet/lokálna sieť), stránka nemusí byť naozaj nedostupná.${when}">${icon("alert")}neoverené</span>`;
+  if (b.lastChecked) return `<span class="badge ok" title="Dostupný — spojenie sa podarilo nadviazať. Stav HTTP (napr. 404) prehliadač pri takejto kontrole neprezradí.${when}">${icon("check-circle")}</span>`;
+  return "";
 }
 function bookmarkTagsHtml(b){
   return (b.tags||[]).map(t=>`<span class="tag-chip" data-tag="${escapeHtml(t)}">${highlightText(t, ui.searchQuery)}</span>`).join("");
 }
-
-function renderCard(b, isTrash){
-  const el = document.createElement("div");
-  const sel = isTrash ? ui.selectedTrashIds : ui.selectedIds;
-  el.className = "card" + (b.isDead ? " dead" : "") + (sel.has(b.id) ? " selected" : "");
-  const meta = `${formatDate(b.createdAt)} · 👁 ${b.visitCount||0}${b.lastVisitedAt ? ` · 🕒 ${formatRelative(b.lastVisitedAt)}` : ""}`;
-  el.innerHTML = `
-    ${bookmarkColorBar(b)}
-    <div class="card-top">
-      <input type="checkbox" class="select-checkbox" title="Vybrať" ${sel.has(b.id)?"checked":""}>
-      ${faviconHtml(b)}
-      <div class="card-title-wrap">
-        <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${highlightText(b.title, ui.searchQuery)}</a>
-        <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
-      </div>
-    </div>
-    <div class="card-actions-row"></div>
-    <div class="card-badges">${bookmarkBadges(b, isTrash)}</div>
-    <div class="card-footer">
-      <div class="card-tags">${bookmarkTagsHtml(b)}</div>
-      <span class="spacer"></span>
-      <span class="meta" title="Pridané ${formatDate(b.createdAt)} · otvorené ${b.visitCount||0}× · naposledy ${b.lastVisitedAt ? formatDateTime(b.lastVisitedAt) : 'nikdy'}">${meta}</span>
-    </div>
-    ${b.note ? `<div class="comment-wrap">
-      <span>💬</span>
-      <span class="comment-preview">${highlightText(b.note, ui.searchQuery)}</span>
-      <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
-    </div>` : ""}
-  `;
+function selectionFor(isTrash){ return isTrash ? ui.selectedTrashIds : ui.selectedIds; }
+function leadHtml(b, sel){
+  return `<span class="lead">${faviconHtml(b)}<input type="checkbox" class="select-checkbox" title="Vybrať" aria-label="Vybrať" ${sel.has(b.id)?"checked":""}></span>`;
+}
+function titleLineHtml(b, isTrash, withNote){
+  return `<div class="title-line">${unreadDot(b, isTrash)}` +
+    `<a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" title="${escapeHtml(b.title)}">${highlightText(b.title, ui.searchQuery)}</a>` +
+    (withNote && b.note ? `<span class="comment-wrap">${icon("message")}<div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div></span>` : "") +
+    `</div>`;
+}
+function subLineHtml(b, isTrash){
+  return `<span class="card-url" title="${escapeHtml(b.url)}">${highlightText(displayUrl(b), ui.searchQuery)}</span>${isTrash ? "" : bookmarkBadges(b)}`;
+}
+function actionsHtml(b, isTrash){
+  const btn = (a, title, ic, cls)=>`<button class="icon-btn sm${cls ? " " + cls : ""}" data-a="${a}" title="${title}" aria-label="${title}">${ic}</button>`;
+  if (isTrash) return btn("restore", "Obnoviť", icon("undo")) + btn("purge", "Vymazať natrvalo", icon("trash"), "danger");
+  const unread = b.status === "unread";
+  return btn("read", unread ? "Označiť ako prečítané" : "Označiť ako neprečítané", icon(unread ? "circle-dot" : "check-circle"), unread ? "on" : "") +
+    btn("pin", b.pinned ? "Odopnúť" : "Pripnúť", icon("pin", b.pinned ? "fill" : ""), b.pinned ? "on" : "") +
+    btn("edit", "Upraviť", icon("edit")) +
+    btn("del", "Zmazať", icon("trash"), "danger");
+}
+function metaTooltip(b){
+  return `Pridané ${formatDate(b.createdAt)} · otvorené ${b.visitCount||0}× · naposledy ${b.lastVisitedAt ? formatDateTime(b.lastVisitedAt) : "nikdy"}`;
+}
+function wireBookmarkEl(el, b, isTrash){
   el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
   wireFaviconFallback(el);
   const checkbox = el.querySelector(".select-checkbox");
-  if (checkbox){
-    checkbox.addEventListener("change", ()=>{
-      toggleSelect(b.id, checkbox.checked);
-      el.classList.toggle("selected", checkbox.checked);
-    });
-  }
-  const actions = el.querySelector(".card-actions-row");
+  checkbox.addEventListener("change", ()=>{
+    toggleSelect(b.id, checkbox.checked);
+    el.classList.toggle("selected", checkbox.checked);
+  });
+  const on = (name, fn)=>{ const btn = el.querySelector(`[data-a="${name}"]`); if (btn) btn.onclick = fn; };
   if (isTrash){
-    actions.innerHTML = `<button class="icon-btn" title="Obnoviť">↩️</button><button class="icon-btn" title="Vymazať natrvalo">🗑️</button>`;
-    const [restoreBtn, delBtn] = actions.querySelectorAll("button");
-    restoreBtn.onclick = ()=>restoreBookmark(b.id);
-    delBtn.onclick = ()=>confirmAction("Vymazať natrvalo?", `Záložka "${b.title}" bude nenávratne odstránená.`, ()=>permanentlyDelete(b.id));
-  } else {
-    actions.innerHTML = `
-      <button class="icon-btn" data-a="read" title="Prečítané/Neprečítané">${b.status==="unread"?"🔵":"⚪"}</button>
-      <button class="icon-btn" data-a="pin" title="Pripnúť">${b.pinned?"📌":"📍"}</button>
-      <button class="icon-btn" data-a="edit" title="Upraviť">✎</button>
-      <button class="icon-btn" data-a="del" title="Zmazať">🗑</button>`;
-    actions.querySelector('[data-a="read"]').onclick = ()=>toggleRead(b.id);
-    actions.querySelector('[data-a="pin"]').onclick = ()=>togglePinned(b.id);
-    actions.querySelector('[data-a="edit"]').onclick = ()=>openBookmarkModal(b);
-    actions.querySelector('[data-a="del"]').onclick = ()=>moveBookmarkToTrash(b.id);
-    el.querySelectorAll(".card-tags .tag-chip").forEach(chip=>{
-      chip.onclick = ()=>{ ui.activeTag = chip.dataset.tag; renderTagList(); renderMain(); };
-    });
-    attachBookmarkDrag(el, b);
+    on("restore", ()=>restoreBookmark(b.id));
+    on("purge", ()=>confirmAction("Vymazať natrvalo?", `Záložka "${b.title}" bude nenávratne odstránená.`, ()=>permanentlyDelete(b.id)));
+    return;
   }
+  on("read", ()=>toggleRead(b.id));
+  on("pin", ()=>togglePinned(b.id));
+  on("edit", ()=>openBookmarkModal(b));
+  on("del", ()=>moveBookmarkToTrash(b.id));
+  el.querySelectorAll(".card-tags .tag-chip").forEach(chip=>{
+    chip.onclick = ()=>{ ui.activeTag = chip.dataset.tag; renderTagList(); renderMain(); };
+  });
+  attachBookmarkDrag(el, b);
+}
+function bookmarkClass(base, b, isTrash){
+  return base + (isTrash ? " in-trash" : "") + (b.isDead ? " dead" : "") + (selectionFor(isTrash).has(b.id) ? " selected" : "");
+}
+
+function renderCard(b, isTrash){
+  const el = document.createElement("div");
+  const sel = selectionFor(isTrash);
+  el.className = bookmarkClass("card", b, isTrash);
+  el.innerHTML = `
+    ${bookmarkColorBar(b)}
+    <div class="card-top">
+      ${leadHtml(b, sel)}
+      <div class="card-title-wrap">
+        ${titleLineHtml(b, isTrash, false)}
+        <div class="card-sub">${subLineHtml(b, isTrash)}</div>
+      </div>
+    </div>
+    ${(b.tags||[]).length ? `<div class="card-tags">${bookmarkTagsHtml(b)}</div>` : ""}
+    ${b.note ? `<div class="comment-wrap">${icon("message")}
+      <span class="comment-preview">${highlightText(b.note, ui.searchQuery)}</span>
+      <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
+    </div>` : ""}
+    <div class="card-footer">
+      <span class="meta" title="${escapeHtml(metaTooltip(b))}">
+        <span>${formatDate(b.createdAt)}</span>
+        <span class="meta-i">${icon("eye")}${b.visitCount||0}</span>
+        ${b.lastVisitedAt ? `<span class="meta-i">${icon("clock")}${formatRelative(b.lastVisitedAt)}</span>` : ""}
+      </span>
+    </div>
+    <div class="card-actions">${actionsHtml(b, isTrash)}</div>
+  `;
+  wireBookmarkEl(el, b, isTrash);
+  return el;
+}
+// Compact tile for the pinned strip.
+function renderPinTile(b){
+  const el = document.createElement("div");
+  const sel = selectionFor(false);
+  el.className = bookmarkClass("card pin-tile", b, false);
+  el.innerHTML = `
+    ${bookmarkColorBar(b)}
+    ${leadHtml(b, sel)}
+    <div class="card-title-wrap">
+      ${titleLineHtml(b, false, false)}
+      <div class="card-sub">${subLineHtml(b, false)}</div>
+    </div>
+    <div class="card-actions">${actionsHtml(b, false)}</div>
+  `;
+  wireBookmarkEl(el, b, false);
   return el;
 }
 function renderRow(b, isTrash){
   const el = document.createElement("div");
-  const sel = isTrash ? ui.selectedTrashIds : ui.selectedIds;
-  el.className = "row" + (b.isDead ? " dead" : "") + (sel.has(b.id) ? " selected" : "");
+  const sel = selectionFor(isTrash);
+  el.className = bookmarkClass("row", b, isTrash);
   el.innerHTML = `
     ${bookmarkColorBar(b)}
-    <input type="checkbox" class="select-checkbox" title="Vybrať" ${sel.has(b.id)?"checked":""}>
-    ${faviconHtml(b)}
-    <a class="card-title" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0;">${highlightText(b.title, ui.searchQuery)}</a>
-    <span class="card-url">${highlightText(b.url, ui.searchQuery)}</span>
-    <div class="row-tags">${bookmarkTagsHtml(b)}</div>
-    ${b.note ? `<div class="comment-wrap" style="max-width:20px;">
-      <span>💬</span>
-      <div class="comment-tooltip">${highlightText(b.note, ui.searchQuery)}</div>
-    </div>` : ""}
-    <span class="meta" title="Otvorené ${b.visitCount||0}× · naposledy ${b.lastVisitedAt ? formatDateTime(b.lastVisitedAt) : 'nikdy'}">👁 ${b.visitCount||0}${b.lastVisitedAt ? ` · 🕒 ${formatRelative(b.lastVisitedAt)}` : ""}</span>
-    <div class="card-badges">${bookmarkBadges(b, isTrash)}</div>
-    <div class="card-actions"></div>
+    ${leadHtml(b, sel)}
+    <div class="c-main">
+      ${titleLineHtml(b, isTrash, true)}
+      <div class="card-sub">${subLineHtml(b, isTrash)}</div>
+    </div>
+    <div class="c-tags card-tags">${bookmarkTagsHtml(b)}</div>
+    <span class="meta c-visits" title="${escapeHtml(metaTooltip(b))}">${icon("eye")}${b.visitCount||0}</span>
+    <span class="meta c-last" title="${escapeHtml(metaTooltip(b))}">${b.lastVisitedAt ? icon("clock") + formatRelative(b.lastVisitedAt) : "—"}</span>
+    <div class="card-actions">${actionsHtml(b, isTrash)}</div>
   `;
-  el.querySelector(".card-title").addEventListener("click", ()=>{ if (!isTrash) trackVisit(b); });
-  wireFaviconFallback(el);
-  const checkbox = el.querySelector(".select-checkbox");
-  if (checkbox){
-    checkbox.addEventListener("change", ()=>{
-      toggleSelect(b.id, checkbox.checked);
-      el.classList.toggle("selected", checkbox.checked);
-    });
-  }
-  const actions = el.querySelector(".card-actions");
-  if (isTrash){
-    actions.innerHTML = `<button class="icon-btn" title="Obnoviť">↩️</button><button class="icon-btn" title="Vymazať natrvalo">🗑️</button>`;
-    const [restoreBtn, delBtn] = actions.querySelectorAll("button");
-    restoreBtn.onclick = ()=>restoreBookmark(b.id);
-    delBtn.onclick = ()=>confirmAction("Vymazať natrvalo?", `Záložka "${b.title}" bude nenávratne odstránená.`, ()=>permanentlyDelete(b.id));
-  } else {
-    actions.innerHTML = `
-      <button class="icon-btn" data-a="read" title="Prečítané/Neprečítané">${b.status==="unread"?"🔵":"⚪"}</button>
-      <button class="icon-btn" data-a="pin" title="Pripnúť">${b.pinned?"📌":"📍"}</button>
-      <button class="icon-btn" data-a="edit" title="Upraviť">✎</button>
-      <button class="icon-btn" data-a="del" title="Zmazať">🗑</button>`;
-    actions.querySelector('[data-a="read"]').onclick = ()=>toggleRead(b.id);
-    actions.querySelector('[data-a="pin"]').onclick = ()=>togglePinned(b.id);
-    actions.querySelector('[data-a="edit"]').onclick = ()=>openBookmarkModal(b);
-    actions.querySelector('[data-a="del"]').onclick = ()=>moveBookmarkToTrash(b.id);
-    el.querySelectorAll(".row-tags .tag-chip").forEach(chip=>{
-      chip.onclick = ()=>{ ui.activeTag = chip.dataset.tag; renderTagList(); renderMain(); };
-    });
-    attachBookmarkDrag(el, b);
-  }
+  wireBookmarkEl(el, b, isTrash);
   return el;
 }
-function renderEmpty(area, isSearch){
+function emptyStateInfo(isFilter){
+  if (isFilter) return {ic:"search-x", title:"Nič nenájdené", sub:"Skús iné kľúčové slovo alebo zruš filter.", reset:true};
+  switch (ui.filterType){
+    case "trash": return {ic:"trash", title:"Kôš je prázdny", sub:`Zmazané záložky sa tu uchovajú ${TRASH_RETENTION_DAYS} dní.`};
+    case "pinned": return {ic:"pin", title:"Žiadne pripnuté záložky", sub:"Pripni si najdôležitejšie záložky, aby boli vždy poruke."};
+    case "unread": return {ic:"check-circle", title:"Všetko je prečítané", sub:"Neprečítané záložky sa zobrazia tu."};
+    case "mostVisited": return {ic:"flame", title:"Zatiaľ nič nenavštívené", sub:"Záložky sa tu zoradia podľa počtu otvorení."};
+    case "recent": return {ic:"clock", title:"Zatiaľ nič nenavštívené", sub:"Naposledy otvorené záložky sa zobrazia tu."};
+    case "problems": return {ic:"check-circle", title:"Žiadne problémové odkazy", sub:"Odkazy môžeš overiť cez tlačidlo „Ďalšie akcie“ → Skontrolovať odkazy."};
+    case "folder": return {ic:"folder", title:"Priečinok je prázdny", sub:"Pretiahni sem záložky alebo ich pridaj tlačidlom Pridať."};
+    default: return {ic:"bookmark", title:"Zatiaľ tu nie sú žiadne záložky", sub:"Pridaj prvú záložku alebo importuj existujúce z prehliadača.", cta:true};
+  }
+}
+function renderEmpty(area, isFilter){
+  const info = emptyStateInfo(isFilter);
   const el = document.createElement("div");
   el.className = "empty-state";
-  if (isSearch){
-    el.innerHTML = `<div class="emoji">🔎</div><div>Nič nenájdené</div>`;
+  el.innerHTML = `<div class="empty-ic">${icon(info.ic)}</div><div class="empty-title">${escapeHtml(info.title)}</div><div class="empty-sub">${escapeHtml(info.sub)}</div>`;
+  if (info.reset){
     const btn = document.createElement("button");
     btn.className = "btn small";
+    btn.style.marginTop = "12px";
     btn.textContent = "Resetovať filter";
     btn.onclick = ()=>{
       ui.searchQuery=""; ui.activeTag=null; ui.filterType="all"; ui.filterFolderId=null;
@@ -2223,17 +2621,48 @@ function renderEmpty(area, isSearch){
       render();
     };
     el.appendChild(btn);
-  } else {
-    el.innerHTML = `<div class="emoji">🔖</div><div>Zatiaľ tu nie sú žiadne záložky</div>`;
+  } else if (info.cta){
+    const actions = document.createElement("div");
+    actions.className = "empty-actions";
+    actions.innerHTML = `<button class="btn primary" data-e="add">${icon("plus")}Pridať záložku</button><button class="btn" data-e="import">${icon("upload")}Importovať</button>`;
+    actions.querySelector('[data-e="add"]').onclick = ()=>openBookmarkModal(null);
+    actions.querySelector('[data-e="import"]').onclick = ()=>{ populateBookmarklet(); showOverlay("importExportOverlay"); };
+    el.appendChild(actions);
   }
   area.appendChild(el);
+}
+function bookmarkCountLabel(n){
+  return n === 1 ? "1 záložka" : (n >= 2 && n <= 4) ? `${n} záložky` : `${n} záložiek`;
+}
+function sectionTitle(inner){
+  const title = document.createElement("div");
+  title.className = "section-title";
+  title.innerHTML = inner + '<span class="line"></span>';
+  return title;
+}
+function renderPinnedSection(area, pinned){
+  const collapsed = !!settings.pinnedCollapsed;
+  const title = sectionTitle(`<button type="button" class="pin-toggle" id="pinToggle" aria-expanded="${!collapsed}" title="${collapsed ? "Rozbaliť" : "Zbaliť"} pripnuté">` +
+    `${icon(collapsed ? "chevron-right" : "chevron-down")}${icon("pin")}<span>Pripnuté</span><span class="n">${pinned.length}</span></button>`);
+  title.querySelector("#pinToggle").onclick = ()=>{
+    settings.pinnedCollapsed = !settings.pinnedCollapsed;
+    // Hidden bookmarks must not stay selected, or a bulk action would silently hit them.
+    if (settings.pinnedCollapsed) pinned.forEach(b=>ui.selectedIds.delete(b.id));
+    saveState(); renderMain();
+  };
+  area.appendChild(title);
+  if (collapsed) return;
+  const strip = document.createElement("div");
+  strip.className = "pin-strip";
+  pinned.slice().sort((a,b)=>(a.order||0)-(b.order||0)).forEach(b=>strip.appendChild(renderPinTile(b)));
+  area.appendChild(strip);
 }
 function renderMain(){
   renderActiveFilters();
   document.getElementById("contentTitle").textContent = activeFilterLabel();
   const {main, pinned} = getVisibleMain();
   const total = main.length + pinned.length;
-  document.getElementById("contentSub").textContent = `${total} záložiek`;
+  document.getElementById("contentSub").textContent = bookmarkCountLabel(total);
   const area = document.getElementById("mainArea");
   area.innerHTML = "";
   const isTrashView = ui.filterType === "trash";
@@ -2244,44 +2673,38 @@ function renderMain(){
     renderSelectionBar();
     return;
   }
-  if (pinned.length && !isTrashView){
-    const title = document.createElement("div");
-    title.className = "section-title";
-    title.innerHTML = `<span>📌 Pripnuté</span><span class="line"></span>`;
-    area.appendChild(title);
-    const grid = document.createElement("div");
-    grid.className = view === "card" ? "bookmark-grid" : "bookmark-list";
-    pinned.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(b=>{
-      grid.appendChild(view === "card" ? renderCard(b,false) : renderRow(b,false));
-    });
-    area.appendChild(grid);
-  }
+  const showPinned = pinned.length > 0 && !isTrashView;
+  if (showPinned) renderPinnedSection(area, pinned);
   if (main.length){
-    if (pinned.length && !isTrashView){
-      const title = document.createElement("div");
-      title.className = "section-title";
-      title.innerHTML = `<span>Ostatné</span><span class="line"></span>`;
-      area.appendChild(title);
-    }
-    const grid = document.createElement("div");
-    grid.className = view === "card" ? "bookmark-grid" : "bookmark-list";
+    if (showPinned) area.appendChild(sectionTitle(`<span>Ostatné</span><span class="n">${main.length}</span>`));
     let sorted;
     if (ui.filterType === "mostVisited" && !ui.searchQuery){
       sorted = main.slice().sort((a,b)=>(b.visitCount||0)-(a.visitCount||0));
     } else if (ui.filterType === "recent" && !ui.searchQuery){
       sorted = main.slice().sort((a,b)=>(b.lastVisitedAt||0)-(a.lastVisitedAt||0));
+    } else if (ui.filterType === "problems" && !ui.searchQuery){
+      sorted = main.slice().sort((a,b)=>(b.isDead?1:0)-(a.isDead?1:0) || (a.order||0)-(b.order||0));
     } else {
       sorted = ui.searchQuery ? main : main.slice().sort((a,b)=>(a.order||0)-(b.order||0));
     }
-    sorted.forEach(b=>{
-      grid.appendChild(view === "card" ? renderCard(b,isTrashView) : renderRow(b,isTrashView));
-    });
+    const grid = document.createElement("div");
+    if (view === "card"){
+      grid.className = "bookmark-grid";
+      sorted.forEach(b=>grid.appendChild(renderCard(b, isTrashView)));
+    } else {
+      grid.className = "bookmark-list";
+      const head = document.createElement("div");
+      head.className = "list-head";
+      head.innerHTML = '<span></span><span>Názov</span><span class="c-tags">Tagy</span><span class="c-visits">Návštev</span><span class="c-last">Naposledy</span><span></span>';
+      grid.appendChild(head);
+      sorted.forEach(b=>grid.appendChild(renderRow(b, isTrashView)));
+    }
     area.appendChild(grid);
   }
   if (isTrashView){
     const emptyBtn = document.createElement("button");
     emptyBtn.className = "btn danger small";
-    emptyBtn.textContent = "🗑️ Vyprázdniť kôš";
+    emptyBtn.innerHTML = `${icon("trash")}Vyprázdniť kôš`;
     emptyBtn.style.marginTop = "6px";
     emptyBtn.onclick = ()=>confirmAction("Vyprázdniť kôš?", "Všetky položky v koši budú natrvalo odstránené.", emptyTrash);
     area.appendChild(emptyBtn);
@@ -2292,6 +2715,19 @@ function renderMain(){
 /* ============================== EVENT WIRING ============================== */
 function wireEvents(){
   document.getElementById("menuToggle").onclick = ()=> document.getElementById("sidebar").classList.toggle("open");
+
+  // "More actions" dropdown: closes on outside click, Escape, or after choosing an item.
+  const moreBtn = document.getElementById("moreMenuBtn");
+  const moreMenu = document.getElementById("moreMenu");
+  const setMoreMenu = open => {
+    moreMenu.classList.toggle("hidden", !open);
+    moreBtn.setAttribute("aria-expanded", String(open));
+  };
+  moreBtn.onclick = e=>{ e.stopPropagation(); setMoreMenu(moreMenu.classList.contains("hidden")); };
+  moreMenu.addEventListener("click", e=>{ if (e.target.closest("button.menu-item")) setMoreMenu(false); });
+  document.addEventListener("click", e=>{
+    if (!e.target.closest("#moreMenu") && !e.target.closest("#moreMenuBtn")) setMoreMenu(false);
+  });
 
   document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
     el.onclick = ()=>{
@@ -2325,6 +2761,12 @@ function wireEvents(){
 
   document.getElementById("checkLinksBtn").onclick = checkAllLinks;
   document.getElementById("progressCloseBtn").onclick = ()=>hideOverlay("progressOverlay");
+  document.getElementById("lastCheckLine").onclick = openLastCheckResults;
+  document.getElementById("showProblemsBtn").onclick = ()=>{
+    hideOverlay("progressOverlay");
+    ui.filterType = "problems"; ui.filterFolderId = null;
+    renderSidebarCounts(); renderFolderTree(); renderMain();
+  };
 
   document.getElementById("addBookmarkBtn").onclick = ()=>openBookmarkModal(null);
   document.getElementById("cancelBookmarkBtn").onclick = closeBookmarkModal;
@@ -2462,7 +2904,7 @@ function wireEvents(){
       if (e.target === ov){
         if (ov.id === "bookmarkModalOverlay") closeBookmarkModal();
         else if (ov.id === "textPromptOverlay") closeTextPrompt(null);
-        else if (ov.id !== "progressOverlay") ov.classList.add("hidden");
+        else if (ov.id !== "progressOverlay" || !document.getElementById("progressCloseBtn").disabled) ov.classList.add("hidden");
       }
     });
   });
@@ -2482,27 +2924,34 @@ function wireEvents(){
       return;
     }
     if (e.key === "Escape"){
+      if (!moreMenu.classList.contains("hidden")){ setMoreMenu(false); moreBtn.focus(); return; }
       const openOverlay = [...document.querySelectorAll(".overlay")].find(o=>!o.classList.contains("hidden"));
       if (openOverlay){
         if (openOverlay.id === "bookmarkModalOverlay") closeBookmarkModal();
         else if (openOverlay.id === "textPromptOverlay") closeTextPrompt(null);
-        else if (openOverlay.id !== "progressOverlay") openOverlay.classList.add("hidden");
+        else if (openOverlay.id !== "progressOverlay" || !document.getElementById("progressCloseBtn").disabled) openOverlay.classList.add("hidden");
       }
     }
   });
 }
 function updateViewButtons(){
-  document.getElementById("viewCardBtn").classList.toggle("active", settings.view==="card");
-  document.getElementById("viewCompactBtn").classList.toggle("active", settings.view==="compact");
+  [["viewCardBtn", "card"], ["viewCompactBtn", "compact"]].forEach(([id, view])=>{
+    const btn = document.getElementById(id);
+    btn.classList.toggle("active", settings.view === view);
+    btn.setAttribute("aria-pressed", String(settings.view === view));
+  });
 }
 function applyTheme(){
   if (settings.theme === "dark") document.documentElement.setAttribute("data-theme","dark");
   else document.documentElement.removeAttribute("data-theme");
-  document.getElementById("themeToggle").textContent = settings.theme === "dark" ? "☀️" : "🌙";
+  const themeBtn = document.getElementById("themeToggle");
+  themeBtn.innerHTML = icon(settings.theme === "dark" ? "sun" : "moon");
+  themeBtn.title = themeBtn.ariaLabel = settings.theme === "dark" ? "Prepnúť na svetlý režim" : "Prepnúť na tmavý režim";
 }
 
 /* ============================== INIT ============================== */
 function init(){
+  if (/Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || "")) document.getElementById("searchHint").textContent = "⌘ K";
   loadState();
   pruneTrash();
   applyTheme();
